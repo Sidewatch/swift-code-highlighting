@@ -85,6 +85,19 @@ public final class SyntaxHighlighter: CodeHighlighter {
         // the storage is built (and rebuilt on font-size change), so leave it alone.
         storage.addAttribute(.foregroundColor, value: colors.foreground, range: range)
 
+        paint(storage, in: range)
+    }
+
+    /// Runs the rule tables over exactly `range` — no line expansion and, unlike
+    /// ``highlight(_:in:)``, no reset to the default foreground first.
+    ///
+    /// The seam ``EmbeddedMarkupHighlighter`` paints its markup spans through: an
+    /// SFC's markup is a set of disjoint sub-ranges rather than one contiguous
+    /// block, so the caller owns both the reset and the clipping. Matching is
+    /// still evaluated against the whole document (a rule may look behind
+    /// `range.location`), only the *matches* are confined to `range`.
+    func paint(_ storage: NSTextStorage, in range: NSRange) {
+        guard range.length > 0 else { return }
         let text = storage.string
         apply(codeRules, to: storage, in: text, range: range)
         applyStringsAndComments(to: storage, in: text, range: range)

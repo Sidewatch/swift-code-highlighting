@@ -805,7 +805,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// UTF-16LE); points come from a single forward newline scan (column in bytes),
     /// block-read via `UTF16NewlineScanner` — this runs per highlight pass, and a
     /// per-character walk to a late injection site cost an ObjC call per UTF-16 unit.
-    private static func combinedParse(_ sub: Grammar, ns: NSString, ranges: [NSRange]) -> MutableTree? {
+    static func combinedParse(_ sub: Grammar, ns: NSString, ranges: [NSRange]) -> MutableTree? {
         let p = Parser()
         try? p.setLanguage(sub.language)
         var scanner = UTF16NewlineScanner(ns)   // ranges are ascending (mergeAscending)
