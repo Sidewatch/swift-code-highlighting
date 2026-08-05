@@ -2,7 +2,7 @@ import Foundation
 import CodeLanguage
 
 /// A definition found somewhere in the project.
-public struct DefLocation {
+public struct DefLocation: Sendable {
     /// The file the definition lives in.
     public let url: URL
     /// The identifier as written at the definition site.
@@ -18,6 +18,13 @@ public struct DefLocation {
 /// Parses every source file in the project and maps symbol names to their
 /// definitions, for cross-file Go-to-Definition and hover-doc. Built on a
 /// background queue; updated incrementally per-file as things change on disk.
+///
+/// All stored state is main-actor isolated, which is what the code already did by hand: the
+/// scan runs on ``queue``, but every read and every install hops back to main first (see the
+/// `- Note` on ``definitions(of:)``). `@MainActor` promotes that convention into something the
+/// compiler checks, and the scan closures below are written to touch nothing isolated — they
+/// build plain values and hand them over the hop.
+@MainActor
 public final class ProjectSymbolIndex {
     private var defs: [String: [DefLocation]] = [:]
     private var fileNames: [String: Set<String>] = [:]   // file path → the names it defines
@@ -40,13 +47,17 @@ public final class ProjectSymbolIndex {
     /// after the build installs; cleared by `invalidate()`.
     private var pendingUpdates: [String: URL] = [:]
     private var generation = 0   // bumped by build()/invalidate() so a superseded build's results are discarded
+    /// In-flight `build(root:completion:)` callbacks, keyed by the generation that owns them.
+    /// Held here so the scan closure never has to carry a (non-Sendable) closure across the
+    /// queue hop. Each entry is removed by the hop that calls it, superseded or not.
+    private var buildCompletions: [Int: () -> Void] = [:]
     private let queue = DispatchQueue(label: "sidewatch.symbolindex", qos: .userInitiated)
 
     /// Creates an empty index; call `build(root:)` to populate it.
     public init() {}
 
     /// The built-in noise list never descended into during a build.
-    public static let defaultSkipDirs: Set<String> = [
+    public nonisolated static let defaultSkipDirs: Set<String> = [
         ".git", ".svn", ".hg", "node_modules", ".build", ".swiftpm", "Pods",
         "DerivedData", "dist", "build", "__pycache__", ".next", ".cache", "vendor",
     ]
@@ -56,9 +67,20 @@ public final class ProjectSymbolIndex {
     /// project with real sources in `dist/` needs it off the list, or its symbols
     /// never enter the index).
     ///
-    /// - Important: Global mutable state read by every ``build(root:completion:)``.
-    ///   Set it during start-up; changing it later needs a rebuild to take effect.
-    public static var skipDirs: Set<String> = defaultSkipDirs
+    /// Lock-guarded and `nonisolated`: the scan reads it from a background queue while the
+    /// setter is a start-up/preferences concern on the main thread, and a `Set` is not atomic.
+    /// Mirrors `FileTools.SkippedDirs.names` and `BlastRadius.skip`.
+    ///
+    /// - Important: Global mutable state read by every ``build(root:completion:)``. The lock
+    ///   makes concurrent access safe, not meaningful — set it during start-up; changing it
+    ///   later needs a rebuild to take effect.
+    public nonisolated static var skipDirs: Set<String> {
+        get { skipLock.lock(); defer { skipLock.unlock() }; return storedSkipDirs }
+        set { skipLock.lock(); defer { skipLock.unlock() }; storedSkipDirs = newValue }
+    }
+
+    private nonisolated static let skipLock = NSLock()
+    private nonisolated(unsafe) static var storedSkipDirs: Set<String> = defaultSkipDirs
 
     /// A path key that stays stable across the file's deletion. `standardizedFileURL`
     /// alone is existence-dependent on macOS (`/private/var/...` is only collapsed
@@ -66,7 +88,7 @@ public final class ProjectSymbolIndex {
     /// drift and `updateFile` would fail to drop its stale definitions. Resolving
     /// symlinks on the parent directory (which still exists after the delete)
     /// yields the same key before and after. Internal for tests.
-    static func canonicalPath(for url: URL) -> String {
+    nonisolated static func canonicalPath(for url: URL) -> String {
         let u = url.standardizedFileURL
         return u.deletingLastPathComponent().resolvingSymlinksInPath()
             .appendingPathComponent(u.lastPathComponent).path
@@ -80,49 +102,76 @@ public final class ProjectSymbolIndex {
         generation += 1
         let gen = generation
         isBuilding = true
-        queue.async { [weak self] in
-            guard let self else { return }
-            var map: [String: [DefLocation]] = [:]
-            var files: [String: Set<String>] = [:]
-            var count = 0
-            let fm = FileManager.default
-            let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
-            if let en = fm.enumerator(at: root, includingPropertiesForKeys: keys, options: [.skipsHiddenFiles]) {
-                for case let url as URL in en {
-                    if Self.skipDirs.contains(url.lastPathComponent) { en.skipDescendants(); continue }
-                    let lang = CodeLanguage.Language.detect(for: url)
-                    guard SymbolQueries.sources[lang] != nil else { continue }
-                    let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-                    guard size > 0, size < 500_000 else { continue }
-                    guard let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
-                    var names = Set<String>()
-                    for s in TreeSitterHighlighter.symbols(in: text, language: lang) {
-                        map[s.name, default: []].append(
-                            DefLocation(url: url, name: s.name, kind: s.kind, range: s.range, line: s.line))
-                        names.insert(s.name)
-                    }
-                    if !names.isEmpty { files[Self.canonicalPath(for: url)] = names }
-                    count += 1
-                    if count > 5000 { break }   // safety cap for very large trees
-                }
-            }
+        // `completion` is parked in main-actor state rather than captured by the scan closure.
+        // A closure is not Sendable, so carrying it through `queue.async` would need an
+        // unchecked escape hatch; keyed by generation it never leaves the main actor, and the
+        // supersede semantics above stay intact — a superseded build still finds its own key.
+        if let completion { buildCompletions[gen] = completion }
+        // The scan itself captures nothing mutable: it returns a value that the main hop
+        // installs. Previously it captured `self` plus two mutable dictionaries and relied on
+        // the queue hop to order the writes before the reads; that is true, but it is an
+        // argument the compiler cannot verify, so it warned on every capture.
+        queue.async {
+            let scanned = Self.scan(root: root)
             DispatchQueue.main.async {
-                if self.generation == gen {   // still the newest request → install
-                    self.defs = map
-                    self.fileNames = files
-                    self.sortedNames = nil   // names replaced wholesale
-                    self.isBuilt = true
-                    self.isBuilding = false
-                    // Replay edits the scan raced against: the enumerator may
-                    // have read a file before its mid-build change, so the
-                    // installed snapshot can be stale for exactly these files.
-                    let pending = self.pendingUpdates
-                    self.pendingUpdates = [:]
-                    for url in pending.values { self.updateFile(url) }
-                }
-                completion?()
+                self.install(scanned, generation: gen)
+                self.buildCompletions.removeValue(forKey: gen)?()
             }
         }
+    }
+
+    /// One full pass over `root`, as a pure function of the file system.
+    ///
+    /// `nonisolated static` on purpose: it must be callable from ``queue`` without touching
+    /// main-actor state, and being static makes that structural rather than a promise.
+    nonisolated private static func scan(root: URL) -> ScanResult {
+        var map: [String: [DefLocation]] = [:]
+        var files: [String: Set<String>] = [:]
+        var count = 0
+        let fm = FileManager.default
+        let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
+        if let en = fm.enumerator(at: root, includingPropertiesForKeys: keys, options: [.skipsHiddenFiles]) {
+            let skip = skipDirs   // read once: the scan should see one consistent list
+            for case let url as URL in en {
+                if skip.contains(url.lastPathComponent) { en.skipDescendants(); continue }
+                let lang = CodeLanguage.Language.detect(for: url)
+                guard SymbolQueries.sources[lang] != nil else { continue }
+                let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+                guard size > 0, size < 500_000 else { continue }
+                guard let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
+                var names = Set<String>()
+                for s in TreeSitterHighlighter.symbols(in: text, language: lang) {
+                    map[s.name, default: []].append(
+                        DefLocation(url: url, name: s.name, kind: s.kind, range: s.range, line: s.line))
+                    names.insert(s.name)
+                }
+                if !names.isEmpty { files[canonicalPath(for: url)] = names }
+                count += 1
+                if count > 5000 { break }   // safety cap for very large trees
+            }
+        }
+        return ScanResult(defs: map, fileNames: files)
+    }
+
+    /// A completed scan, ready to install. Immutable so it can cross the queue hop as a value.
+    private struct ScanResult: Sendable {
+        let defs: [String: [DefLocation]]
+        let fileNames: [String: Set<String>]
+    }
+
+    /// Installs a finished scan, unless a newer `build()`/`invalidate()` superseded it.
+    private func install(_ scanned: ScanResult, generation gen: Int) {
+        guard generation == gen else { return }   // superseded → discard, but still complete
+        defs = scanned.defs
+        fileNames = scanned.fileNames
+        sortedNames = nil   // names replaced wholesale
+        isBuilt = true
+        isBuilding = false
+        // Replay edits the scan raced against: the enumerator may have read a file before its
+        // mid-build change, so the installed snapshot can be stale for exactly these files.
+        let pending = pendingUpdates
+        pendingUpdates = [:]
+        for url in pending.values { updateFile(url) }
     }
 
     /// Incrementally re-indexes one file (edited/added), or drops it (deleted).
@@ -134,33 +183,55 @@ public final class ProjectSymbolIndex {
             return
         }
         let path = Self.canonicalPath(for: url)
-        queue.async { [weak self] in
-            var newDefs: [DefLocation] = []
-            var names = Set<String>()
-            if FileManager.default.fileExists(atPath: path) {
-                let lang = CodeLanguage.Language.detect(for: url)
-                let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-                if SymbolQueries.sources[lang] != nil, size > 0, size < 500_000,
-                   let text = try? String(contentsOf: url, encoding: .utf8) {
-                    for s in TreeSitterHighlighter.symbols(in: text, language: lang) {
-                        newDefs.append(DefLocation(url: url, name: s.name, kind: s.kind, range: s.range, line: s.line))
-                        names.insert(s.name)
-                    }
-                }
-            }
+        // Captured strongly: a `@MainActor` class is implicitly Sendable, whereas `[weak self]`
+        // introduces a mutable optional that a concurrent closure may not reference. The index
+        // outlives its edits in practice, and `apply` is a no-op before the first build.
+        queue.async {
+            let rescanned = Self.rescan(url: url, path: path)
             DispatchQueue.main.async {
-                guard let self, self.isBuilt else { return }
-                if let old = self.fileNames[path] {
-                    for n in old {
-                        self.defs[n]?.removeAll { Self.canonicalPath(for: $0.url) == path }
-                        if self.defs[n]?.isEmpty == true { self.defs[n] = nil }
-                    }
-                }
-                for d in newDefs { self.defs[d.name, default: []].append(d) }
-                self.fileNames[path] = names.isEmpty ? nil : names
-                self.sortedNames = nil   // this file's names entered/left `defs`
+                self.apply(rescanned, at: path)
             }
         }
+    }
+
+    /// Re-parses one file, as a pure function of its contents. Empty when the file is gone,
+    /// unparseable, or too large — which is also exactly what a delete should install.
+    nonisolated private static func rescan(url: URL, path: String) -> FileSymbols {
+        guard FileManager.default.fileExists(atPath: path) else { return FileSymbols(defs: [], names: []) }
+        let lang = CodeLanguage.Language.detect(for: url)
+        let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        guard SymbolQueries.sources[lang] != nil, size > 0, size < 500_000,
+              let text = try? String(contentsOf: url, encoding: .utf8) else {
+            return FileSymbols(defs: [], names: [])
+        }
+        var newDefs: [DefLocation] = []
+        var names = Set<String>()
+        for s in TreeSitterHighlighter.symbols(in: text, language: lang) {
+            newDefs.append(DefLocation(url: url, name: s.name, kind: s.kind, range: s.range, line: s.line))
+            names.insert(s.name)
+        }
+        return FileSymbols(defs: newDefs, names: names)
+    }
+
+    /// One file's definitions, immutable so it can cross the queue hop as a value.
+    private struct FileSymbols: Sendable {
+        let defs: [DefLocation]
+        let names: Set<String>
+    }
+
+    /// Swaps one file's definitions in the installed index: drop what it used to define,
+    /// add what it defines now.
+    private func apply(_ rescanned: FileSymbols, at path: String) {
+        guard isBuilt else { return }
+        if let old = fileNames[path] {
+            for n in old {
+                defs[n]?.removeAll { Self.canonicalPath(for: $0.url) == path }
+                if defs[n]?.isEmpty == true { defs[n] = nil }
+            }
+        }
+        for d in rescanned.defs { defs[d.name, default: []].append(d) }
+        fileNames[path] = rescanned.names.isEmpty ? nil : rescanned.names
+        sortedNames = nil   // this file's names entered/left `defs`
     }
 
     /// All known definitions of `name` across the project (empty before the

@@ -20,7 +20,11 @@ import AppKit
 /// ```
 public enum HighlightTheme {
     /// The active color provider. Defaults to a neutral system-color set.
-    public static var colors: TokenColorProviding = DefaultTokenColors()
+    ///
+    /// `nonisolated(unsafe)` matches the contract stated above: installed once at launch,
+    /// before any highlighting runs, and only read thereafter. It is not a lock, and a theme
+    /// swapped mid-highlight would still be a race — assign it at start-up, as documented.
+    public nonisolated(unsafe) static var colors: TokenColorProviding = DefaultTokenColors()
 }
 
 /// A neutral fallback color provider, so highlighting is sensible before a theme

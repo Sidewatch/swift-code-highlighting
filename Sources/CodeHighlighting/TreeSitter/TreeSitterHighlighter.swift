@@ -296,7 +296,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     }
 
     /// Compiled symbol queries, cached per language (guarded by `symbolCacheLock`).
-    private static var symbolQueryCache: [CodeLanguage.Language: Query] = [:]
+    /// Genuinely cross-thread: `symbols(in:language:)` runs on ProjectSymbolIndex's scan
+    /// queue as well as on main, which is why `symbolCacheLock` exists. The annotation
+    /// asserts that guard.
+    private nonisolated(unsafe) static var symbolQueryCache: [CodeLanguage.Language: Query] = [:]
     private static let symbolCacheLock = NSLock()
 
     /// All definition symbols (functions, classes, …) in `text`, ordered by
@@ -372,6 +375,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     ///   session's cached symbols; for an already-located definition (e.g. a
     ///   ``ProjectSymbolIndex`` hit) use ``hoverInfo(for:definedAt:kind:in:language:)``
     ///   — neither parses.
+    /// `@MainActor`: builds an `NSAttributedString` through the main-thread-only
+    /// ``highlight(_:in:)`` path. Every caller is a hover popup or the headless selftest,
+    /// both already on main.
+    @MainActor
     public static func hoverInfo(for word: String, in text: String, language: CodeLanguage.Language) -> (kind: SymbolKind, signature: NSAttributedString, doc: String)? {
         guard word.count > 1 else { return nil }
         return hoverInfo(for: word, symbols: symbols(in: text, language: language), in: text, language: language)
@@ -381,6 +388,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// ``HighlightSession/symbols(text:)``, a query over the cached tree) — no
     /// parse. Empty `symbols` (a session still warming up) just yields nil:
     /// treat that as "no info here", never a reason to fall back to a parse.
+    /// `@MainActor`: builds an `NSAttributedString` through the main-thread-only
+    /// ``highlight(_:in:)`` path. Every caller is a hover popup or the headless selftest,
+    /// both already on main.
+    @MainActor
     public static func hoverInfo(for word: String, symbols: [Symbol], in text: String, language: CodeLanguage.Language) -> (kind: SymbolKind, signature: NSAttributedString, doc: String)? {
         guard word.count > 1, let sym = symbols.first(where: { $0.name == word }) else { return nil }
         return signatureInfo(kind: sym.kind, at: sym.range.location, in: text as NSString, language: language)
@@ -391,6 +402,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// are read straight off `text` — no parse, no symbol query. Returns nil
     /// when `range` no longer holds `word` (the FSEvents-refreshed index can
     /// briefly lag the file on disk) rather than guessing at a stale site.
+    /// `@MainActor`: builds an `NSAttributedString` through the main-thread-only
+    /// ``highlight(_:in:)`` path. Every caller is a hover popup or the headless selftest,
+    /// both already on main.
+    @MainActor
     public static func hoverInfo(for word: String, definedAt range: NSRange, kind: SymbolKind,
                                  in text: String, language: CodeLanguage.Language) -> (kind: SymbolKind, signature: NSAttributedString, doc: String)? {
         let ns = text as NSString
@@ -401,6 +416,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
 
     /// Shared tail of the `hoverInfo` variants: the (trimmed) line at `location`
     /// as a highlighted signature, plus the doc comment above it.
+    @MainActor
     private static func signatureInfo(kind: SymbolKind, at location: Int, in ns: NSString,
                                       language: CodeLanguage.Language) -> (kind: SymbolKind, signature: NSAttributedString, doc: String)? {
         guard location <= ns.length else { return nil }
@@ -416,6 +432,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
 
     /// Syntax-highlights a short code snippet (e.g. a hover signature) into an
     /// attributed string. Appends "{}" so a body-less definition still parses.
+    /// `@MainActor`: builds an `NSAttributedString` through the main-thread-only
+    /// ``highlight(_:in:)`` path. Every caller is a hover popup or the headless selftest,
+    /// both already on main.
+    @MainActor
     public static func attributedSnippet(_ code: String, language: CodeLanguage.Language, font: NSFont) -> NSAttributedString {
         let storage = NSTextStorage(string: code + " {}",
                                     attributes: [.font: font, .foregroundColor: HighlightTheme.colors.foreground])
@@ -551,6 +571,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// nothing to reconcile.
     /// - Note: Must be called on the main thread (the resolving query cursor is
     ///   main-actor-isolated). Only `.foregroundColor` is touched, never `.font`.
+    @MainActor
     public func highlight(_ storage: NSTextStorage, in editedRange: NSRange) {
         let full = NSRange(location: 0, length: storage.length)
         let ns = storage.string as NSString
@@ -560,21 +581,20 @@ public final class TreeSitterHighlighter: CodeHighlighter {
 
         guard let tree = parser.parse(storage.string) else { return }
 
-        // ResolvingQueryCursor is main-actor-isolated; highlight() only runs on main.
-        MainActor.assumeIsolated {
-            var base = 0
-            var hits = Self.collectHits(grammar.highlights, tree: tree, source: ns,
-                                        offset: 0, clip: range, nextBase: &base)
-            hits += Self.collectInjectionHits(grammar, tree: tree, source: ns,
-                                              offset: 0, clip: range, depth: 0, nextBase: &base)
-            Self.applyResolved(hits: hits, clip: NSIntersectionRange(range, full),
-                               defaultColor: HighlightTheme.colors.foreground, into: storage)
-        }
+        var base = 0
+        var hits = Self.collectHits(grammar.highlights, tree: tree, source: ns,
+                                    offset: 0, clip: range, nextBase: &base)
+        hits += Self.collectInjectionHits(grammar, tree: tree, source: ns,
+                                          offset: 0, clip: range, depth: 0, nextBase: &base)
+        Self.applyResolved(hits: hits, clip: NSIntersectionRange(range, full),
+                           defaultColor: HighlightTheme.colors.foreground, into: storage)
     }
 
     /// Whether hosts should draw a small color swatch beside hex color literals.
     /// A rendering preference for the host editor — this class never draws chips itself.
-    public static var showColorChips = true
+    /// `nonisolated(unsafe)`: a host display preference, set from the settings pane and read
+    /// when the host lays out chips — both on the main thread.
+    public nonisolated(unsafe) static var showColorChips = true
 
     /// Matches `#RGB` / `#RRGGBB` / `#RRGGBBAA` hex color literals, for hosts
     /// locating chip positions.
@@ -724,7 +744,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// diff-aware ranges), so hosts/probes can verify the zero-write contract
     /// over settled text. Nil (and free) in production. Main-thread only,
     /// like `highlight` itself.
-    public static var writeObserver: ((NSRange) -> Void)?
+    public nonisolated(unsafe) static var writeObserver: ((NSRange) -> Void)?
 
     /// Applies collected capture hits: later `patternIndex` wins (hits are applied
     /// in ascending pattern order so later patterns overwrite earlier ones), and

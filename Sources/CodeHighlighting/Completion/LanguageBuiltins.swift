@@ -13,7 +13,9 @@ import CodeLanguage
 public enum LanguageBuiltins {
 
     /// Cached, ranked completion items per language (empty for unsupported ones).
-    private static var cache: [Language: [CompletionItem]] = [:]
+    /// `nonisolated(unsafe)` states what `lock` already enforces: every read and write below
+    /// happens inside it, so the annotation asserts the guard rather than waiving it.
+    private nonisolated(unsafe) static var cache: [Language: [CompletionItem]] = [:]
     private static let lock = NSLock()
 
     /// Built-in completion candidates for `language`, sorted + de-duplicated. Empty

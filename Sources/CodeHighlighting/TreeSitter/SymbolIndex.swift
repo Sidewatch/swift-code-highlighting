@@ -27,7 +27,7 @@ public struct Symbol {
 }
 
 /// The kind of definition a ``Symbol`` represents. `class` maps to ``type``.
-public enum SymbolKind: String {
+public enum SymbolKind: String, Sendable {
     case function, method, type, structure, enumeration, interface, module, property, constant, variable
     /// A Markdown (or other prose) section heading — not a code definition; used by
     /// the document-heading outline path.

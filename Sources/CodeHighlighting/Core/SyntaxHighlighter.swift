@@ -64,6 +64,7 @@ public final class SyntaxHighlighter: CodeHighlighter {
     /// Recolors the lines that intersect `editedRange` (expanded to whole lines).
     /// Only the `.foregroundColor` attribute is touched — never `.font`, which
     /// would invalidate layout on every keystroke.
+    @MainActor
     public func highlight(_ storage: NSTextStorage, in editedRange: NSRange) {
         let string = storage.string as NSString
         guard string.length > 0 else { return }

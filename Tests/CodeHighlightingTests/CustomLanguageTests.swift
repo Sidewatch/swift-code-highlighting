@@ -24,6 +24,10 @@ private struct Palette: TokenColorProviding {
     var foreground: NSColor { .black }
 }
 
+// `@MainActor`: these exercise the highlighting entry points, which are main-actor
+// isolated because they write attributes into a live text storage. XCTest already runs
+// test methods on the main thread, so this states the existing reality.
+@MainActor
 final class CustomLanguageTests: XCTestCase {
 
     // MARK: - Helpers

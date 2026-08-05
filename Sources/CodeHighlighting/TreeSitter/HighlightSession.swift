@@ -39,7 +39,12 @@ import SwiftTreeSitter
 /// - Important: ``highlight(in:text:clip:)`` must run on the main thread (the
 ///   resolving query cursor is main-actor-isolated), and `text` must be the
 ///   exact current contents of `storage`. Only `.foregroundColor` is touched.
-public final class HighlightSession {
+/// `@unchecked Sendable` is a checked claim, not a waiver: every field the warm-up queue
+/// touches (`tree`, `lastText`, `generation`, `fullParseCount`) is documented as guarded by
+/// `stateLock` and is only read or written while holding it. The two `let` fields are
+/// immutable, and `parser` is main-thread-only by construction — the warm-up parses on its
+/// own private `Parser`, which is the whole reason that field carries the note it does.
+public final class HighlightSession: @unchecked Sendable {
 
     /// The resolved grammar (language pointer + compiled highlight/injection
     /// queries) this session highlights with.
@@ -126,7 +131,7 @@ public final class HighlightSession {
     /// or `invalidate()`) or when a tree was installed by another path first.
     /// `completion` always runs on the main queue — check ``hasTree`` there:
     /// false means the warm-up was superseded, so re-warm with the current text.
-    public func warmUp(text: String, completion: @escaping () -> Void) {
+    public func warmUp(text: String, completion: @escaping @Sendable () -> Void) {
         stateLock.lock()
         let gen = generation
         let alreadyInstalled = tree != nil
@@ -298,7 +303,11 @@ public final class HighlightSession {
     ///   the clip was already correctly colored — TextKit saw no edit, nothing
     ///   was invalidated, and the host can (must, for scroll smoothness) skip
     ///   its post-pass layout settle.
+    /// `@MainActor` rather than the whole class: this method writes into a live text storage,
+    /// but the session also runs warm-up parses on a background queue, so isolating the type
+    /// would be a lie. Only this entry point is main-thread-bound, as its `- Note` already said.
     @discardableResult
+    @MainActor
     public func highlight(in storage: NSTextStorage, text: String, clip: NSRange) -> Bool {
         stateLock.lock()
         if tree == nil {
@@ -313,18 +322,15 @@ public final class HighlightSession {
         let clipped = NSIntersectionRange(clip, NSRange(location: 0, length: storage.length))
         guard clipped.length > 0 else { return false }
 
-        // ResolvingQueryCursor is main-actor-isolated; highlight only runs on main.
-        return MainActor.assumeIsolated {
-            var base = 0
-            var hits = TreeSitterHighlighter.collectHits(grammar.highlights, tree: tree, source: ns,
-                                                         offset: 0, clip: clipped, nextBase: &base)
-            hits += TreeSitterHighlighter.collectInjectionHits(grammar, tree: tree, source: ns,
-                                                               offset: 0, clip: clipped, depth: 0,
-                                                               nextBase: &base)
-            return TreeSitterHighlighter.applyResolved(hits: hits, clip: clipped,
-                                                       defaultColor: HighlightTheme.colors.foreground,
-                                                       into: storage) > 0
-        }
+        var base = 0
+        var hits = TreeSitterHighlighter.collectHits(grammar.highlights, tree: tree, source: ns,
+                                                     offset: 0, clip: clipped, nextBase: &base)
+        hits += TreeSitterHighlighter.collectInjectionHits(grammar, tree: tree, source: ns,
+                                                           offset: 0, clip: clipped, depth: 0,
+                                                           nextBase: &base)
+        return TreeSitterHighlighter.applyResolved(hits: hits, clip: clipped,
+                                                   defaultColor: HighlightTheme.colors.foreground,
+                                                   into: storage) > 0
     }
 
     /// Drops the cached tree (and its text). The next

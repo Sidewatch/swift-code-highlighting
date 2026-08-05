@@ -88,6 +88,7 @@ public final class EmbeddedMarkupHighlighter: CodeHighlighter {
 
     // MARK: - Painting
 
+    @MainActor
     public func highlight(_ storage: NSTextStorage, in editedRange: NSRange) {
         let ns = storage.string as NSString
         guard ns.length > 0 else { return }
@@ -123,22 +124,21 @@ public final class EmbeddedMarkupHighlighter: CodeHighlighter {
     /// Paints one embedded region. `body` is the region's full extent (the
     /// parser needs all of it for a valid parse even when only part is on
     /// screen); `clip` is the visible slice actually recolored.
+    @MainActor
     private func paint(_ lang: Language, storage: NSTextStorage, ns: NSString, body: NSRange, clip: NSRange) {
         if let grammar = TreeSitterHighlighter.grammars[lang],
            let tree = TreeSitterHighlighter.combinedParse(grammar, ns: ns, ranges: [body]) {
             // `combinedParse` restricts the parser to `body` via includedRanges,
             // so capture ranges come back in document coordinates already —
             // offset stays 0, exactly as in the injection pass.
-            MainActor.assumeIsolated {
-                var base = 0
-                var hits = TreeSitterHighlighter.collectHits(grammar.highlights, tree: tree, source: ns,
-                                                             offset: 0, clip: clip, nextBase: &base)
-                hits += TreeSitterHighlighter.collectInjectionHits(grammar, tree: tree, source: ns,
-                                                                   offset: 0, clip: clip, depth: 0,
-                                                                   nextBase: &base)
-                TreeSitterHighlighter.applyResolved(hits: hits, clip: clip,
-                                                    defaultColor: colors.foreground, into: storage)
-            }
+            var base = 0
+            var hits = TreeSitterHighlighter.collectHits(grammar.highlights, tree: tree, source: ns,
+                                                         offset: 0, clip: clip, nextBase: &base)
+            hits += TreeSitterHighlighter.collectInjectionHits(grammar, tree: tree, source: ns,
+                                                               offset: 0, clip: clip, depth: 0,
+                                                               nextBase: &base)
+            TreeSitterHighlighter.applyResolved(hits: hits, clip: clip,
+                                                defaultColor: colors.foreground, into: storage)
             return
         }
         fallback(for: lang).paint(storage, in: clip)
