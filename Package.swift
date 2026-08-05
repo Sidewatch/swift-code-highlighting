@@ -77,7 +77,8 @@ let package = Package(
             resources: [
                 // Per-language built-in identifier lists for the completion tier.
                 .copy("CodeHighlighting/Builtins"),
-            ]
+            ],
+            swiftSettings: [.unsafeFlags(["-strict-concurrency=complete"])]
         ),
         .testTarget(
             name: "CodeHighlightingTests",
