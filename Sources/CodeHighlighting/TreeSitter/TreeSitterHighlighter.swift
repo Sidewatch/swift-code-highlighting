@@ -277,7 +277,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     }
 
     /// Root node of one fresh full parse of `text`, or nil when no grammar is loaded.
-    private static func freshParseRoot(_ text: String, language: CodeLanguage.Language) -> Node? {
+    static func freshParseRoot(_ text: String, language: CodeLanguage.Language) -> Node? {
         guard let g = grammars[language] else { return nil }
         let parser = Parser()
         try? parser.setLanguage(g.language)
