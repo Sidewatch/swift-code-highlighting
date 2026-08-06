@@ -449,6 +449,88 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         return storage.attributedSubstring(from: NSRange(location: 0, length: len))
     }
 
+    /// Syntax-highlights `code` as HTML: the escaped text wrapped in `<span style="color:…">`
+    /// runs, ready to drop inside a `<pre><code>`.
+    ///
+    /// Returns nil when no grammar is bundled for `language`, which is the caller's signal to
+    /// emit the plain escaped code it would have emitted anyway — an unknown fence tag renders
+    /// exactly as before rather than half-highlighted.
+    ///
+    /// Deliberately NOT built on ``attributedSnippet(_:language:font:)``, which appends `" {}"`
+    /// so a body-less hover signature still parses. That is right for a one-line signature and
+    /// wrong for a whole code block, where the closing braces would be highlighted and then
+    /// trimmed back off by length — leaving the last real token coloured as if it were inside a
+    /// block that does not exist.
+    ///
+    /// Colours come from ``HighlightTheme/colors``, so blocks follow the app's theme with no
+    /// stylesheet to keep in sync.
+    ///
+    /// - Parameters:
+    ///   - code: The block's source, exactly as written.
+    ///   - language: The language to parse it as.
+    /// - Returns: HTML for the inside of a `<code>` element, or nil when unsupported.
+    @MainActor
+    public static func highlightedHTML(_ code: String, language: CodeLanguage.Language) -> String? {
+        guard grammars[language] != nil, let hl = TreeSitterHighlighter(language: language) else { return nil }
+
+        let font = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
+        let storage = NSTextStorage(string: code,
+                                    attributes: [.font: font, .foregroundColor: HighlightTheme.colors.foreground])
+        storage.beginEditing()
+        hl.highlight(storage, in: NSRange(location: 0, length: storage.length))
+        storage.endEditing()
+
+        let ns = storage.string as NSString
+        let fallback = HighlightTheme.colors.foreground
+        var out = ""
+        out.reserveCapacity(code.count * 2)
+        // One span per colour RUN, not per token: adjacent characters sharing a colour collapse
+        // into a single element, which keeps the markup close to the size of the code itself.
+        storage.enumerateAttribute(.foregroundColor,
+                                   in: NSRange(location: 0, length: ns.length)) { value, range, _ in
+            let text = escapeHTML(ns.substring(with: range))
+            let color = (value as? NSColor) ?? fallback
+            // The default colour needs no span — the surrounding <code> already carries it.
+            if color == fallback {
+                out += text
+            } else {
+                out += "<span style=\"color:\(cssHex(color))\">\(text)</span>"
+            }
+        }
+        return out
+    }
+
+    /// Escapes the five characters that can end a text run inside HTML.
+    ///
+    /// Applied PER RUN rather than once over the whole block: the spans are inserted between
+    /// runs, so escaping afterwards would eat the markup, and escaping before would let a `<` in
+    /// the source split a token. Quotes are escaped too — the output is only used as element
+    /// content today, but a string that is safe in one position and not another is a trap.
+    static func escapeHTML(_ s: String) -> String {
+        var out = ""
+        out.reserveCapacity(s.count)
+        for ch in s {
+            switch ch {
+            case "&":  out += "&amp;"
+            case "<":  out += "&lt;"
+            case ">":  out += "&gt;"
+            case "\"": out += "&quot;"
+            case "'":  out += "&#39;"
+            default:   out.append(ch)
+            }
+        }
+        return out
+    }
+
+    /// An NSColor as `#rrggbb`, via sRGB so a theme colour in any space converts predictably.
+    static func cssHex(_ color: NSColor) -> String {
+        let c = color.usingColorSpace(.sRGB) ?? color
+        let r = Int((c.redComponent * 255).rounded())
+        let g = Int((c.greenComponent * 255).rounded())
+        let b = Int((c.blueComponent * 255).rounded())
+        return String(format: "#%02X%02X%02X", r, g, b)
+    }
+
     /// Enclosing definition names at `offset` (outermost → innermost) for breadcrumbs,
     /// e.g. ["UserRepository", "findById"].
     /// - Important: performs a fresh full parse of `text` (~620 ms on a 2.8 MB
