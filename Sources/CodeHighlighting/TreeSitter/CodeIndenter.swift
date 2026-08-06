@@ -91,14 +91,21 @@ public enum CodeIndenter {
                 let first = lineOf.line(at: range.location)
                 let last = lineOf.line(at: max(range.location, NSMaxRange(range) - 1))
                 if last > first { for l in (first + 1)...last { protectedLines.insert(l) } }
+                // Do not descend. A string is not a leaf once it contains an escape: tree-sitter
+                // splits it into `string_content` and `escape_sequence` children, and "{\"a\"…"
+                // yields a ONE-CHARACTER `string_content` holding just `{`. Recursing counted
+                // that as an opening brace while its `}` stayed inside a longer content run, so
+                // depth was permanently +1 and every line after the string indented a level too
+                // deep. Stopping at the string node is what actually makes its interior text.
+                continue
             }
 
             let childCount = node.childCount
             if childCount == 0 {
-                // A leaf whose text is exactly one bracket. Tree-sitter gives these as their own
-                // anonymous tokens, so a brace inside a string never reaches here — it is interior
-                // to the string node and has no token of its own.
-                if range.length == 1 {
+                // Brackets are ANONYMOUS tokens. Requiring that here is a second guard against
+                // the same class of mistake: any named one-character node — a `string_content`,
+                // an operator fragment — can no longer be mistaken for structure.
+                if range.length == 1, !node.isNamed {
                     switch ns.substring(with: range) {
                     case "{", "[", "(": brackets.append(Bracket(offset: range.location, isOpen: true))
                     case "}", "]", ")": brackets.append(Bracket(offset: range.location, isOpen: false))

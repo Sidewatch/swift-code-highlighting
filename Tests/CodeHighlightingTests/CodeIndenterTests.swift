@@ -58,6 +58,38 @@ final class CodeIndenterTests: XCTestCase {
         assertOnlyIndentationChanged(input, out)
     }
 
+    /// Regression: a string containing BOTH an escape and a bracket.
+    ///
+    /// The escape is what made this bite. A string with escapes is not a leaf — tree-sitter
+    /// splits it into `string_content` and `escape_sequence` children — so `"{\"a\": 1, [b]}"`
+    /// yields a one-character `string_content` holding just `{`. That was counted as an opening
+    /// brace while its `}` stayed inside a longer content run, leaving depth permanently +1, so
+    /// every line after the string indented one level too deep. Escape-free strings were fine,
+    /// which is exactly why the original tests missed it.
+    func testStringContainingBothEscapesAndBrackets() {
+        let input = """
+        {
+        "braces": "{\\"a\\": 1, [b]}",
+        "after": 1
+        }
+        """
+        let out = CodeIndenter.reindent(input, language: .json, indentUnit: "  ")!
+        XCTAssertEqual(out, """
+        {
+          "braces": "{\\"a\\": 1, [b]}",
+          "after": 1
+        }
+        """, "depth leaked out of an escaped string")
+    }
+
+    /// The same shape in Swift, since the node types differ per grammar.
+    func testEscapedBracketStringDoesNotLeakDepthInSwift() {
+        let input = "func f() {\nlet s = \"{\\\"a\\\": [b]}\"\nlet after = 1\n}"
+        let out = CodeIndenter.reindent(input, language: .swift)!
+        XCTAssertTrue(out.contains("\n    let after = 1"), "depth leaked out of an escaped string:\n\(out)")
+        assertOnlyIndentationChanged(input, out)
+    }
+
     /// Same hazard, in a comment.
     func testBracesInsideCommentsDoNotChangeDepth() {
         let input = """
