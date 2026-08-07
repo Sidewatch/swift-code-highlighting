@@ -115,6 +115,79 @@ final class CodeIndenterTests: XCTestCase {
         XCTAssertEqual(out.components(separatedBy: "\n").count, 4, "a line was added or lost")
     }
 
+    // MARK: - JSX
+
+    /// JSX nests with TAGS, and tags are not bracket tokens. Descending into an element found
+    /// only the stray braces of embedded `{expr}` children, so every child line was re-indented
+    /// to the enclosing BRACKET depth — flattening JSX that was already indented correctly. The
+    /// container's interior is now frozen like a string's, so well-indented JSX must round-trip
+    /// byte-identical. (`<>…</>` parses as a `jsx_element` with unnamed tags in this grammar,
+    /// so the fragment rides the same test.)
+    func testWellIndentedJSXRoundTripsByteIdentical() {
+        let input = """
+        function App() {
+            return (
+                <div className="app">
+                    <Header title="Sidewatch" />
+                    <>
+                        <p>{count + 1}</p>
+                    </>
+                </div>
+            );
+        }
+
+        """
+        for lang in [CodeLanguage.Language.jsx, .tsx] {
+            XCTAssertEqual(CodeIndenter.reindent(input, language: lang), input,
+                           "\(lang) rewrote well-indented JSX")
+        }
+    }
+
+    /// The same guarantee when the OUTERMOST container is a multi-line self-closing element —
+    /// `jsx_self_closing_element` is a distinct node type, so it needs its own proof that the
+    /// protection matches it and not just `jsx_element`.
+    func testWellIndentedMultiLineSelfClosingElementRoundTrips() {
+        let input = """
+        function icon() {
+            return (
+                <Icon
+                    name="gear"
+                    size={16}
+                />
+            );
+        }
+
+        """
+        for lang in [CodeLanguage.Language.jsx, .tsx] {
+            XCTAssertEqual(CodeIndenter.reindent(input, language: lang), input,
+                           "\(lang) rewrote a well-indented self-closing element")
+        }
+    }
+
+    /// Freezing the interior must not unbalance depth for what FOLLOWS. The walk skips the
+    /// whole JSX node, so no bracket inside it is counted, and a mis-indented statement after
+    /// the block still lands at the right level while the JSX itself stays untouched.
+    func testCodeAfterJSXBlockStillIndents() {
+        let input = """
+        function App() {
+            const el = (
+                <div>
+                    <span>{x}</span>
+                </div>
+            );
+        return el;
+        }
+        """
+        for lang in [CodeLanguage.Language.jsx, .tsx] {
+            let out = CodeIndenter.reindent(input, language: lang)!
+            XCTAssertTrue(out.contains("\n    return el;"),
+                          "\(lang): depth was lost across the JSX block:\n\(out)")
+            XCTAssertTrue(out.contains("\n            <span>{x}</span>\n"),
+                          "\(lang): JSX interior was touched:\n\(out)")
+            assertOnlyIndentationChanged(input, out)
+        }
+    }
+
     // MARK: - Refusal
 
     /// The exclusions are the point of the whitelist. In Python indentation IS the syntax, and
@@ -202,8 +275,8 @@ final class CodeIndenterTests: XCTestCase {
             .java:       "class A {\nvoid b() {\n}\n}\n",
             .javascript: "function f() {\nreturn 1;\n}\n",
             .typescript: "function f(): number {\nreturn 1;\n}\n",
-            .tsx:        "function f() {\nreturn 1;\n}\n",
-            .jsx:        "function f() {\nreturn 1;\n}\n",
+            .tsx:        "function f() {\nreturn (\n<a>\n<b />\n</a>\n);\n}\n",
+            .jsx:        "function f() {\nreturn (\n<a>\n<b />\n</a>\n);\n}\n",
             .go:         "func main() {\nx := 1\n}\n",
             .rust:       "fn main() {\nlet a = 1;\n}\n",
             .php:        "<?php\nfunction f() {\nreturn 1;\n}\n",

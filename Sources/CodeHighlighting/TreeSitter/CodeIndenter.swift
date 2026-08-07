@@ -86,8 +86,22 @@ public enum CodeIndenter {
             // its interior would edit the value of a string literal or the shape of a doc block,
             // which is a content change wearing a whitespace disguise. The node's FIRST line is
             // still fair game — that one is positioned by the code around it.
+            //
+            // A JSX container gets the same treatment for a different reason: its nesting is TAG
+            // nesting, and tags are not bracket tokens, so descending found only the stray braces
+            // of embedded `{expr}` children and flattened every child line to the enclosing
+            // BRACKET depth — destroying indentation that was already right. Freezing the
+            // interior is safe (skipping the whole node counts none of its brackets, so depth
+            // stays balanced for what follows) and idempotent. Exact names, never a `jsx_`
+            // prefix: `jsx_expression` and friends exist only inside a container the walk
+            // already refused to enter, and must never match on their own. `jsx_fragment` is
+            // kept for grammar versions that emit it — this one parses `<>…</>` as a
+            // `jsx_element` with unnamed tags.
             let lowered = type.lowercased()
-            if lowered.contains("string") || lowered.contains("comment") || lowered.contains("heredoc") {
+            let isJSXContainer = type == "jsx_element" || type == "jsx_self_closing_element"
+                || type == "jsx_fragment"
+            if lowered.contains("string") || lowered.contains("comment") || lowered.contains("heredoc")
+                || isJSXContainer {
                 let first = lineOf.line(at: range.location)
                 let last = lineOf.line(at: max(range.location, NSMaxRange(range) - 1))
                 if last > first { for l in (first + 1)...last { protectedLines.insert(l) } }
