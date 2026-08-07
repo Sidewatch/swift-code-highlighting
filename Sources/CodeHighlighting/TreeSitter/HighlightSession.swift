@@ -131,13 +131,20 @@ public final class HighlightSession: @unchecked Sendable {
     /// or `invalidate()`) or when a tree was installed by another path first.
     /// `completion` always runs on the main queue — check ``hasTree`` there:
     /// false means the warm-up was superseded, so re-warm with the current text.
-    public func warmUp(text: String, completion: @escaping @Sendable () -> Void) {
+    ///
+    /// `@MainActor` on the completion encodes that contract in the type: hosts touch
+    /// main-actor state (their own view controllers) in it, and without the annotation
+    /// every such capture is a strict-concurrency diagnostic on the caller's side even
+    /// though the dispatch below already guarantees the isolation. Delivered via
+    /// `DispatchQueue.main` (not `Task { @MainActor }`) to preserve main-queue FIFO
+    /// ordering with everything else the session posts.
+    public func warmUp(text: String, completion: @escaping @MainActor @Sendable () -> Void) {
         stateLock.lock()
         let gen = generation
         let alreadyInstalled = tree != nil
         stateLock.unlock()
         if alreadyInstalled {
-            DispatchQueue.main.async(execute: completion)
+            DispatchQueue.main.async { MainActor.assumeIsolated { completion() } }
             return
         }
         let tsLanguage = grammar.language
@@ -154,7 +161,7 @@ public final class HighlightSession: @unchecked Sendable {
                 }
                 self.stateLock.unlock()
             }
-            DispatchQueue.main.async(execute: completion)
+            DispatchQueue.main.async { MainActor.assumeIsolated { completion() } }
         }
     }
 
