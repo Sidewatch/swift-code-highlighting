@@ -268,4 +268,24 @@ final class CodeHighlightingTests: XCTestCase {
         wait(for: [done], timeout: 10)
         XCTAssertFalse(idx.isBuilt, "a superseded build must not install its stale results")
     }
+
+    func testGettextRoles() {
+        let text = """
+        # translator note
+        #: includes/class-orders.php:42
+        #, php-format
+        msgctxt "admin"
+        msgid "One order"
+        msgid_plural "%d orders"
+        msgstr[0] "Une commande"
+        """
+        let s = highlighted(text, .gettext)
+        let ns = text as NSString
+        XCTAssertEqual(colorAt(s, ns.range(of: "# translator").location), .red, "translator note is a comment")
+        XCTAssertEqual(colorAt(s, ns.range(of: "#:").location), .red, "reference line is a comment")
+        XCTAssertEqual(colorAt(s, ns.range(of: "msgctxt").location), .blue, "msgctxt is a keyword")
+        XCTAssertEqual(colorAt(s, ns.range(of: "msgid_plural").location), .blue, "msgid_plural is a keyword")
+        XCTAssertEqual(colorAt(s, ns.range(of: "msgstr[0]").location), .blue, "plural msgstr is a keyword")
+        XCTAssertEqual(colorAt(s, ns.range(of: "\"One order\"").location), .green, "the message is a string")
+    }
 }

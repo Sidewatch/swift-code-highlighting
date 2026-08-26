@@ -438,6 +438,15 @@ public final class SyntaxHighlighter: CodeHighlighter {
                 ("\\b\\d+(\\.\\d+)?\\b", .number),
                 ("@{1,2}[a-zA-Z_]\\w*", .type),
             ]
+        case .gettext:
+            // Translation catalogs (.po/.pot): `#`-family comment lines (translator
+            // notes, `#:` references, `#,` flags), the msgid/msgstr keyword spine —
+            // plural forms included — and the quoted message strings themselves.
+            return [
+                ("#.*$", .comment),
+                ("\"(?:[^\"\\\\]|\\\\.)*\"", .string),
+                ("^(msgid_plural|msgid|msgstr(\\[\\d+\\])?|msgctxt)\\b", .keyword),
+            ]
         case .gitignore:
             // No dedicated grammar, so give ignore files (.gitignore/.dockerignore/
             // .npmignore/…) real coloring: comment lines, the `!` un-ignore prefix,
