@@ -1076,6 +1076,9 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// the vendored/`extra` queries instead.
     public static func role(for capture: String) -> String? {
         if capture == "variable" || capture == "identifier" { return nil }   // bare catch-alls
+        // Checked before the first-component split: bare "namespace" stays a type-colored
+        // module name, while the PREFIX of a qualified name recedes (PhpStorm-style).
+        if capture == "namespace.prefix" { return "muted" }
         switch capture.split(separator: ".").first.map(String.init) ?? capture {
         case "keyword", "conditional", "repeat", "include", "exception",
              "storageclass", "label", "tag":            return "keyword"
@@ -1103,6 +1106,9 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         case "function":           return HighlightTheme.colors.color(for: .function)
         case "variable":           return HighlightTheme.colors.color(for: .variable)
         case "property":           return HighlightTheme.colors.color(for: .property)
+        // Receded, not recolored: the theme's own foreground at reduced alpha keeps
+        // the dimming correct on every palette, light or dark, with no new token role.
+        case "muted":              return HighlightTheme.colors.foreground.withAlphaComponent(0.55)
         default:                   return nil
         }
     }

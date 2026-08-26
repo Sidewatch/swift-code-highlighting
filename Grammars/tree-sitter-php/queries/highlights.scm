@@ -147,6 +147,23 @@
     (relative_name (name) @type)
   ])
 
+; The class before `::` in constant/static-property access — `Limits::MAX_BATCH`,
+; `Config::$instance`. Only calls were covered, leaving these scopes unpainted.
+; The constant-access node has NO fields and both sides are `name` children, so
+; the leading anchor (`.`) pins the capture to the scope side only.
+(class_constant_access_expression . [
+  (name) @type
+  (qualified_name (name) @type)
+  (relative_name (name) @type)
+])
+
+(scoped_property_access_expression
+  scope: [
+    (name) @type
+    (qualified_name (name) @type)
+    (relative_name (name) @type)
+  ])
+
 ; Functions
 
 (array_creation_expression "array" @function.builtin)
@@ -201,3 +218,12 @@
  (#eq? @variable.builtin "this"))
 
 "$" @operator
+
+; PhpStorm-style receded namespace prefixes — LAST so these outrank the
+; @module coloring of the same segments (later patternIndex wins). The final
+; segment of a qualified name keeps its own capture (@type/@function/@constructor);
+; everything before it, separators included, recedes.
+(qualified_name prefix: (namespace_name) @namespace.prefix)
+(qualified_name prefix: "\\" @namespace.prefix)
+(relative_name prefix: (namespace_name) @namespace.prefix)
+(relative_name prefix: "\\" @namespace.prefix)

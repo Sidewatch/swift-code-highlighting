@@ -133,6 +133,9 @@ public enum SymbolQueries {
     (class_definition name: (identifier) @class)
     """
 
+    /// PHP. Properties index by their BARE name (`private $cache` defines `cache`)
+    /// because access sites spell them bare too (`$this->cache`); the `$`-prefixed
+    /// lookup fallback lives in the caller.
     private static let php = """
     (function_definition name: (name) @function)
     (method_declaration name: (name) @method)
@@ -140,6 +143,8 @@ public enum SymbolQueries {
     (interface_declaration name: (name) @interface)
     (trait_declaration name: (name) @class)
     (enum_declaration name: (name) @enum)
+    (property_declaration (property_element name: (variable_name (name) @property)))
+    (const_declaration (const_element (name) @constant))
     """
 
     private static let go = """
