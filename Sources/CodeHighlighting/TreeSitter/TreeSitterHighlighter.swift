@@ -800,6 +800,20 @@ public final class TreeSitterHighlighter: CodeHighlighter {
             }
         }
 
+        // The agent's leftovers pop: TODO-family markers inside pure comment runs
+        // take the keyword color. Folded into `desired` (not painted after) so the
+        // zero-write contract over settled text holds — a post-pass tint would
+        // fight the diff below and rewrite every marker on every pass.
+        let commentColor = HighlightTheme.colors.color(for: .comment)
+        let keywordColor = HighlightTheme.colors.color(for: .keyword)
+        CommentKeywords.regex.enumerateMatches(in: storage.string, options: [], range: clipped) { m, _, _ in
+            guard let r = m?.range, r.length > 0 else { return }
+            let lo = r.location - clipped.location, hi = NSMaxRange(r) - clipped.location
+            guard lo >= 0, hi <= desired.count,
+                  (lo..<hi).allSatisfy({ desired[$0]?.isEqual(commentColor) ?? false }) else { return }
+            for i in lo..<hi { desired[i] = keywordColor }
+        }
+
         // Diff desired runs against the storage's existing colors; collect only
         // the mismatching ranges. Runs are merged by object identity (theme
         // colors are stable per role), with isEqual deciding an actual rewrite.

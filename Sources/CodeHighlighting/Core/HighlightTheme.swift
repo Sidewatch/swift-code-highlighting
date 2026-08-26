@@ -27,6 +27,14 @@ public enum HighlightTheme {
     public nonisolated(unsafe) static var colors: TokenColorProviding = DefaultTokenColors()
 }
 
+/// TODO-family markers surfaced inside comments (both highlight tiers tint
+/// them with the keyword color — the agent's leftovers pop while scrolling).
+/// Case-sensitive for the shouting forms; `@todo` is docblock-lowercase.
+public enum CommentKeywords {
+    public static let regex = try! NSRegularExpression(
+        pattern: "\\b(?:TODO|FIXME|HACK|XXX)\\b|(?i:@todo)\\b")
+}
+
 /// A neutral fallback color provider, so highlighting is sensible before a theme
 /// is installed.
 public struct DefaultTokenColors: TokenColorProviding {

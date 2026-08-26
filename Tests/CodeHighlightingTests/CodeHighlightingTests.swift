@@ -269,6 +269,19 @@ final class CodeHighlightingTests: XCTestCase {
         XCTAssertFalse(idx.isBuilt, "a superseded build must not install its stale results")
     }
 
+    func testCommentKeywordTint() {
+        // Regex tier (bash): TODO/FIXME inside a comment take the KEYWORD color;
+        // the rest of the comment stays comment-colored, and a TODO outside a
+        // comment (an identifier) is untouched.
+        let text = "# TODO fix this\nTODO=1\necho done # plain comment"
+        let s = highlighted(text, .bash)
+        let ns = text as NSString
+        XCTAssertEqual(colorAt(s, ns.range(of: "TODO fix").location), .blue, "marker in comment → keyword color")
+        XCTAssertEqual(colorAt(s, ns.range(of: "fix this").location), .red, "rest of the comment stays comment")
+        XCTAssertEqual(colorAt(s, ns.range(of: "plain comment").location), .red)
+        XCTAssertNotEqual(colorAt(s, ns.range(of: "TODO=1").location), .blue, "TODO outside a comment is untouched")
+    }
+
     func testGettextRoles() {
         let text = """
         # translator note

@@ -87,6 +87,17 @@ public final class SyntaxHighlighter: CodeHighlighter {
         storage.addAttribute(.foregroundColor, value: colors.foreground, range: range)
 
         paint(storage, in: range)
+
+        // Same leftover-marker tint as the tree-sitter tier: a marker whose run
+        // was just painted comment-colored takes the keyword color.
+        let comment = colors.color(for: .comment)
+        let keyword = colors.color(for: .keyword)
+        CommentKeywords.regex.enumerateMatches(in: storage.string, options: [], range: range) { m, _, _ in
+            guard let r = m?.range, r.length > 0, NSMaxRange(r) <= storage.length,
+                  let c = storage.attribute(.foregroundColor, at: r.location, effectiveRange: nil) as? NSColor,
+                  c.isEqual(comment) else { return }
+            storage.addAttribute(.foregroundColor, value: keyword, range: r)
+        }
     }
 
     /// Runs the rule tables over exactly `range` — no line expansion and, unlike
