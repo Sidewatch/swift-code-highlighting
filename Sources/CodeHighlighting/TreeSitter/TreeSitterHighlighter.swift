@@ -437,16 +437,22 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// both already on main.
     @MainActor
     public static func attributedSnippet(_ code: String, language: CodeLanguage.Language, font: NSFont) -> NSAttributedString {
-        let storage = NSTextStorage(string: code + " {}",
+        // tree-sitter-php starts in HTML/text mode: a bare signature with no
+        // `<?php` opener parses as inline text and yields ZERO captures, so PHP
+        // hover signatures rendered monochrome. Parse behind an opener, then trim
+        // it back off along with the appended braces.
+        let preamble = language == .php ? "<?php " : ""
+        let storage = NSTextStorage(string: preamble + code + " {}",
                                     attributes: [.font: font, .foregroundColor: HighlightTheme.colors.foreground])
         if let hl = TreeSitterHighlighter(language: language) {
             storage.beginEditing()
             hl.highlight(storage, in: NSRange(location: 0, length: storage.length))
             storage.endEditing()
         }
+        let start = (preamble as NSString).length
         let len = (code as NSString).length
-        guard len <= storage.length else { return storage }
-        return storage.attributedSubstring(from: NSRange(location: 0, length: len))
+        guard start + len <= storage.length else { return storage }
+        return storage.attributedSubstring(from: NSRange(location: start, length: len))
     }
 
     /// Syntax-highlights `code` as HTML: the escaped text wrapped in `<span style="color:…">`
