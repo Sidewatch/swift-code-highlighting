@@ -104,6 +104,14 @@ public final class ProjectSymbolIndex {
     /// superseded build still calls its completion, but its results are discarded —
     /// so a project switch can never install the previous project's index.
     public func build(root: URL, completion: (() -> Void)? = nil) {
+        build(roots: [root], completion: completion)
+    }
+
+    /// (Re)builds from several roots (the primary project folder plus any
+    /// reference roots) into ONE merged index — cross-root go-to-definition is
+    /// the point. Same supersede semantics as the single-root form; the file cap
+    /// is shared across all roots.
+    public func build(roots: [URL], completion: (() -> Void)? = nil) {
         generation += 1
         let gen = generation
         isBuilding = true
@@ -117,7 +125,7 @@ public final class ProjectSymbolIndex {
         // the queue hop to order the writes before the reads; that is true, but it is an
         // argument the compiler cannot verify, so it warned on every capture.
         queue.async {
-            let scanned = Self.scan(root: root)
+            let scanned = Self.scan(roots: roots)
             DispatchQueue.main.async {
                 self.install(scanned, generation: gen)
                 self.buildCompletions.removeValue(forKey: gen)?()
@@ -125,18 +133,21 @@ public final class ProjectSymbolIndex {
         }
     }
 
-    /// One full pass over `root`, as a pure function of the file system.
+    /// One full pass over every root, as a pure function of the file system.
+    /// The 5,000-file safety cap spans ALL roots — a huge reference root can't
+    /// turn the scan unbounded.
     ///
     /// `nonisolated static` on purpose: it must be callable from ``queue`` without touching
     /// main-actor state, and being static makes that structural rather than a promise.
-    nonisolated private static func scan(root: URL) -> ScanResult {
+    nonisolated private static func scan(roots: [URL]) -> ScanResult {
         var map: [String: [DefLocation]] = [:]
         var files: [String: Set<String>] = [:]
         var count = 0
         let fm = FileManager.default
         let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
-        if let en = fm.enumerator(at: root, includingPropertiesForKeys: keys, options: [.skipsHiddenFiles]) {
-            let skip = skipDirs   // read once: the scan should see one consistent list
+        let skip = skipDirs   // read once: the scan should see one consistent list
+        outer: for root in roots {
+            guard let en = fm.enumerator(at: root, includingPropertiesForKeys: keys, options: [.skipsHiddenFiles]) else { continue }
             for case let url as URL in en {
                 if skip.contains(url.lastPathComponent) { en.skipDescendants(); continue }
                 let lang = CodeLanguage.Language.detect(for: url)
@@ -155,7 +166,7 @@ public final class ProjectSymbolIndex {
                 }
                 if !names.isEmpty { files[canonicalPath(for: url)] = names }
                 count += 1
-                if count > 5000 { break }   // safety cap for very large trees
+                if count > 5000 { break outer }   // safety cap for very large trees
             }
         }
         return ScanResult(defs: map, fileNames: files)
