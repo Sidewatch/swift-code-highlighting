@@ -13,6 +13,11 @@ public struct DefLocation: Sendable {
     public let range: NSRange
     /// 1-based line of the definition.
     public let line: Int
+    /// The type this member belongs to (innermost enclosing type at scan time),
+    /// nil for free functions/types and for languages whose methods don't nest
+    /// (Go receivers, C++ out-of-line). Lets go-to-definition prefer the class
+    /// the call site's receiver actually holds.
+    public let owner: String?
 }
 
 /// Parses every source file in the project and maps symbol names to their
@@ -140,9 +145,12 @@ public final class ProjectSymbolIndex {
                 guard size > 0, size < 500_000 else { continue }
                 guard let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
                 var names = Set<String>()
-                for s in TreeSitterHighlighter.symbols(in: text, language: lang) {
+                let syms = TreeSitterHighlighter.symbols(in: text, language: lang)
+                let owners = SymbolOwners.owners(in: syms)
+                for (i, s) in syms.enumerated() {
                     map[s.name, default: []].append(
-                        DefLocation(url: url, name: s.name, kind: s.kind, range: s.range, line: s.line))
+                        DefLocation(url: url, name: s.name, kind: s.kind, range: s.range,
+                                    line: s.line, owner: owners[i]))
                     names.insert(s.name)
                 }
                 if !names.isEmpty { files[canonicalPath(for: url)] = names }
@@ -206,8 +214,11 @@ public final class ProjectSymbolIndex {
         }
         var newDefs: [DefLocation] = []
         var names = Set<String>()
-        for s in TreeSitterHighlighter.symbols(in: text, language: lang) {
-            newDefs.append(DefLocation(url: url, name: s.name, kind: s.kind, range: s.range, line: s.line))
+        let syms = TreeSitterHighlighter.symbols(in: text, language: lang)
+        let owners = SymbolOwners.owners(in: syms)
+        for (i, s) in syms.enumerated() {
+            newDefs.append(DefLocation(url: url, name: s.name, kind: s.kind, range: s.range,
+                                       line: s.line, owner: owners[i]))
             names.insert(s.name)
         }
         return FileSymbols(defs: newDefs, names: names)
