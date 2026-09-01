@@ -520,6 +520,8 @@ final class SymbolIndexTests: XCTestCase {
         XCTAssertEqual(prefetched.kind, parsed.kind)
         XCTAssertEqual(prefetched.signature.string, parsed.signature.string)
         XCTAssertEqual(prefetched.doc, parsed.doc)
+        XCTAssertEqual(parsed.line, 2, "the card names the definition's line (1-based)")
+        XCTAssertEqual(prefetched.line, 2)
         XCTAssertNil(TreeSitterHighlighter.hoverInfo(for: "alpha", symbols: [], in: text, language: .python),
                      "a warming session's empty symbols yield nil, never a parse")
     }
@@ -532,6 +534,12 @@ final class SymbolIndexTests: XCTestCase {
                                                                  kind: .function, in: text, language: .python))
         XCTAssertEqual(info.kind, .function)
         XCTAssertEqual(info.signature.string, "def alpha():")
+        XCTAssertEqual(info.line, 1, "no Symbol to hand, so the line is counted from the text")
+        // A site further down counts every newline before it, not just the first.
+        let text3 = "# a\n\n\ndef beta():\n    pass\n"
+        let r3 = (text3 as NSString).range(of: "beta")
+        XCTAssertEqual(TreeSitterHighlighter.hoverInfo(for: "beta", definedAt: r3, kind: .function,
+                                                       in: text3, language: .python)?.line, 4)
         // A stale index site (the range no longer holds the word, or is out of
         // bounds) yields nil rather than a guessed signature.
         XCTAssertNil(TreeSitterHighlighter.hoverInfo(for: "alpha", definedAt: NSRange(location: 0, length: 5),

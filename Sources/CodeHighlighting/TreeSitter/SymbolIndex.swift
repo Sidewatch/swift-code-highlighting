@@ -32,6 +32,10 @@ public enum SymbolKind: String, Sendable {
     /// A Markdown (or other prose) section heading — not a code definition; used by
     /// the document-heading outline path.
     case heading
+    /// A stylesheet rule — `.btn:hover`, ` (max-width: 782px)` — listed by the
+    /// stylesheet outline; a selector is a location, not a definition, so it never
+    /// enters the project symbol index.
+    case selector
 
     /// Maps a tree-sitter capture name (from the symbol queries below) to a kind.
     public init?(capture: String) {
@@ -63,6 +67,7 @@ public enum SymbolKind: String, Sendable {
         case .property, .variable: return "diamond"
         case .constant:            return "c.circle"
         case .heading:             return "number"
+        case .selector:            return "paintbrush"
         }
     }
 
@@ -73,6 +78,7 @@ public enum SymbolKind: String, Sendable {
         case .structure:   return "struct"
         case .enumeration: return "enum"
         case .heading:     return ""      // the name is the heading; no kind suffix
+        case .selector:    return ""      // the name IS the selector
         default:           return rawValue
         }
     }

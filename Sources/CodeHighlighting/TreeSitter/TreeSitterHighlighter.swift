@@ -378,8 +378,14 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// `@MainActor`: builds an `NSAttributedString` through the main-thread-only
     /// ``highlight(_:in:)`` path. Every caller is a hover popup or the headless selftest,
     /// both already on main.
+    /// What every `hoverInfo` variant returns: the card's kind, highlighted signature
+    /// and doc comment, plus the 1-based `line` the definition sits on. The card
+    /// prints that line beside the defining file (`box.php:3`) so a reviewer sees
+    /// WHERE a signature came from — and a mis-attribution reads as one at a glance.
+    public typealias HoverInfo = (kind: SymbolKind, signature: NSAttributedString, doc: String, line: Int)
+
     @MainActor
-    public static func hoverInfo(for word: String, in text: String, language: CodeLanguage.Language) -> (kind: SymbolKind, signature: NSAttributedString, doc: String)? {
+    public static func hoverInfo(for word: String, in text: String, language: CodeLanguage.Language) -> HoverInfo? {
         guard word.count > 1 else { return nil }
         return hoverInfo(for: word, symbols: symbols(in: text, language: language), in: text, language: language)
     }
@@ -392,9 +398,9 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// ``highlight(_:in:)`` path. Every caller is a hover popup or the headless selftest,
     /// both already on main.
     @MainActor
-    public static func hoverInfo(for word: String, symbols: [Symbol], in text: String, language: CodeLanguage.Language) -> (kind: SymbolKind, signature: NSAttributedString, doc: String)? {
+    public static func hoverInfo(for word: String, symbols: [Symbol], in text: String, language: CodeLanguage.Language) -> HoverInfo? {
         guard word.count > 1, let sym = symbols.first(where: { $0.name == word }) else { return nil }
-        return signatureInfo(kind: sym.kind, at: sym.range.location, in: text as NSString, language: language)
+        return signatureInfo(kind: sym.kind, at: sym.range.location, line: sym.line, in: text as NSString, language: language)
     }
 
     /// Hover info for a definition whose site is already known (a
@@ -407,18 +413,20 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// both already on main.
     @MainActor
     public static func hoverInfo(for word: String, definedAt range: NSRange, kind: SymbolKind,
-                                 in text: String, language: CodeLanguage.Language) -> (kind: SymbolKind, signature: NSAttributedString, doc: String)? {
+                                 in text: String, language: CodeLanguage.Language) -> HoverInfo? {
         let ns = text as NSString
         guard word.count > 1, range.location >= 0, range.length >= 0,
               NSMaxRange(range) <= ns.length, ns.substring(with: range) == word else { return nil }
-        return signatureInfo(kind: kind, at: range.location, in: ns, language: language)
+        return signatureInfo(kind: kind, at: range.location, line: nil, in: ns, language: language)
     }
 
     /// Shared tail of the `hoverInfo` variants: the (trimmed) line at `location`
-    /// as a highlighted signature, plus the doc comment above it.
+    /// as a highlighted signature, plus the doc comment above it, plus the
+    /// 1-based line number — `knownLine` when the caller already has it (a
+    /// `Symbol`), else counted from the text.
     @MainActor
-    private static func signatureInfo(kind: SymbolKind, at location: Int, in ns: NSString,
-                                      language: CodeLanguage.Language) -> (kind: SymbolKind, signature: NSAttributedString, doc: String)? {
+    private static func signatureInfo(kind: SymbolKind, at location: Int, line knownLine: Int?, in ns: NSString,
+                                      language: CodeLanguage.Language) -> HoverInfo? {
         guard location <= ns.length else { return nil }
         let lineRange = ns.lineRange(for: NSRange(location: location, length: 0))
         var signature = ns.substring(with: lineRange).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -427,7 +435,25 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         }
         signature = signature.trimmingCharacters(in: .whitespaces)
         let mono = NSFont.monospacedSystemFont(ofSize: 12, weight: .medium)
-        return (kind, attributedSnippet(signature, language: language, font: mono), docComment(above: lineRange.location, in: ns, language: language))
+        let line = knownLine ?? lineNumber(at: lineRange.location, in: ns)
+        return (kind, attributedSnippet(signature, language: language, font: mono),
+                docComment(above: lineRange.location, in: ns, language: language), line)
+    }
+
+    /// 1-based line of `location`: one pass over the prefix in blocks (the walk
+    /// ``symbols(in:language:)`` uses). A hover is one call per 0.4 s and the index
+    /// caps files at 500 KB, so this is well under a millisecond.
+    private static func lineNumber(at location: Int, in ns: NSString) -> Int {
+        var line = 1
+        var scanned = 0
+        var block = [unichar](repeating: 0, count: 4096)
+        while scanned < location {
+            let n = min(block.count, location - scanned)
+            ns.getCharacters(&block, range: NSRange(location: scanned, length: n))
+            for i in 0..<n where block[i] == 0x0A { line += 1 }
+            scanned += n
+        }
+        return line
     }
 
     /// Syntax-highlights a short code snippet (e.g. a hover signature) into an
