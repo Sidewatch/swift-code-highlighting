@@ -18,6 +18,10 @@ public struct DefLocation: Sendable {
     /// (Go receivers, C++ out-of-line). Lets go-to-definition prefer the class
     /// the call site's receiver actually holds.
     public let owner: String?
+    /// The language the defining file parsed as. Cross-file lookups are gated on it
+    /// (see ``ProjectSymbolIndex/definitions(of:visibleFrom:)``): a symbol table
+    /// keyed by bare name alone let a CSS file's `float` resolve to a PHP method.
+    public let language: Language
 }
 
 /// Parses every source file in the project and maps symbol names to their
@@ -161,7 +165,7 @@ public final class ProjectSymbolIndex {
                 for (i, s) in syms.enumerated() {
                     map[s.name, default: []].append(
                         DefLocation(url: url, name: s.name, kind: s.kind, range: s.range,
-                                    line: s.line, owner: owners[i]))
+                                    line: s.line, owner: owners[i], language: lang))
                     names.insert(s.name)
                 }
                 if !names.isEmpty { files[canonicalPath(for: url)] = names }
@@ -196,19 +200,69 @@ public final class ProjectSymbolIndex {
     /// Incrementally re-indexes one file (edited/added), or drops it (deleted).
     /// Cheap enough to call on every disk change. No-op until the full build ran,
     /// except mid-build: those calls are queued and replayed once it installs.
+    ///
+    /// Two guards keep a file-change storm (a build writing thousands of files, a
+    /// cache directory churning) from turning into a parse storm:
+    /// - A path whose extension maps to no symbol query is dropped HERE, on the
+    ///   main thread, before anything is enqueued — `.log`, `.css`, images and
+    ///   directories never reach the parse queue. The check is extension-only, so
+    ///   a deleted source file (gone from disk, extension intact) still gets its
+    ///   stale definitions dropped.
+    /// - Paths are folded into ``pendingRescans`` and drained as ONE batch at a
+    ///   time (``drainRescansIfIdle()``): the same file rewritten fifty times
+    ///   while a batch is parsing is parsed once more, not fifty times, and the
+    ///   parse queue is never deeper than one batch. The old shape — one closure
+    ///   per notification on a serial queue — grew without bound whenever changes
+    ///   arrived faster than tree-sitter could parse them.
     public func updateFile(_ url: URL) {
+        guard SymbolQueries.sources[Language.detect(for: url)] != nil else { return }
+        let path = Self.canonicalPath(for: url)
         guard isBuilt else {
-            if isBuilding { pendingUpdates[Self.canonicalPath(for: url)] = url }
+            if isBuilding { pendingUpdates[path] = url }
             return
         }
-        let path = Self.canonicalPath(for: url)
+        pendingRescans[path] = url
+        drainRescansIfIdle()
+    }
+
+    /// Files waiting for the next rescan batch, keyed by canonical path (one
+    /// parse per file per batch, however many notifications it produced).
+    private var pendingRescans: [String: URL] = [:]
+    /// Whether a rescan batch is on ``queue`` right now. The next batch starts
+    /// only when this one has installed, which is what bounds the queue depth.
+    private var rescanInFlight = false
+    /// Test seam: how many single-file rescans have run since the index was
+    /// created. Lets a test prove that a non-source path never reaches the parse
+    /// queue and that a burst of notifications collapses into a bounded number
+    /// of parses.
+    private(set) var rescannedFiles = 0
+
+    /// Starts a rescan batch over everything in ``pendingRescans`` unless one is
+    /// already running — its completion calls back here, so paths that arrived
+    /// mid-batch (including a file the batch already read, then changed again)
+    /// are picked up by the next batch rather than lost.
+    private func drainRescansIfIdle() {
+        guard !rescanInFlight, !pendingRescans.isEmpty else { return }
+        rescanInFlight = true
+        let batch = pendingRescans
+        pendingRescans = [:]
+        let gen = generation
         // Captured strongly: a `@MainActor` class is implicitly Sendable, whereas `[weak self]`
         // introduces a mutable optional that a concurrent closure may not reference. The index
         // outlives its edits in practice, and `apply` is a no-op before the first build.
         queue.async {
-            let rescanned = Self.rescan(url: url, path: path)
+            var results: [(path: String, symbols: FileSymbols)] = []
+            results.reserveCapacity(batch.count)
+            for (path, url) in batch { results.append((path, Self.rescan(url: url, path: path))) }
             DispatchQueue.main.async {
-                self.apply(rescanned, at: path)
+                self.rescanInFlight = false
+                // A build()/invalidate() since the batch started owns the index now;
+                // its results describe files this generation never indexed.
+                if self.generation == gen {
+                    for r in results { self.apply(r.symbols, at: r.path) }
+                }
+                self.rescannedFiles += results.count
+                self.drainRescansIfIdle()
             }
         }
     }
@@ -229,7 +283,7 @@ public final class ProjectSymbolIndex {
         let owners = SymbolOwners.owners(in: syms)
         for (i, s) in syms.enumerated() {
             newDefs.append(DefLocation(url: url, name: s.name, kind: s.kind, range: s.range,
-                                       line: s.line, owner: owners[i]))
+                                       line: s.line, owner: owners[i], language: lang))
             names.insert(s.name)
         }
         return FileSymbols(defs: newDefs, names: names)
@@ -257,9 +311,44 @@ public final class ProjectSymbolIndex {
     }
 
     /// All known definitions of `name` across the project (empty before the
-    /// build completes, or when the name is undefined).
+    /// build completes, or when the name is undefined). Every language, unfiltered —
+    /// the raw table. Anything driven by a hovered/edited FILE wants
+    /// ``definitions(of:visibleFrom:)`` instead.
     /// - Note: Read on the main queue — the index installs its updates there.
     public func definitions(of name: String) -> [DefLocation] { defs[name] ?? [] }
+
+    /// The definitions of `name` a file written in `host` may resolve to: only those
+    /// in a language `host` can reference (``SymbolQueries/visibleLanguages(from:)``),
+    /// and none at all when `host` has no symbol vocabulary of its own. This is the
+    /// lookup behind cross-file hover-doc, Go to Definition and the completion
+    /// popup's project tier. It exists because the bare-name table let a `.css`
+    /// file's `float` and `container` pop PHP hover cards — the index knew a PHP
+    /// method named `float`, and nothing asked what language was asking.
+    public func definitions(of name: String, visibleFrom host: Language) -> [DefLocation] {
+        guard let visible = SymbolQueries.visibleLanguages(from: host) else { return [] }
+        return (defs[name] ?? []).filter { visible.contains($0.language) }
+    }
+
+    /// ``definitions(matchingPrefix:limit:)`` gated the way ``definitions(of:visibleFrom:)``
+    /// is: a name defined in several languages yields its first definition in one the
+    /// `host` can see, and is skipped when it has none. Empty when `host` has no symbol
+    /// vocabulary — a stylesheet must not complete PHP method names.
+    public func definitions(matchingPrefix prefix: String, limit: Int = 50, visibleFrom host: Language) -> [DefLocation] {
+        guard let visible = SymbolQueries.visibleLanguages(from: host),
+              !prefix.isEmpty, limit > 0 else { return [] }
+        let needle = prefix.lowercased()
+        let names = sortedNameCursor()
+        var out: [DefLocation] = []
+        var i = Self.lowerBound(of: needle, in: names)
+        while i < names.count, names[i].lower.hasPrefix(needle) {
+            if let def = defs[names[i].name]?.first(where: { visible.contains($0.language) }) {
+                out.append(def)
+                if out.count >= limit { break }
+            }
+            i += 1
+        }
+        return out
+    }
 
     /// One definition per known name starting with `prefix`, case-insensitively,
     /// alphabetical, at most `limit` of them — the completion popup's
@@ -333,5 +422,6 @@ public final class ProjectSymbolIndex {
         isBuilt = false
         isBuilding = false
         pendingUpdates = [:]
+        pendingRescans = [:]   // a batch already in flight is discarded by its generation check
     }
 }

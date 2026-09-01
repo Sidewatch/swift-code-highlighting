@@ -179,6 +179,123 @@ final class SymbolIndexTests: XCTestCase {
         XCTAssertEqual(idx.definitions(of: "vendored").count, 0, "node_modules must be skipped")
     }
 
+    // MARK: - Language visibility (the "CSS hover shows a PHP method" bug)
+
+    /// A stylesheet, markup or prose file has no cross-file symbols to borrow; a
+    /// code language sees itself, JS/TS see each other, templates see what they embed.
+    func testVisibleLanguagesGateNonCodeHosts() {
+        for host: Language in [.css, .scss, .less, .sass, .html, .markdown, .json, .yaml, .plainText] {
+            XCTAssertNil(SymbolQueries.visibleLanguages(from: host), "\(host) must resolve nothing across files")
+        }
+        XCTAssertEqual(SymbolQueries.visibleLanguages(from: .php), [.php])
+        XCTAssertEqual(SymbolQueries.visibleLanguages(from: .blade), [.php], "a Blade template embeds PHP")
+        XCTAssertEqual(SymbolQueries.visibleLanguages(from: .python), [.python])
+        XCTAssertEqual(SymbolQueries.visibleLanguages(from: .swift), [.swift])
+        XCTAssertEqual(SymbolQueries.visibleLanguages(from: .typescript), [.javascript, .typescript, .jsx, .tsx])
+        XCTAssertEqual(SymbolQueries.visibleLanguages(from: .vue), SymbolQueries.visibleLanguages(from: .javascript))
+        XCTAssertEqual(SymbolQueries.visibleLanguages(from: .cpp), [.c, .cpp])
+        XCTAssertFalse(SymbolQueries.visibleLanguages(from: .php)!.contains(.javascript), "PHP never sees JS")
+    }
+
+    /// Builds one index holding `render` twice — a PHP method and a JS function —
+    /// the exact shape behind the reported hover leak.
+    private func makeRenderIndex() throws -> (ProjectSymbolIndex, URL) {
+        let dir = makeTempDir()
+        try "<?php\nclass Box {\n    public function render() {}\n}\n"
+            .write(to: dir.appendingPathComponent("box.php"), atomically: true, encoding: .utf8)
+        try "function render() {}\n"
+            .write(to: dir.appendingPathComponent("view.js"), atomically: true, encoding: .utf8)
+        let idx = ProjectSymbolIndex()
+        let built = expectation(description: "build completes")
+        idx.build(root: dir) { built.fulfill() }
+        wait(for: [built], timeout: 10)
+        return (idx, dir)
+    }
+
+    /// The reported bug: hovering `float` / `container` in a `.css` file popped a
+    /// PHP method / property card, because the bare-name table had no language
+    /// dimension and nothing asked what language was asking.
+    func testDefinitionsVisibleFromFiltersByHostLanguage() throws {
+        try XCTSkipUnless(TreeSitterHighlighter.supports(.php) && TreeSitterHighlighter.supports(.javascript))
+        let (idx, dir) = try makeRenderIndex()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        XCTAssertEqual(idx.definitions(of: "render").count, 2, "the raw table still holds both")
+        XCTAssertEqual(Set(idx.definitions(of: "render").map(\.language)), [.javascript, .php], "each def records its language")
+        XCTAssertTrue(idx.definitions(of: "render", visibleFrom: .css).isEmpty, "a stylesheet borrows nothing")
+        XCTAssertTrue(idx.definitions(of: "render", visibleFrom: .markdown).isEmpty)
+        XCTAssertEqual(idx.definitions(of: "render", visibleFrom: .php).map(\.url.lastPathComponent), ["box.php"])
+        XCTAssertEqual(idx.definitions(of: "render", visibleFrom: .typescript).map(\.url.lastPathComponent), ["view.js"], "TS sees JS")
+        XCTAssertEqual(idx.definitions(of: "render", visibleFrom: .javascript).map(\.url.lastPathComponent), ["view.js"])
+        XCTAssertTrue(idx.definitions(of: "render", visibleFrom: .python).isEmpty, "Python sees neither")
+    }
+
+    /// The completion tier picks the first definition the HOST can see, not the
+    /// first in the table — and offers nothing to a host with no vocabulary.
+    func testPrefixQueryVisibleFromPicksTheVisibleDefinition() throws {
+        try XCTSkipUnless(TreeSitterHighlighter.supports(.php) && TreeSitterHighlighter.supports(.javascript))
+        let (idx, dir) = try makeRenderIndex()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        XCTAssertEqual(idx.definitions(matchingPrefix: "ren", visibleFrom: .php).map(\.url.lastPathComponent), ["box.php"])
+        XCTAssertEqual(idx.definitions(matchingPrefix: "ren", visibleFrom: .tsx).map(\.url.lastPathComponent), ["view.js"])
+        XCTAssertTrue(idx.definitions(matchingPrefix: "ren", visibleFrom: .css).isEmpty, "a stylesheet completes no PHP")
+        XCTAssertTrue(idx.definitions(matchingPrefix: "ren", visibleFrom: .python).isEmpty)
+        XCTAssertEqual(idx.definitions(matchingPrefix: "ren").count, 1, "the unfiltered query is unchanged: one row per name")
+    }
+
+    // MARK: - Rescan bounding (the file-change-storm guard)
+
+    /// A change notification for a path with no symbol query never reaches the
+    /// parse queue — `.log` / `.css` / image / directory churn costs nothing.
+    func testUpdateFileSkipsPathsWithoutSymbolQuery() throws {
+        try XCTSkipUnless(TreeSitterHighlighter.supports(.python))
+        let dir = makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "def alpha():\n    pass\n".write(to: dir.appendingPathComponent("a.py"), atomically: true, encoding: .utf8)
+        let css = dir.appendingPathComponent("site.css")
+        try ".a { float: left }\n".write(to: css, atomically: true, encoding: .utf8)
+
+        let idx = ProjectSymbolIndex()
+        let built = expectation(description: "build completes")
+        idx.build(root: dir) { built.fulfill() }
+        wait(for: [built], timeout: 10)
+
+        idx.updateFile(css)
+        idx.updateFile(dir.appendingPathComponent("debug.log"))
+        idx.updateFile(dir)   // a directory-level event
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        XCTAssertEqual(idx.rescannedFiles, 0, "nothing parseable was touched, so nothing was parsed")
+
+        idx.updateFile(dir.appendingPathComponent("a.py"))
+        XCTAssertTrue(waitUntil { idx.rescannedFiles == 1 }, "a source file still rescans")
+    }
+
+    /// Fifty notifications for one file while a batch is parsing collapse into at
+    /// most one catch-up parse — the queue is one batch deep, never one closure
+    /// per event — and the catch-up replaces the file's definitions rather than
+    /// stacking duplicates.
+    func testUpdateFileBurstCoalescesPerPath() throws {
+        try XCTSkipUnless(TreeSitterHighlighter.supports(.python))
+        let dir = makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let file = dir.appendingPathComponent("a.py")
+        try "def alpha():\n    pass\n".write(to: file, atomically: true, encoding: .utf8)
+
+        let idx = ProjectSymbolIndex()
+        let built = expectation(description: "build completes")
+        idx.build(root: dir) { built.fulfill() }
+        wait(for: [built], timeout: 10)
+
+        try "def gamma():\n    pass\n".write(to: file, atomically: true, encoding: .utf8)
+        for _ in 0..<50 { idx.updateFile(file) }
+        XCTAssertTrue(waitUntil { idx.definitions(of: "gamma").count == 1 }, "the edit lands")
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))   // let any catch-up batch settle
+        XCTAssertLessThanOrEqual(idx.rescannedFiles, 2, "50 notifications → the first batch plus one catch-up, not 50 parses")
+        XCTAssertEqual(idx.definitions(of: "gamma").count, 1, "the catch-up replaced, never duplicated")
+        XCTAssertEqual(idx.definitions(of: "alpha").count, 0)
+    }
+
     func testUpdateFileReindexesEditedFile() throws {
         try XCTSkipUnless(TreeSitterHighlighter.supports(.python))
         let dir = makeTempDir()
