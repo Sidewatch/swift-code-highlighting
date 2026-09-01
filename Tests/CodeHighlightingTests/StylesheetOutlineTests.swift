@@ -84,7 +84,8 @@ final class StylesheetOutlineTests: XCTestCase {
         /* This paragraph explains the whole file in far more than sixty characters of prose text. */
         /* stylelint-disable selector-max-id */
         /* rtl:begin:ignore */
-        // Buttons (a line comment, not a banner)
+        // Buttons are styled below.
+        // They share one base rule (a prose block, not a banner).
         .btn { color: red; /* fallback */ }
         .a { } /* trailing note on a code line */
         .b {
@@ -147,6 +148,68 @@ final class StylesheetOutlineTests: XCTestCase {
         let huge = "/* Big */\n" + (0...StylesheetOutline.selectorLimit).map { ".r\($0){}" }.joined() + "@media print{.p{}}"
         let symbols = StylesheetOutline.symbols(in: huge, language: .css)
         XCTAssertEqual(symbols.map(\.name), ["Big", "@media print"], "sections and at-rules stay; the selectors go")
+    }
+
+    /// The SCSS convention (WordPress core's `_tokens.scss`): `//` banners with
+    /// decoration rows, prose blocks that are NOT banners however short their lines,
+    /// and `$variables` as the content — nested under their section.
+    func testLineCommentBannersAndVariablesInSCSS() throws {
+        let scss = """
+        // ==========================================================================
+        // WordPress Design System Tokens
+        // ==========================================================================
+        //
+        // These tokens are derived from the WordPress Design System in Figma:
+        // IMPORTANT: Do NOT expose these as CSS custom properties.
+        // - --wp-admin-theme-color
+        // ==========================================================================
+
+
+        // --------------------------------------------------------------------------
+        // Grid Units (Spacing)
+        // --------------------------------------------------------------------------
+        // Based on 4px base unit. Use for padding, margin, and gap values.
+
+        $grid-unit-05: 4px;   // Scales/grid unit 05
+        $grid-unit-10: 8px;
+        $spacing: (small: $grid-unit-05, large: $grid-unit-10);
+
+        // --------------------------------------------------------------------------
+        // Border Radius
+        // --------------------------------------------------------------------------
+
+        $radius-xs: 1px;
+        .card { $local: 2px; border-radius: $local; }
+
+        // Buttons
+        .btn { color: red; }
+        """
+        let symbols = StylesheetOutline.symbols(in: scss, language: .scss)
+        XCTAssertEqual(symbols.filter { $0.kind == .heading }.map(\.name),
+                       ["WordPress Design System Tokens", "Grid Units (Spacing)", "Border Radius", "Buttons"])
+        XCTAssertEqual(symbols.filter { $0.kind == .heading }.map(\.line), [1, 11, 20, 27], "a banner starts at its opening row")
+        XCTAssertEqual(symbols.filter { $0.kind == .variable }.map(\.name),
+                       ["$grid-unit-05", "$grid-unit-10", "$spacing", "$radius-xs"], "top-level variables only — `$local` stays inside its rule")
+        XCTAssertEqual(symbols.first { $0.name == "$grid-unit-05" }?.line, 16)
+        let tree = OutlineTree.build(from: symbols)
+        XCTAssertEqual(tree.map(\.symbol.name), ["WordPress Design System Tokens", "Grid Units (Spacing)", "Border Radius", "Buttons"])
+        XCTAssertEqual(tree.dropFirst().first?.children.map(\.symbol.name), ["$grid-unit-05", "$grid-unit-10", "$spacing"])
+        XCTAssertEqual(tree.dropFirst(2).first?.children.map(\.symbol.name), ["$radius-xs", ".card"])
+        XCTAssertEqual(tree.last?.children.map(\.symbol.name), [".btn"], "a lone `// Label` above code is a section")
+    }
+
+    /// Less variables (`@name: value;`) list; `@import` and `@media` do not, and a
+    /// `//` inside a URL is not a comment.
+    func testLessVariablesAndUrls() {
+        let less = """
+        @import 'base';
+        @brand: #916745;
+        @font: url(https://fonts.example/x.woff);
+        @media print { .p { } }
+        """
+        let symbols = StylesheetOutline.symbols(in: less, language: .less)
+        XCTAssertEqual(symbols.map(\.name), ["@brand", "@font", "@media print", ".p"])
+        XCTAssertEqual(symbols.map(\.kind), [.variable, .variable, .module, .selector])
     }
 
     func testSupportsBraceStylesheetsOnly() {

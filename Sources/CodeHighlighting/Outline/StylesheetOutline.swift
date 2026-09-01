@@ -17,6 +17,13 @@ import CodeLanguage
 ///   multi-line `2.0 - Header` banners; it rejects prose paragraphs,
 ///   `/*! license */` headers, tool pragmas (`stylelint-…`, `rtl:…`) and code
 ///   samples. A section's scope runs to the next section or the end.
+/// - **Section, SCSS/Less style** — a block of own-line `//` comments holding a
+///   decoration row, a title and (usually) a closing row: `// ----` /
+///   `// Grid Units` / `// ----`. A lone `// Label` directly above code counts
+///   too; a multi-line prose block never does (see ``lineCommentBanners``).
+/// - **Variable** — a top-level `$name: value;` (SCSS) or `@name: value;` (Less):
+///   the entire content of a tokens or variables partial, nested under its
+///   section. Inside a block it is a local and stays out.
 /// - **Rule** — a `selector {` prelude at the top level, or directly inside a
 ///   listed at-rule block. The name is the prelude with whitespace collapsed.
 /// - **At-rule with a block** — `@media`, `@supports`, `@layer`, `@container`,
@@ -112,8 +119,36 @@ public enum StylesheetOutline {
                 i = end
                 continue
             }
-            // `//` line comment (SCSS / Less).
-            if lineComments, c == 0x2F, i + 1 < n, buf[i + 1] == 0x2F {
+            // `//` line comment (SCSS / Less) — not the `//` inside `url(http://…)`.
+            if lineComments, c == 0x2F, i + 1 < n, buf[i + 1] == 0x2F, !(i > 0 && buf[i - 1] == 0x3A) {
+                if depth == 0, isBlank(lineStart, i) {
+                    // A block of consecutive own-line `//` comments. SCSS banners are
+                    // `// ----` / `// Title` / `// ----`, and a lone `// Label` directly
+                    // above code is a label; prose paragraphs are neither.
+                    var rows: [(text: String, location: Int, line: Int)] = []
+                    var k = i
+                    while true {
+                        var e = k
+                        while e < n, buf[e] != 0x0A { e += 1 }
+                        rows.append((ns.substring(with: NSRange(location: k + 2, length: e - k - 2)), k, line))
+                        preludeComments.append(NSRange(location: k, length: e - k))
+                        i = e   // the newline (or EOF) is the main loop's
+                        guard e < n else { break }
+                        var p = e + 1
+                        while p < n, buf[p] == 0x20 || buf[p] == 0x09 || buf[p] == 0x0D { p += 1 }
+                        guard p + 1 < n, buf[p] == 0x2F, buf[p + 1] == 0x2F, !(buf[p - 1] == 0x3A) else { break }
+                        line += 1
+                        lineStart = e + 1
+                        k = p
+                    }
+                    var q = i
+                    while q < n, isWS(buf[q]) { q += 1 }
+                    let nextIsCode = q < n && buf[q] != 0x2F
+                    for b in Self.lineCommentBanners(rows, nextIsCode: nextIsCode) {
+                        banners.append(Banner(name: b.name, location: b.location, length: b.length, line: b.line))
+                    }
+                    continue
+                }
                 let start = i
                 while i < n, buf[i] != 0x0A { i += 1 }
                 preludeComments.append(NSRange(location: start, length: i - start))
@@ -164,6 +199,18 @@ public enum StylesheetOutline {
                 preludeStart = i + 1
                 preludeComments = []
             case 0x3B: // ;
+                // A top-level `$name: value;` (SCSS) or `@name: value;` (Less) is a
+                // variable — the whole content of a tokens/variables partial. Inside a
+                // block it is a local or a declaration and stays out.
+                if depth == 0 {
+                    let raw = NSRange(location: preludeStart, length: i - preludeStart)
+                    if let name = Self.variableName(in: collapsed(preludeText(raw, cutting: preludeComments, in: ns))) {
+                        var nameStart = preludeStart
+                        while nameStart < i, isWS(buf[nameStart]) || preludeComments.contains(where: { NSLocationInRange(nameStart, $0) }) { nameStart += 1 }
+                        rules.append(Rule(name: name, location: nameStart, length: (name as NSString).length,
+                                          line: line - newlines(nameStart, i), kind: .variable, scopeEnd: nil))
+                    }
+                }
                 preludeStart = i + 1
                 preludeComments = []
             default:
@@ -206,6 +253,57 @@ public enum StylesheetOutline {
         }
         if cursor < NSMaxRange(raw) { pieces.append(ns.substring(with: NSRange(location: cursor, length: NSMaxRange(raw) - cursor))) }
         return pieces.joined(separator: " ")
+    }
+
+    /// The banners in one block of consecutive own-line `//` comments (`rows` are the
+    /// texts after `//`, in order). Two shapes count:
+    /// - **Decorated**: a decoration row (`----`, `====`, `****`…, three or more), a
+    ///   title line, and optionally a closing decoration row — the SCSS convention.
+    ///   The title must pass ``bannerName(_:)``; prose after the closing row is not
+    ///   a title, and a trailing decoration row with nothing under it opens nothing.
+    /// - **Lone label**: a block of exactly one line that passes ``bannerName(_:)``
+    ///   and sits directly above code (`// Buttons` then `.btn {`). A multi-line
+    ///   prose block is never a banner, however short its lines.
+    static func lineCommentBanners(_ rows: [(text: String, location: Int, line: Int)], nextIsCode: Bool)
+        -> [(name: String, location: Int, length: Int, line: Int)] {
+        func isDecorationRow(_ s: String) -> Bool {
+            let t = s.trimmingCharacters(in: .whitespaces)
+            return t.count >= 3 && t.allSatisfy { "*-=#~_".contains($0) }
+        }
+        func length(from a: Int, through b: Int) -> Int {
+            rows[b].location + (rows[b].text as NSString).length + 2 - rows[a].location
+        }
+        if rows.count == 1 {
+            guard nextIsCode, !isDecorationRow(rows[0].text), let name = bannerName(rows[0].text) else { return [] }
+            return [(name, rows[0].location, length(from: 0, through: 0), rows[0].line)]
+        }
+        var out: [(name: String, location: Int, length: Int, line: Int)] = []
+        var k = 0
+        while k < rows.count {
+            guard isDecorationRow(rows[k].text) else { k += 1; continue }
+            if k + 1 < rows.count, !isDecorationRow(rows[k + 1].text), let name = bannerName(rows[k + 1].text) {
+                let end = (k + 2 < rows.count && isDecorationRow(rows[k + 2].text)) ? k + 2 : k + 1
+                out.append((name, rows[k].location, length(from: k, through: end), rows[k].line))
+                k = end + 1
+            } else {
+                k += 1
+            }
+        }
+        return out
+    }
+
+    /// `$name` / `@name` when `prelude` is a variable declaration (`$grid-unit-05: 4px`,
+    /// `@brand: #fff`), else nil — `@import 'x'` and `@media …` have no `:` after the name.
+    static func variableName(in prelude: String) -> String? {
+        guard let first = prelude.first, first == "$" || first == "@" else { return nil }
+        var name = String(first)
+        var rest = prelude.dropFirst()
+        while let ch = rest.first, ch.isLetter || ch.isNumber || ch == "_" || ch == "-" {
+            name.append(ch); rest = rest.dropFirst()
+        }
+        guard name.count > 1 else { return nil }
+        while let ch = rest.first, ch == " " || ch == "\t" { rest = rest.dropFirst() }
+        return rest.first == ":" ? name : nil
     }
 
     /// The section name a comment body yields, or nil when the comment is not a
