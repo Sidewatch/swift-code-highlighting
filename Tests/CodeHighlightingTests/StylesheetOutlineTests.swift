@@ -119,7 +119,7 @@ final class StylesheetOutlineTests: XCTestCase {
         XCTAssertNil(symbols[2].scopeRange, "a selector never is")
         let tree = OutlineTree.build(from: symbols)
         XCTAssertEqual(tree.map(\.symbol.name), ["@mixin clearfix($x)", "@media (max-width: 782px)", ".top"])
-        XCTAssertEqual(tree[1].children.map(\.symbol.name), [".a", ".b"])
+        XCTAssertEqual(tree.dropFirst().first?.children.map(\.symbol.name), [".a", ".b"])   // no crash on an empty tree
     }
 
     /// Braces and semicolons inside strings, and a comment inside a selector list,

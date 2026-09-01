@@ -111,7 +111,68 @@ public enum SymbolQueries {
         .csharp: csharp,
         .lua: lua,
         .swift: swift,
+        // Grammars that were vendored for highlighting but had no symbol query, so
+        // their files had no outline, hover, go-to-definition or completion tier.
+        .bash: bash,
+        .kotlin: kotlin,
+        .dart: dart,
+        .scala: scala,
+        .sql: sql,
     ]
+
+    private static let bash = """
+    (function_definition name: (word) @function)
+    """
+
+    // tree-sitter-kotlin names nothing by field: the declaration's own
+    // `type_identifier` / `simple_identifier` child IS the name (the receiver,
+    // parameters and return type are all wrapped in their own nodes). `class`
+    // and `interface` share `class_declaration`, told apart by the keyword.
+    private static let kotlin = """
+    (class_declaration "interface" (type_identifier) @interface)
+    (class_declaration "class" (type_identifier) @class)
+    (object_declaration (type_identifier) @class)
+    (function_declaration (simple_identifier) @function)
+    (class_body (property_declaration (variable_declaration (simple_identifier) @property)))
+    (source_file (property_declaration (variable_declaration (simple_identifier) @property)))
+    (type_alias (type_identifier) @type)
+    """
+
+    // A Dart method is a `function_signature` inside a `method_signature`; one
+    // pattern covers both so no node is captured twice (methods read as
+    // "function", the way Swift's query reads them).
+    private static let dart = """
+    (class_definition name: (identifier) @class)
+    (mixin_declaration (identifier) @class)
+    (enum_declaration name: (identifier) @enum)
+    (extension_declaration name: (identifier) @type)
+    (function_signature name: (identifier) @function)
+    (getter_signature name: (identifier) @property)
+    (setter_signature name: (identifier) @property)
+    """
+
+    private static let scala = """
+    (class_definition name: (identifier) @class)
+    (object_definition name: (identifier) @class)
+    (trait_definition name: (identifier) @interface)
+    (enum_definition name: (identifier) @enum)
+    (function_definition name: (identifier) @function)
+    (function_declaration name: (identifier) @function)
+    (val_definition pattern: (identifier) @constant)
+    (var_definition pattern: (identifier) @variable)
+    """
+
+    // DDL only — a query file's structure is what it creates. `create_function`
+    // also matches a custom RETURNS type spelled as an object_reference (rare:
+    // builtin return types are keyword nodes), which then shows as a second entry.
+    private static let sql = """
+    (create_table (object_reference name: (identifier) @type))
+    (create_view (object_reference name: (identifier) @type))
+    (create_function (object_reference name: (identifier) @function))
+    (create_type (object_reference name: (identifier) @type))
+    (create_schema (identifier) @module)
+    (create_database name: (identifier) @module)
+    """
 
     private static let js = """
     (function_declaration name: (identifier) @function)
