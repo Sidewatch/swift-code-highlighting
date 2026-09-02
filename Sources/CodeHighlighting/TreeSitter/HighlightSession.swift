@@ -172,7 +172,16 @@ public final class HighlightSession: @unchecked Sendable {
     /// (a desync — `noteEdit` normally keeps the tree current on every edit).
     private func currentTree(matching text: String) -> MutableTree? {
         stateLock.lock(); defer { stateLock.unlock() }
-        guard let tree, lastText == text else { return nil }
+        guard let tree, let last = lastText else { return nil }
+        // NOT `lastText == text`. Both strings come from the text storage, NSString-backed,
+        // and Swift's `==` on bridged strings walks every UTF-16 unit through the bridge
+        // with Unicode canonical equivalence on top: ~10 ms for a 358 KB PHP file, five
+        // lookups per sticky-scroll pass, 36% of every scroll step (measured with the
+        // scroll probe's profiler on wp-includes/formatting.php). NSString compares the
+        // backing stores in bulk, and a parse cache WANTS code-unit identity — the tree
+        // was built from exactly those units, canonical equivalence be damned.
+        let a = last as NSString, b = text as NSString
+        guard a.length == b.length, a.isEqual(to: text) else { return nil }
         return tree
     }
 
