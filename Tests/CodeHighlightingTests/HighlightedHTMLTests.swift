@@ -32,7 +32,9 @@ final class HighlightedHTMLTests: XCTestCase {
         }
     }
 
-    private var savedColors: TokenColorProviding!
+    // setUp/tearDown run serially on the XCTest runner, never concurrently with each other or
+    // with the test body, so this is safe despite not being MainActor-isolated.
+    private nonisolated(unsafe) var savedColors: TokenColorProviding!
 
     override func setUp() {
         super.setUp()

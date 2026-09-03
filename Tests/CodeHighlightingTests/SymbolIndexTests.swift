@@ -172,7 +172,8 @@ final class SymbolIndexTests: XCTestCase {
         try "function mine() {}\n".write(to: dir.appendingPathComponent("app.js"), atomically: true, encoding: .utf8)
 
         // A host rule (what .gitignore would say): the generated directory and secret.js.
-        var seenRoots = Set<String>()
+        // Guarded by `lock` below, so the compiler's data-race check can be trusted to be overcautious.
+        nonisolated(unsafe) var seenRoots = Set<String>()
         let lock = NSLock()
         ProjectSymbolIndex.isExcluded = { root, url, isDir in
             lock.lock(); seenRoots.insert(root.path); lock.unlock()
