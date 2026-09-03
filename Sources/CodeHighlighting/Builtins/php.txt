@@ -128,8 +128,8 @@ extends
 implements
 return
 yield
-echo
-print
+echo	echo(string ...$expressions): void
+print	print(string $expression): int
 if
 else
 elseif
@@ -150,15 +150,15 @@ throw
 match
 fn
 global
-isset
-unset
-empty
-list
+isset	isset(mixed $var, mixed ...$vars): bool
+unset	unset(mixed $var, mixed ...$vars): void
+empty	empty(mixed $var): bool
+list	list($var, ...): array
 declare
-require
-require_once
-include
-include_once
+require	require(string $path): mixed
+require_once	require_once(string $path): mixed
+include	include(string $path): mixed
+include_once	include_once(string $path): mixed
 true
 false
 null
