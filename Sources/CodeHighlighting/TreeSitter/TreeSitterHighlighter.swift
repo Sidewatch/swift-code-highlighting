@@ -42,7 +42,8 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// Grammars we bundle. Add a package + a line here to support a language.
     /// `bundle` is the SwiftPM resource-bundle name: `<Product>_<Product>`.
     /// Internal so ``HighlightSession`` resolves languages through the same table.
-    static let grammars: [CodeLanguage.Language: Grammar] = {
+    /// One builder per language, built cheaply; `grammar(for:)` compiles on first use.
+    nonisolated(unsafe) static let grammarBuilders: [CodeLanguage.Language: () -> Grammar?] = {
         // `inherits` prepends base grammars' highlights (TS overlays JS; C++ overlays C).
         // `injectHTMLText` adds an HTML injection for inline `text` (PHP templates).
         func g(_ ptr: OpaquePointer?, _ product: String, inherits: [String] = [], injectHTMLText: Bool = false, extra: String = "") -> Grammar? {
@@ -67,9 +68,9 @@ public final class TreeSitterHighlighter: CodeHighlighter {
             if injectHTMLText { injSrc += "\n((text) @injection.content (#set! injection.language \"html\"))\n" }
             return Grammar(language: language, highlights: highlights, injections: injSrc.isEmpty ? nil : build(injSrc))
         }
-        var m: [CodeLanguage.Language: Grammar] = [:]
-        m[.json]       = g(tree_sitter_json(),       "TreeSitterJSON",
-                           extra: "(pair key: (string) @property)\n((number) @number)\n[(true) (false)] @boolean\n(null) @constant.builtin")
+        var m: [CodeLanguage.Language: () -> Grammar?] = [:]
+        m[.json]       = { g(tree_sitter_json(),       "TreeSitterJSON",
+                           extra: "(pair key: (string) @property)\n((number) @number)\n[(true) (false)] @boolean\n(null) @constant.builtin") }
         // JSONC (tsconfig & friends) shares the JSON grammar: upstream
         // tree-sitter-json parses `//` and `/* */` comments as extras.
         m[.jsonc]      = m[.json]
@@ -77,46 +78,46 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         // with a `^--` guard; the bare-variable role is nil now (see `role(for:)`),
         // so re-capture them as `@property` — sigiled, self-distinguishing tokens
         // that VS Code keeps colored (same hue family as bash's `$VAR` @property).
-        m[.css]        = g(tree_sitter_css(),        "TreeSitterCSS",
-                           extra: "((property_name) @property (#match? @property \"^--\"))\n((plain_value) @property (#match? @property \"^--\"))")
+        m[.css]        = { g(tree_sitter_css(),        "TreeSitterCSS",
+                           extra: "((property_name) @property (#match? @property \"^--\"))\n((plain_value) @property (#match? @property \"^--\"))") }
         // JSX patterns live in a separate upstream query file the base highlights
         // don't include; overlay it on every grammar whose parser produces jsx
         // nodes (the JS grammar parses JSX natively; TSX is TypeScript+JSX).
         // The patterns only match jsx_* nodes, so non-JSX files are unaffected.
         let jsx = queryText("TreeSitterJavaScript", "highlights-jsx.scm") ?? ""
-        m[.javascript] = g(tree_sitter_javascript(), "TreeSitterJavaScript", extra: jsx)
-        m[.python]     = g(tree_sitter_python(),     "TreeSitterPython")
-        m[.rust]       = g(tree_sitter_rust(),       "TreeSitterRust")
-        m[.go]         = g(tree_sitter_go(),         "TreeSitterGo")
-        m[.html]       = g(tree_sitter_html(),       "TreeSitterHTML")
-        m[.bash]      = g(tree_sitter_bash(),       "TreeSitterBash")
-        m[.c]          = g(tree_sitter_c(),          "TreeSitterC")
-        m[.java]       = g(tree_sitter_java(),       "TreeSitterJava")
-        m[.ruby]       = g(tree_sitter_ruby(),       "TreeSitterRuby")
-        m[.typescript] = g(tree_sitter_typescript(), "TreeSitterTypeScript", inherits: ["TreeSitterJavaScript"])
-        m[.cpp]        = g(tree_sitter_cpp(),        "TreeSitterCPP", inherits: ["TreeSitterC"])
-        m[.csharp]     = g(tree_sitter_c_sharp(),    "TreeSitterCSharp")
+        m[.javascript] = { g(tree_sitter_javascript(), "TreeSitterJavaScript", extra: jsx) }
+        m[.python]     = { g(tree_sitter_python(),     "TreeSitterPython") }
+        m[.rust]       = { g(tree_sitter_rust(),       "TreeSitterRust") }
+        m[.go]         = { g(tree_sitter_go(),         "TreeSitterGo") }
+        m[.html]       = { g(tree_sitter_html(),       "TreeSitterHTML") }
+        m[.bash]      = { g(tree_sitter_bash(),       "TreeSitterBash") }
+        m[.c]          = { g(tree_sitter_c(),          "TreeSitterC") }
+        m[.java]       = { g(tree_sitter_java(),       "TreeSitterJava") }
+        m[.ruby]       = { g(tree_sitter_ruby(),       "TreeSitterRuby") }
+        m[.typescript] = { g(tree_sitter_typescript(), "TreeSitterTypeScript", inherits: ["TreeSitterJavaScript"]) }
+        m[.cpp]        = { g(tree_sitter_cpp(),        "TreeSitterCPP", inherits: ["TreeSitterC"]) }
+        m[.csharp]     = { g(tree_sitter_c_sharp(),    "TreeSitterCSharp") }
         // PHP `$vars` are captured `(variable_name) @variable` upstream — nil'd by the
         // bare-variable role now. Like bash's `$VAR`, they're sigiled tokens VS Code
         // keeps colored, so re-capture as `@property` — except `$this`, whose inner
         // `(name)` keeps the `@variable.builtin` color (this extra would outrank it).
-        m[.php]        = g(tree_sitter_php(),         "TreeSitterPHP", injectHTMLText: true,
-                           extra: "((variable_name) @property (#not-eq? @property \"$this\"))")
-        m[.yaml]       = g(tree_sitter_yaml(),       "TreeSitterYAML")
-        m[.toml]       = g(tree_sitter_toml(),       "TreeSitterTOML")
-        m[.lua]        = g(tree_sitter_lua(),        "TreeSitterLua")
-        m[.kotlin]     = g(tree_sitter_kotlin(),     "TreeSitterKotlin")
-        m[.dart]       = g(tree_sitter_dart(),       "TreeSitterDart")
-        m[.dockerfile] = g(tree_sitter_dockerfile(), "TreeSitterDockerfile")
-        m[.swift]      = g(tree_sitter_swift(),      "TreeSitterSwift")
-        m[.scala]      = g(tree_sitter_scala(),      "TreeSitterScala")
-        m[.xml]        = g(tree_sitter_xml(),        "TreeSitterXML")
+        m[.php]        = { g(tree_sitter_php(),         "TreeSitterPHP", injectHTMLText: true,
+                           extra: "((variable_name) @property (#not-eq? @property \"$this\"))") }
+        m[.yaml]       = { g(tree_sitter_yaml(),       "TreeSitterYAML") }
+        m[.toml]       = { g(tree_sitter_toml(),       "TreeSitterTOML") }
+        m[.lua]        = { g(tree_sitter_lua(),        "TreeSitterLua") }
+        m[.kotlin]     = { g(tree_sitter_kotlin(),     "TreeSitterKotlin") }
+        m[.dart]       = { g(tree_sitter_dart(),       "TreeSitterDart") }
+        m[.dockerfile] = { g(tree_sitter_dockerfile(), "TreeSitterDockerfile") }
+        m[.swift]      = { g(tree_sitter_swift(),      "TreeSitterSwift") }
+        m[.scala]      = { g(tree_sitter_scala(),      "TreeSitterScala") }
+        m[.xml]        = { g(tree_sitter_xml(),        "TreeSitterXML") }
         // Upstream's number/float patterns use Lua-style classes ("%d"), which
         // NSRegularExpression matches literally — so numeric literals stayed on
         // the earlier `(literal) @string` capture. Re-capture them with a real
         // regex; appended last, it wins under later-pattern-wins precedence.
-        m[.sql]        = g(tree_sitter_sql(),        "TreeSitterSQL",
-                           extra: "((literal) @number (#match? @number \"^[+-]?\\\\d+(\\\\.\\\\d+)?$\"))")
+        m[.sql]        = { g(tree_sitter_sql(),        "TreeSitterSQL",
+                           extra: "((literal) @number (#match? @number \"^[+-]?\\\\d+(\\\\.\\\\d+)?$\"))") }
         // Markdown is upstream's DUAL parser; this entry is the BLOCK grammar
         // only (headings, fences, lists, quotes). Its injections.scm routes
         // every `(inline)` node to the separate inline grammar (see
@@ -126,7 +127,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         // the extra re-captures the structure with this table's roles,
         // mirroring the regex tier's markdown palette (headings/list markers
         // keyword, fences/links string, quote markers/rules comment).
-        m[.markdown]   = g(tree_sitter_markdown(),   "TreeSitterMarkdown", extra: """
+        m[.markdown]   = { g(tree_sitter_markdown(),   "TreeSitterMarkdown", extra: """
             (atx_heading (inline) @keyword)
             (setext_heading (paragraph) @keyword)
             [(atx_h1_marker) (atx_h2_marker) (atx_h3_marker) (atx_h4_marker) (atx_h5_marker) (atx_h6_marker) (setext_h1_underline) (setext_h2_underline)] @keyword
@@ -135,7 +136,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
             [(fenced_code_block_delimiter) (info_string)] @string
             [(link_destination) (link_title)] @string
             (link_label) @property
-            """)
+            """) }
 
         // TSX has its OWN vendored parser (upstream's second grammar in the
         // tree-sitter-typescript repo — TypeScript + native JSX) but shares the
@@ -143,7 +144,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         // overlay appended last. JSX files use it too — TSX is a superset that
         // parses plain JSX, and the shared queries keep tags/attributes/components
         // colored identically across .jsx/.tsx.
-        m[.tsx]  = g(tree_sitter_tsx(), "TreeSitterTypeScript", inherits: ["TreeSitterJavaScript"], extra: jsx)
+        m[.tsx]  = { g(tree_sitter_tsx(), "TreeSitterTypeScript", inherits: ["TreeSitterJavaScript"], extra: jsx) }
         m[.jsx]  = m[.tsx]
         // SCSS/Sass/Less deliberately have NO entry: the CSS grammar tokenizes
         // their variables (`$var`, Less `@var`) as ERROR nodes that swallow the
@@ -153,6 +154,43 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         // layering), so they route to the dedicated regex rule sets instead.
         return m
     }()
+
+    private static let grammarLock = NSLock()
+    nonisolated(unsafe) private static var grammarCache: [CodeLanguage.Language: Grammar?] = [:]   // guarded by grammarLock
+
+    /// The compiled grammar for `language`, compiled on first request and cached —
+    /// nil when there is no builder or its query does not compile. The table used to
+    /// be ONE `static let` dictionary that compiled every language's query on first
+    /// touch: 600–750 ms on the main thread at launch, because the untitled document's
+    /// highlighter lookup was the first touch (the watchdog's stack sampler caught it
+    /// on every launch, 3 Sep 2026). Compiling happens OUTSIDE the lock so two threads
+    /// asking for different languages never serialise; a race on the same language
+    /// compiles it twice and keeps one, which is harmless.
+    static func grammar(for language: CodeLanguage.Language) -> Grammar? {
+        grammarLock.lock()
+        if let hit = grammarCache[language] { grammarLock.unlock(); return hit }
+        grammarLock.unlock()
+        guard let build = grammarBuilders[language] else { return nil }
+        let built = build()
+        grammarLock.lock(); grammarCache[language] = built; grammarLock.unlock()
+        return built
+    }
+
+    /// Compiles every language's queries. Call from a BACKGROUND thread at launch so
+    /// the first file the user opens finds its grammar ready; a language asked for
+    /// before the warm-up reaches it simply compiles on demand.
+    public static func warmUpGrammars() {
+        for language in grammarBuilders.keys.sorted(by: { $0.rawValue < $1.rawValue }) { _ = grammar(for: language) }
+    }
+
+    /// Per-language compile cost, for `--probe-grammars`: (language, milliseconds, compiled).
+    public static func measureGrammarCompiles() -> [(language: String, ms: Double, ok: Bool)] {
+        grammarBuilders.keys.sorted(by: { $0.rawValue < $1.rawValue }).map { language in
+            let t0 = ProcessInfo.processInfo.systemUptime
+            let ok = grammarBuilders[language]?() != nil
+            return (language.rawValue, (ProcessInfo.processInfo.systemUptime - t0) * 1000, ok)
+        }
+    }
 
     /// The markdown INLINE grammar — upstream tree-sitter-markdown's second
     /// parser (emphasis, code spans, links). Deliberately NOT in `grammars`:
@@ -212,37 +250,37 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// Maps an injection language name (from injections.scm) to a bundled grammar.
     private static func grammarForInjection(_ name: String) -> Grammar? {
         switch name.lowercased() {
-        case "html":                   return grammars[.html]
-        case "css", "scss":            return grammars[.css]
-        case "javascript", "js", "jsx": return grammars[.javascript]
-        case "typescript", "ts":       return grammars[.typescript]
-        case "json":                   return grammars[.json]
-        case "python":                 return grammars[.python]
-        case "ruby":                   return grammars[.ruby]
-        case "bash", "sh", "shell":    return grammars[.bash]
-        case "yaml":                   return grammars[.yaml]
-        case "markdown", "md":         return grammars[.markdown]
+        case "html":                   return grammar(for: .html)
+        case "css", "scss":            return grammar(for: .css)
+        case "javascript", "js", "jsx": return grammar(for: .javascript)
+        case "typescript", "ts":       return grammar(for: .typescript)
+        case "json":                   return grammar(for: .json)
+        case "python":                 return grammar(for: .python)
+        case "ruby":                   return grammar(for: .ruby)
+        case "bash", "sh", "shell":    return grammar(for: .bash)
+        case "yaml":                   return grammar(for: .yaml)
+        case "markdown", "md":         return grammar(for: .markdown)
         // The block grammar's injections.scm tags every `(inline)` node with
         // this pseudo-language; it resolves to the dedicated inline grammar.
         case "markdown_inline",
              "markdown-inline":        return markdownInlineGrammar
-        default:                       return grammars[CodeLanguage.Language(rawValue: name.lowercased()) ?? .plainText]
+        default:                       return grammar(for: CodeLanguage.Language(rawValue: name.lowercased()) ?? .plainText)
         }
     }
 
     /// Whether a grammar (with its query bundle) is loaded for `language` —
     /// i.e. whether `init?(language:)` would succeed. When false, fall back to
     /// the regex ``SyntaxHighlighter``.
-    public static func supports(_ language: CodeLanguage.Language) -> Bool { grammars[language] != nil }
+    public static func supports(_ language: CodeLanguage.Language) -> Bool { grammar(for: language) != nil }
 
     /// How many grammars loaded successfully (a startup sanity check: 0 usually
     /// means the `.bundle` query resources weren't shipped next to the executable).
-    public static var loadedCount: Int { grammars.count }
+    public static var loadedCount: Int { grammarBuilders.count }
 
     /// The loaded tree-sitter language object for `language`. Internal for tests
     /// (lets them compile hand-written queries against a bundled grammar).
     static func tsLanguage(for language: CodeLanguage.Language) -> SwiftTreeSitter.Language? {
-        grammars[language]?.language
+        grammar(for: language)?.language
     }
 
     /// Smallest syntax node whose range is strictly larger than `selection`
@@ -278,7 +316,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
 
     /// Root node of one fresh full parse of `text`, or nil when no grammar is loaded.
     static func freshParseRoot(_ text: String, language: CodeLanguage.Language) -> Node? {
-        guard let g = grammars[language] else { return nil }
+        guard let g = grammar(for: language) else { return nil }
         let parser = Parser()
         try? parser.setLanguage(g.language)
         return parser.parse(text)?.rootNode
@@ -308,7 +346,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// - Important: performs a fresh full parse of `text`; on big open documents
     ///   prefer ``HighlightSession/symbols(text:)``, which queries the cached tree.
     public static func symbols(in text: String, language: CodeLanguage.Language) -> [Symbol] {
-        guard let g = grammars[language], SymbolQueries.sources[language] != nil else { return [] }
+        guard let g = grammar(for: language), SymbolQueries.sources[language] != nil else { return [] }
         let parser = Parser()
         try? parser.setLanguage(g.language)
         guard let tree = parser.parse(text) else { return [] }
@@ -318,7 +356,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// Query half of ``symbols(in:language:)``, against an already-parsed tree.
     /// Internal so ``HighlightSession`` reuses it with its cached tree.
     static func symbols(tree: MutableTree, ns: NSString, language: CodeLanguage.Language) -> [Symbol] {
-        guard let g = grammars[language], let src = SymbolQueries.sources[language] else { return [] }
+        guard let g = grammar(for: language), let src = SymbolQueries.sources[language] else { return [] }
         symbolCacheLock.lock()
         var query = symbolQueryCache[language]
         symbolCacheLock.unlock()
@@ -503,7 +541,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// - Returns: HTML for the inside of a `<code>` element, or nil when unsupported.
     @MainActor
     public static func highlightedHTML(_ code: String, language: CodeLanguage.Language) -> String? {
-        guard grammars[language] != nil, let hl = TreeSitterHighlighter(language: language) else { return nil }
+        guard grammar(for: language) != nil, let hl = TreeSitterHighlighter(language: language) else { return nil }
 
         let font = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
         let storage = NSTextStorage(string: code,
@@ -673,7 +711,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// Creates a highlighter for `language`, or nil when no grammar is loaded
     /// for it (check with ``supports(_:)``; fall back to ``SyntaxHighlighter``).
     public init?(language: CodeLanguage.Language) {
-        guard let g = Self.grammars[language] else { return nil }
+        guard let g = Self.grammar(for: language) else { return nil }
         grammar = g
         try? parser.setLanguage(g.language)
     }
@@ -1168,7 +1206,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         guard let content = try? String(contentsOf: url, encoding: .utf8) else {
             print("!! cannot read \(path)"); return
         }
-        guard let g = grammars[lang] else {
+        guard let g = grammar(for: lang) else {
             print("!! no tree-sitter grammar for \(lang.displayName) (\(url.lastPathComponent))"); return
         }
         let ns = content as NSString

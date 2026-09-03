@@ -95,7 +95,7 @@ public final class HighlightSession: @unchecked Sendable {
     /// ``TreeSitterHighlighter/supports(_:)``. Fall back to the stateless
     /// highlighter or ``SyntaxHighlighter`` when this returns nil.
     public init?(language: CodeLanguage.Language) {
-        guard let g = TreeSitterHighlighter.grammars[language] else { return nil }
+        guard let g = TreeSitterHighlighter.grammar(for: language) else { return nil }
         grammar = g
         self.language = language
         try? parser.setLanguage(g.language)

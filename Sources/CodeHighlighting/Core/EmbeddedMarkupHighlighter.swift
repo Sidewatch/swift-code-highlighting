@@ -126,7 +126,7 @@ public final class EmbeddedMarkupHighlighter: CodeHighlighter {
     /// screen); `clip` is the visible slice actually recolored.
     @MainActor
     private func paint(_ lang: Language, storage: NSTextStorage, ns: NSString, body: NSRange, clip: NSRange) {
-        if let grammar = TreeSitterHighlighter.grammars[lang],
+        if let grammar = TreeSitterHighlighter.grammar(for: lang),
            let tree = TreeSitterHighlighter.combinedParse(grammar, ns: ns, ranges: [body]) {
             // `combinedParse` restricts the parser to `body` via includedRanges,
             // so capture ranges come back in document coordinates already —

@@ -168,7 +168,7 @@ final class TreeSitterHighlighterTests: XCTestCase {
         try XCTSkipUnless(TreeSitterHighlighter.supports(.python), "Python grammar failed to load")
         let text = "# コメント 🙂\nclass Greeter:\n    def hello(self):\n        pass\n"
         let ns = text as NSString
-        let grammar = try XCTUnwrap(TreeSitterHighlighter.grammars[.python])
+        let grammar = try XCTUnwrap(TreeSitterHighlighter.grammar(for: .python))
         let parser = Parser()
         try parser.setLanguage(grammar.language)
         let root = try XCTUnwrap(parser.parse(text)?.rootNode)
