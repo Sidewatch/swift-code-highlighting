@@ -198,4 +198,15 @@ final class CompletionTests: XCTestCase {
         _ = provider.completions(for: "qq", text: "", language: .plainText)
         XCTAssertEqual(calls, 2)
     }
+
+    func testPHPLanguageConstructsHaveSignatures() {
+        // unset/isset/empty/echo/… are constructs, not functions; the hover and completion
+        // paths look them up in the same builtin list, so they must carry a signature.
+        let items = LanguageBuiltins.completions(for: .php)
+        for name in ["unset", "isset", "empty", "echo", "print", "list", "array", "exit", "require_once"] {
+            let item = items.first { $0.text == name }
+            XCTAssertNotNil(item, name)
+            XCTAssertFalse(item?.detail?.isEmpty ?? true, "\(name) has a signature")
+        }
+    }
 }

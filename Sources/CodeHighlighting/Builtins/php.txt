@@ -164,3 +164,8 @@ false
 null
 and
 or
+# Language constructs (not functions, but hovered and completed like them — PhpStorm shows them too)
+array	array(mixed ...$values): array
+die	die(string|int $status = 0): never
+exit	exit(string|int $status = 0): never
+eval	eval(string $code): mixed
