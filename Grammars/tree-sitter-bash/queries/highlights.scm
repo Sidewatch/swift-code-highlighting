@@ -54,3 +54,7 @@
   (command (_) @constant)
   (#match? @constant "^-")
 )
+
+; Sidewatch additions (4 Sep 2026): tokens the grammar defines but the upstream query left plain.
+; Appended last on purpose — the highlighter lets the highest pattern index win.
+[ "local" "declare" "readonly" "typeset" "export" "unset" "unsetenv" ] @function.builtin

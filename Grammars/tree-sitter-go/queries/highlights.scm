@@ -121,3 +121,7 @@
 ] @constant.builtin
 
 (comment) @comment
+
+; Sidewatch additions (4 Sep 2026): tokens the grammar defines but the upstream query left plain.
+; Appended last on purpose — the highlighter lets the highest pattern index win.
+[ "go" "defer" "select" "chan" "range" "fallthrough" "goto" "map" "interface" "struct" "const" "var" "type" "func" "package" "import" "return" "break" "continue" "if" "else" "for" "switch" "case" "default" ] @keyword

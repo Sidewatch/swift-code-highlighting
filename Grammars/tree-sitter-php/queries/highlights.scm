@@ -61,6 +61,7 @@
   "xor"
   "yield"
   "yield from"
+  "unset"
   (abstract_modifier)
   (final_modifier)
   (readonly_modifier)

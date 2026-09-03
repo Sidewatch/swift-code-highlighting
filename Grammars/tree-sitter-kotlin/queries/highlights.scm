@@ -376,3 +376,8 @@
 	(interpolation_expression_start) @punctuation.special
 	(interpolated_expression) @none
 	(interpolation_expression_end) @punctuation.special)
+
+; Sidewatch additions (4 Sep 2026): tokens the grammar defines but the upstream query left plain.
+; Appended last on purpose — the highlighter lets the highest pattern index win.
+[ "is" "in" "as" "as?" ] @keyword.operator
+[ "by" "companion" "operator" "infix" "internal" "external" "tailrec" "inline" "crossinline" "noinline" "reified" "vararg" "lateinit" "const" "open" "abstract" "override" "data" "sealed" "annotation" "enum" "suspend" "actual" "expect" "inner" "value" "private" "protected" "public" "final" "typealias" "init" "get" "set" "constructor" ] @keyword

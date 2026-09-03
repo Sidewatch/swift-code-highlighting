@@ -334,3 +334,8 @@
     "<"
     ">"
   ] @punctuation.bracket)
+
+; Sidewatch additions (4 Sep 2026): tokens the grammar defines but the upstream query left plain.
+; Appended last on purpose — the highlighter lets the highest pattern index win.
+[ "is" "as" "as?" "as!" "lazy" "actor" "associatedtype" "borrowing" "consuming" "async" "await" "inout" "some" "any" "nonisolated" "unowned" "weak" "convenience" "required" "indirect" "dynamic" "optional" "final" "open" "fileprivate" "internal" "private" "public" "static" "override" "mutating" "nonmutating" "prefix" "postfix" "infix" "typealias" "subscript" "operator" "precedencegroup" "repeat" "fallthrough" "try" ] @keyword
+[ (throws) ] @keyword

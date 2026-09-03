@@ -152,3 +152,8 @@
   "%w("
   "%i("
 ] @punctuation.bracket
+
+; Sidewatch additions (4 Sep 2026): tokens the grammar defines but the upstream query left plain.
+; Appended last on purpose — the highlighter lets the highest pattern index win.
+[ "not" "and" "or" ] @keyword.operator
+[ "undef" "BEGIN" "END" "alias" "defined?" "redo" "retry" ] @keyword

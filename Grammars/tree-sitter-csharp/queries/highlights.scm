@@ -212,3 +212,7 @@
 ;; Method calls
 
 (invocation_expression (member_access_expression name: (identifier) @function))
+
+; Sidewatch additions (4 Sep 2026): tokens the grammar defines but the upstream query left plain.
+; Appended last on purpose — the highlighter lets the highest pattern index win.
+[ "fixed" "unsafe" "checked" "unchecked" "stackalloc" "lock" "sizeof" "typeof" "is" "as" "in" "out" "ref" "params" "when" "where" "yield" "await" "async" "operator" "implicit" "explicit" "extern" "volatile" "unmanaged" "notnull" "with" "init" "required" "file" "scoped" "managed" "global" "alias" "add" "remove" "get" "set" "partial" "record" "sealed" "virtual" "override" "abstract" "readonly" "const" "static" "new" "base" "this" "event" "delegate" "default" ] @keyword

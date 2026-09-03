@@ -1200,6 +1200,23 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// Headless validation: prints every token → capture → role for a file so
     /// highlighting can be verified across languages without opening the app.
     /// Invoked via `Sidewatch --dump-captures <file>`.
+    /// Number of ERROR nodes tree-sitter produced for `text` — a probe that judges highlight
+    /// coverage must know when its own sample does not parse (captures vanish around errors).
+    public static func parseErrorCount(in text: String, language: CodeLanguage.Language) -> Int {
+        guard let g = grammar(for: language) else { return -1 }
+        let parser = Parser()
+        try? parser.setLanguage(g.language)
+        guard let tree = parser.parse(text), let root = tree.rootNode else { return -1 }
+        var count = 0
+        func walk(_ node: Node) {
+            if node.nodeType == "ERROR" { count += 1 }
+            guard node.hasError else { return }   // only descend where an error lives
+            for i in 0..<node.childCount { if let c = node.child(at: i) { walk(c) } }
+        }
+        walk(root)
+        return count
+    }
+
     public static func dumpCaptures(path: String) {
         let url = URL(fileURLWithPath: path)
         let lang = CodeLanguage.Language.detect(for: url)

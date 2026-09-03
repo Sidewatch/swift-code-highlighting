@@ -277,3 +277,6 @@
 (record_type_field
   (identifier) @variable)
 
+; Sidewatch additions (4 Sep 2026): tokens the grammar defines but the upstream query left plain.
+; Appended last on purpose — the highlighter lets the highest pattern index win.
+[ "deferred" "hide" "show" "part" "async" "await" "yield" "late" "required" "covariant" "external" "factory" "operator" "typedef" "mixin" "extension" "on" "get" "set" "static" "final" "abstract" "base" "interface" "sealed" "when" "library" "export" "import" "as" "is" "this" "super" "new" "throw" "enum" "extends" "implements" "with" "var" ] @keyword
