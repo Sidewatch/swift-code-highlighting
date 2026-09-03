@@ -91,6 +91,15 @@ public final class ProjectSymbolIndex {
     private nonisolated static let skipLock = NSLock()
     private nonisolated(unsafe) static var storedSkipDirs: Set<String> = defaultSkipDirs
 
+    /// A host-supplied exclusion on top of the name list — `.gitignore` / `.ignore` rules,
+    /// which need the ROOT to resolve a path against. Called for every entry the enumerator
+    /// yields (`isDirectory` true prunes the subtree). Nil means no extra exclusion.
+    public nonisolated static var isExcluded: (@Sendable (_ root: URL, _ url: URL, _ isDirectory: Bool) -> Bool)? {
+        get { skipLock.lock(); defer { skipLock.unlock() }; return storedIsExcluded }
+        set { skipLock.lock(); defer { skipLock.unlock() }; storedIsExcluded = newValue }
+    }
+    private nonisolated(unsafe) static var storedIsExcluded: (@Sendable (URL, URL, Bool) -> Bool)?
+
     /// A path key that stays stable across the file's deletion. `standardizedFileURL`
     /// alone is existence-dependent on macOS (`/private/var/...` is only collapsed
     /// to `/var/...` while the path exists), so a just-deleted file's key would
@@ -148,12 +157,17 @@ public final class ProjectSymbolIndex {
         var files: [String: Set<String>] = [:]
         var count = 0
         let fm = FileManager.default
-        let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
+        let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey, .isDirectoryKey]
         let skip = skipDirs   // read once: the scan should see one consistent list
+        let excluded = isExcluded
         outer: for root in roots {
             guard let en = fm.enumerator(at: root, includingPropertiesForKeys: keys, options: [.skipsHiddenFiles]) else { continue }
             for case let url as URL in en {
                 if skip.contains(url.lastPathComponent) { en.skipDescendants(); continue }
+                if let excluded {
+                    let isDir = (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
+                    if excluded(root, url, isDir) { if isDir { en.skipDescendants() }; continue }
+                }
                 let lang = CodeLanguage.Language.detect(for: url)
                 guard SymbolQueries.sources[lang] != nil else { continue }
                 let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0

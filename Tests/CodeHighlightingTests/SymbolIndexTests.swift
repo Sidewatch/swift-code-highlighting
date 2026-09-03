@@ -161,6 +161,35 @@ final class SymbolIndexTests: XCTestCase {
         XCTAssertEqual(idx.definitions(of: "nonexistent").count, 0)
     }
 
+    func testBuildHonoursHostExclusion() throws {
+        try XCTSkipUnless(TreeSitterHighlighter.supports(.javascript))
+        let dir = makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let gen = dir.appendingPathComponent("generated")
+        try FileManager.default.createDirectory(at: gen, withIntermediateDirectories: true)
+        try "function fromGenerator() {}\n".write(to: gen.appendingPathComponent("out.js"), atomically: true, encoding: .utf8)
+        try "function secret() {}\n".write(to: dir.appendingPathComponent("secret.js"), atomically: true, encoding: .utf8)
+        try "function mine() {}\n".write(to: dir.appendingPathComponent("app.js"), atomically: true, encoding: .utf8)
+
+        // A host rule (what .gitignore would say): the generated directory and secret.js.
+        var seenRoots = Set<String>()
+        let lock = NSLock()
+        ProjectSymbolIndex.isExcluded = { root, url, isDir in
+            lock.lock(); seenRoots.insert(root.path); lock.unlock()
+            return (isDir && url.lastPathComponent == "generated") || url.lastPathComponent == "secret.js"
+        }
+        defer { ProjectSymbolIndex.isExcluded = nil }
+        let idx = ProjectSymbolIndex()
+        let built = expectation(description: "build completes")
+        idx.build(root: dir) { built.fulfill() }
+        wait(for: [built], timeout: 10)
+
+        XCTAssertEqual(idx.definitions(of: "mine").count, 1)
+        XCTAssertEqual(idx.definitions(of: "fromGenerator").count, 0, "an excluded directory is pruned")
+        XCTAssertEqual(idx.definitions(of: "secret").count, 0, "an excluded file is skipped")
+        XCTAssertEqual(seenRoots, [dir.path], "the hook is told which root the path belongs to")
+    }
+
     func testBuildSkipsDependencyDirectories() throws {
         try XCTSkipUnless(TreeSitterHighlighter.supports(.javascript))
         let dir = makeTempDir()
