@@ -37,7 +37,11 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// A loaded grammar: the language pointer plus its compiled highlight and
     /// (optional) injection queries. Internal (not private) so ``HighlightSession``
     /// can share the loaded grammars and tests can build one from a hand-compiled query.
-    struct Grammar { let language: SwiftTreeSitter.Language; let highlights: Query; let injections: Query? }
+    struct Grammar {
+        let language: SwiftTreeSitter.Language; let highlights: Query; let injections: Query?
+        /// HTML: also scan its text for Underscore / `wp.template` tags (see `templateTagHits`).
+        var templateTags = false
+    }
 
     /// Grammars we bundle. Add a package + a line here to support a language.
     /// `bundle` is the SwiftPM resource-bundle name: `<Product>_<Product>`.
@@ -46,7 +50,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     nonisolated(unsafe) static let grammarBuilders: [CodeLanguage.Language: () -> Grammar?] = {
         // `inherits` prepends base grammars' highlights (TS overlays JS; C++ overlays C).
         // `injectHTMLText` adds an HTML injection for inline `text` (PHP templates).
-        func g(_ ptr: OpaquePointer?, _ product: String, inherits: [String] = [], injectHTMLText: Bool = false, extra: String = "") -> Grammar? {
+        func g(_ ptr: OpaquePointer?, _ product: String, inherits: [String] = [], injectHTMLText: Bool = false, extra: String = "", templateTags: Bool = false) -> Grammar? {
             guard let ptr else { return nil }
             let language = SwiftTreeSitter.Language(ptr)
             func build(_ src: String) -> Query? {
@@ -66,7 +70,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
             guard let highlights = buildHighlights(combined) ?? buildHighlights(own) else { return nil }
             var injSrc = queryText(product, "injections.scm") ?? ""
             if injectHTMLText { injSrc += "\n((text) @injection.content (#set! injection.language \"html\"))\n" }
-            return Grammar(language: language, highlights: highlights, injections: injSrc.isEmpty ? nil : build(injSrc))
+            return Grammar(language: language, highlights: highlights, injections: injSrc.isEmpty ? nil : build(injSrc), templateTags: templateTags)
         }
         var m: [CodeLanguage.Language: () -> Grammar?] = [:]
         m[.json]       = { g(tree_sitter_json(),       "TreeSitterJSON",
@@ -89,7 +93,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         m[.python]     = { g(tree_sitter_python(),     "TreeSitterPython") }
         m[.rust]       = { g(tree_sitter_rust(),       "TreeSitterRust") }
         m[.go]         = { g(tree_sitter_go(),         "TreeSitterGo") }
-        m[.html]       = { g(tree_sitter_html(),       "TreeSitterHTML") }
+        m[.html]       = { g(tree_sitter_html(),       "TreeSitterHTML", templateTags: true) }
         m[.bash]      = { g(tree_sitter_bash(),       "TreeSitterBash") }
         m[.c]          = { g(tree_sitter_c(),          "TreeSitterC") }
         m[.java]       = { g(tree_sitter_java(),       "TreeSitterJava") }
@@ -1014,8 +1018,14 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     static func collectInjectionHits(_ g: Grammar, tree: MutableTree, source ns: NSString,
                                      offset: Int, clip: NSRange, depth: Int,
                                      nextBase: inout Int) -> [Hit] {
-        guard depth < 3, let injQuery = g.injections else { return [] }
+        guard depth < 3 else { return [] }
         var hits: [Hit] = []
+        // A top-level HTML document owns all of `ns`; injected HTML gets its ranges below.
+        if depth == 0, g.templateTags {
+            hits += templateTagHits(source: ns, within: [NSRange(location: 0, length: ns.length)],
+                                    offset: offset, clip: clip, nextBase: &nextBase)
+        }
+        guard let injQuery = g.injections else { return hits }
         let sourceClip = NSRange(location: max(0, clip.location - offset), length: clip.length)
         for site in injectionSites(injQuery, tree: tree, ns: ns, clip: sourceClip) {
             guard let sub = grammarForInjection(site.name) else { continue }
@@ -1027,6 +1037,51 @@ public final class TreeSitterHighlighter: CodeHighlighter {
                                 offset: offset, clip: clip, nextBase: &nextBase)
             hits += collectInjectionHits(sub, tree: subTree, source: ns, offset: offset,
                                          clip: clip, depth: depth + 1, nextBase: &nextBase)
+            if sub.templateTags {
+                hits += templateTagHits(source: ns, within: site.ranges, offset: offset, clip: clip, nextBase: &nextBase)
+            }
+        }
+        return hits
+    }
+
+    /// Underscore / `wp.template` tags — `<# js #>`, `{{ expr }}`, `{{{ expr }}}` — are plain text
+    /// to the HTML grammar, and WordPress core's Customizer and media templates are made of them
+    /// (4 Sep 2026: a WP_Customize control's whole template read as uncoloured). Found by regex
+    /// within the HTML-owned `ranges`. All `<# #>` fragments parse as ONE JavaScript document
+    /// (combined ranges), so `<# if ( x ) { #> … <# } #>` is a valid program across fragments;
+    /// each `{{ }}` interpolation parses alone, as the expression it is.
+    nonisolated(unsafe) private static let templateTagRegex = try! NSRegularExpression(
+        pattern: #"<#([\s\S]*?)#>|\{\{\{?([\s\S]*?)\}\}\}?"#)
+
+    /// (`<# #>` fragments, `{{ }}` fragments), each ascending and non-overlapping.
+    static func templateTagRanges(in ns: NSString, within ranges: [NSRange]) -> (code: [NSRange], expressions: [NSRange]) {
+        var code: [NSRange] = [], expressions: [NSRange] = []
+        let text = ns as String
+        for r in ranges where r.length > 0 && NSMaxRange(r) <= ns.length {
+            for m in templateTagRegex.matches(in: text, range: r) {
+                let c = m.range(at: 1), e = m.range(at: 2)
+                if c.location != NSNotFound, c.length > 0 { code.append(c) }
+                if e.location != NSNotFound, e.length > 0 { expressions.append(e) }
+            }
+        }
+        return (mergeAscending(code), mergeAscending(expressions))
+    }
+
+    @MainActor
+    static func templateTagHits(source ns: NSString, within ranges: [NSRange], offset: Int, clip: NSRange,
+                                nextBase: inout Int) -> [Hit] {
+        let tags = templateTagRanges(in: ns, within: ranges)
+        guard !(tags.code.isEmpty && tags.expressions.isEmpty), let js = grammarForInjection("javascript") else { return [] }
+        func intersectsClip(_ rs: [NSRange]) -> Bool {
+            rs.contains { NSIntersectionRange(NSRange(location: offset + $0.location, length: $0.length), clip).length > 0 }
+        }
+        var hits: [Hit] = []
+        if !tags.code.isEmpty, intersectsClip(tags.code), let tree = combinedParse(js, ns: ns, ranges: tags.code) {
+            hits += collectHits(js.highlights, tree: tree, source: ns, offset: offset, clip: clip, nextBase: &nextBase)
+        }
+        for e in tags.expressions where intersectsClip([e]) {
+            guard let tree = combinedParse(js, ns: ns, ranges: [e]) else { continue }
+            hits += collectHits(js.highlights, tree: tree, source: ns, offset: offset, clip: clip, nextBase: &nextBase)
         }
         return hits
     }

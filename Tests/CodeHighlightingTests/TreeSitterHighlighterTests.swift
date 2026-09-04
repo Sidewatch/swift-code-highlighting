@@ -323,6 +323,22 @@ final class TreeSitterHighlighterTests: XCTestCase {
         XCTAssertNil(colorAt(s, 0), "nothing painted inside the preamble")
     }
 
+    /// WP Customizer / media templates: `<# js #>` statements and `{{ }}` / `{{{ }}}` expressions
+    /// inside the HTML a PHP file embeds — plain text to every grammar until 4 Sep 2026. The
+    /// grammar queries are not reachable under `swift test` (Bundle.main is the xctest runner),
+    /// so the scanner is tested here and the painted result by `Sidewatch --dump-captures`.
+    func testTemplateTagScannerSeparatesCodeFragmentsFromExpressions() {
+        let src = "<label for=\"{{ p }}_e\"><# if ( data.label ) { #>{{{ data.label }}}<# } #></label>\n<# var q = 1;\n   q++; #>"
+        let ns = src as NSString
+        let tags = TreeSitterHighlighter.templateTagRanges(in: ns, within: [NSRange(location: 0, length: ns.length)])
+        XCTAssertEqual(tags.code.map { ns.substring(with: $0) }, [" if ( data.label ) { ", " } ", " var q = 1;\n   q++; "])
+        XCTAssertEqual(tags.expressions.map { ns.substring(with: $0) }, [" p ", " data.label "])
+        // Only HTML-owned ranges are scanned: a `<# #>` outside them is not a template tag.
+        let partial = TreeSitterHighlighter.templateTagRanges(in: ns, within: [NSRange(location: 0, length: 20)])
+        XCTAssertEqual(partial.code, [])
+        XCTAssertEqual(partial.expressions.map { ns.substring(with: $0) }, [" p "])
+    }
+
     // MARK: - 3. Range clamping at document/clip edges
 
     func testApplyHitsClampsPartialOverlapToClip() {
