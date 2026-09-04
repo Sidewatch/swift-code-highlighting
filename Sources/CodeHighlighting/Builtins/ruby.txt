@@ -1,0 +1,142 @@
+# Ruby — Kernel and core methods, common classes.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+def
+end
+class
+module
+if
+elsif
+else
+unless
+while
+until
+for
+in
+do
+return
+yield
+begin
+rescue
+ensure
+raise
+self
+nil
+true
+false
+and
+or
+not
+then
+case
+when
+next
+break
+redo
+retry
+super
+lambda
+proc
+require
+require_relative
+include
+extend
+private
+public
+protected
+alias
+puts	puts(*objs) -> nil — each on its own line
+print	print(*objs) -> nil — no newline
+p	p(*objs) -> obj — inspect form; returns its argument
+pp	pp(*objs) -> obj — pretty-printed inspect
+gets	gets -> String | nil — a line from stdin
+attr_accessor	attr_accessor :name, … — reader and writer methods
+attr_reader	attr_reader :name, …
+attr_writer	attr_writer :name, …
+each	each { |item| … } -> self
+each_with_index	each_with_index { |item, i| … }
+each_pair	each_pair { |key, value| … } — Hash
+map	map { |item| … } -> Array  (collect)
+select	select { |item| … } -> Array | Hash  (filter)
+reject	reject { |item| … } -> Array
+find	find { |item| … } -> item | nil  (detect)
+reduce	reduce(initial = nil) { |acc, item| … } — reduce(:+)  (inject)
+sum	sum(init = 0) { |item| … }
+min	min(n = nil) / min_by { }
+max	max(n = nil) / max_by { }
+sort	sort { |a, b| a <=> b } -> Array
+sort_by	sort_by { |item| key } -> Array
+uniq	uniq -> Array — uniq { |item| key }
+flatten	flatten(depth = nil) -> Array
+compact	compact -> Array — without nils
+first	first(n = nil)
+last	last(n = nil)
+take	take(n) -> Array
+drop	drop(n) -> Array
+include?	include?(obj) -> true | false
+empty?	empty? -> true | false
+any?	any? { |item| … } -> true | false
+all?	all? { |item| … } -> true | false
+none?	none? { |item| … } -> true | false
+nil?	nil? -> true | false
+count	count(obj = nil) { |item| … } -> Integer
+size	size -> Integer  (length)
+length	length -> Integer
+push	push(*objs) -> self  (<<, append)
+pop	pop(n = nil) -> obj
+shift	shift(n = nil) -> obj — from the front
+unshift	unshift(*objs) -> self — onto the front
+join	join(separator = '') -> String
+split	split(pattern = nil, limit = 0) -> Array
+strip	strip -> String — leading and trailing whitespace
+chomp	chomp(suffix = $/) -> String — trailing newline
+gsub	gsub(pattern, replacement) / gsub(pattern) { |m| … } -> String — all matches
+sub	sub(pattern, replacement) -> String — first match
+upcase	upcase -> String
+downcase	downcase -> String
+capitalize	capitalize -> String
+start_with?	start_with?(*prefixes) -> true | false
+end_with?	end_with?(*suffixes) -> true | false
+to_s	to_s -> String
+to_i	to_i -> Integer
+to_f	to_f -> Float
+to_a	to_a -> Array
+to_sym	to_sym -> Symbol
+to_h	to_h -> Hash
+keys	keys -> Array
+values	values -> Array
+fetch	fetch(key, default = nil) { |key| … } — raises KeyError when missing and no default
+dig	dig(key, …) -> obj | nil — nested lookup
+merge	merge(other, …) { |key, old, new| … } -> Hash
+times	times { |i| … } — Integer
+upto	upto(limit) { |i| … }
+downto	downto(limit) { |i| … }
+step	step(limit, step) { |i| … }
+freeze	freeze -> self — immutable from now on
+frozen?	frozen? -> true | false
+dup	dup -> shallow copy, unfrozen
+is_a?	is_a?(klass) -> true | false  (kind_of?)
+respond_to?	respond_to?(symbol, include_all = false) -> true | false
+send	send(symbol, *args, &block) — call any method, private included  (public_send)
+tap	tap { |x| … } -> x — side effects mid-chain
+then	then { |x| … } -> result  (yield_self)
+format	format(format_string, *args) -> String  (sprintf)
+rand	rand(max = 0) -> Float | Integer
+sleep	sleep(seconds) -> Integer
+exit	exit(status = true) — raises SystemExit
+raise	raise(ExceptionClass, 'message') / raise 'message' — RuntimeError
+String	class String — mutable text; "interp #{x}", 'literal', %w[]
+Integer	class Integer — arbitrary precision
+Float	class Float
+Array	class Array — [1, 2], Array.new(n, default)
+Hash	class Hash — { key: value }, Hash.new(default)
+Symbol	class Symbol — :name; interned, immutable
+Range	class Range — 1..10 inclusive, 1...10 exclusive
+Proc	class Proc — Proc.new { }, proc { }, lambda { }, ->(x) { }; .call, .()
+Struct	Struct.new(:a, :b, keyword_init: true)
+Enumerable	module Enumerable — define each and get map/select/reduce/sort/…
+Comparable	module Comparable — define <=> and get < <= == > >= between?
+Kernel	module Kernel — puts, print, p, require, raise, loop, rand, sleep
+Time	class Time — Time.now, Time.at(epoch), strftime
+File	class File — File.read(path), File.write(path, str), File.open(path, 'w') { |f| }, File.exist?
+Dir	class Dir — Dir.glob('**/*.rb'), Dir.pwd, Dir.mkdir
+JSON	module JSON — JSON.parse(str, symbolize_names: true), JSON.generate(obj), obj.to_json

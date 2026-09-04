@@ -1,0 +1,160 @@
+# C# — common BCL and LINQ (hover word is the unqualified name), keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+using
+namespace
+class
+struct
+interface
+enum
+record
+public
+private
+protected
+internal
+static
+readonly
+const
+var
+new
+return
+if
+else
+for
+foreach
+while
+do
+switch
+case
+default
+break
+continue
+try
+catch
+finally
+throw
+async
+await
+void
+int
+long
+double
+float
+decimal
+bool
+string
+char
+object
+null
+true
+false
+is
+as
+in
+out
+ref
+params
+this
+base
+override
+virtual
+abstract
+sealed
+partial
+get
+set
+init
+where
+yield
+lock
+nameof
+typeof
+dynamic
+WriteLine	Console.WriteLine(string value)  ·  WriteLine(string format, params object[] args)
+Write	Console.Write(string value)
+ReadLine	Console.ReadLine() -> string? — null at end of input
+Length	Length: int — string / array
+Substring	Substring(int startIndex, int length) -> string
+IndexOf	IndexOf(string value) -> int — -1 when absent
+Contains	Contains(string value) -> bool  ·  Enumerable.Contains(item)
+Split	Split(char separator, StringSplitOptions options = None) -> string[]
+Trim	Trim() -> string
+ToUpper	ToUpper() -> string
+ToLower	ToLower() -> string
+Replace	Replace(string oldValue, string newValue) -> string
+StartsWith	StartsWith(string value) -> bool
+EndsWith	EndsWith(string value) -> bool
+IsNullOrEmpty	string.IsNullOrEmpty(string? value) -> bool
+IsNullOrWhiteSpace	string.IsNullOrWhiteSpace(string? value) -> bool
+Join	string.Join(string separator, IEnumerable<T> values) -> string
+Format	string.Format(string format, params object[] args) -> string — prefer $"…"
+List	class List<T> — Add, Remove, Count, Contains, IndexOf, Clear, AddRange, Find, Sort
+Add	Add(T item)  ·  Dictionary.Add(key, value)
+Remove	Remove(T item) -> bool
+Count	Count: int (property)  ·  Count() (LINQ)
+Clear	Clear()
+AddRange	AddRange(IEnumerable<T> collection)
+Find	Find(Predicate<T> match) -> T?
+Dictionary	class Dictionary<TKey, TValue> — indexer, TryGetValue, ContainsKey, Keys, Values
+TryGetValue	TryGetValue(TKey key, out TValue value) -> bool
+ContainsKey	ContainsKey(TKey key) -> bool
+Keys	Keys: KeyCollection
+Values	Values: ValueCollection
+Where	Where(Func<T, bool> predicate) -> IEnumerable<T>
+Select	Select(Func<T, TResult> selector) -> IEnumerable<TResult>
+SelectMany	SelectMany(Func<T, IEnumerable<TResult>> selector)
+OrderBy	OrderBy(Func<T, TKey> keySelector)  ·  ThenBy
+OrderByDescending	OrderByDescending(Func<T, TKey> keySelector)
+First	First() -> T  ·  First(predicate) — throws when none
+FirstOrDefault	FirstOrDefault() -> T?  ·  FirstOrDefault(predicate)
+Single	Single() -> T — throws unless exactly one
+Any	Any() -> bool  ·  Any(predicate)
+All	All(Func<T, bool> predicate) -> bool
+Sum	Sum()  ·  Sum(selector)
+Max	Max()  ·  Math.Max(a, b)
+Min	Min()  ·  Math.Min(a, b)
+ToList	ToList() -> List<T>
+ToArray	ToArray() -> T[]
+ToDictionary	ToDictionary(keySelector, elementSelector)
+GroupBy	GroupBy(Func<T, TKey> keySelector) -> IEnumerable<IGrouping<TKey, T>>
+Distinct	Distinct() -> IEnumerable<T>
+Skip	Skip(int count)
+Take	Take(int count)
+Aggregate	Aggregate(seed, Func<TAcc, T, TAcc> func)
+Task	class Task / Task<TResult> — await task; Task.Run, Task.Delay, Task.WhenAll, Task.CompletedTask
+Run	Task.Run(Func<T> function) -> Task<T> — thread pool
+Delay	Task.Delay(int millisecondsDelay) -> Task
+WhenAll	Task.WhenAll(params Task[] tasks) -> Task
+ConfigureAwait	ConfigureAwait(bool continueOnCapturedContext)
+Math	class Math — Abs, Max, Min, Pow, Sqrt, Round, Floor, Ceiling, PI
+Abs	Math.Abs(x)
+Pow	Math.Pow(double x, double y) -> double
+Sqrt	Math.Sqrt(double d) -> double
+Round	Math.Round(double value, int digits = 0) -> double
+Parse	int.Parse(string s) -> int — FormatException; also double/long/DateTime.Parse
+TryParse	int.TryParse(string? s, out int result) -> bool
+ToInt32	Convert.ToInt32(object value) -> int
+Exception	class Exception — Message, InnerException, StackTrace; throw new Exception("…")
+ArgumentException	class ArgumentException — ArgumentNullException.ThrowIfNull(arg)
+InvalidOperationException	class InvalidOperationException
+StringBuilder	class StringBuilder — Append, AppendLine, ToString()
+Append	Append(object value) -> StringBuilder
+File	static class File — ReadAllText, WriteAllText, ReadAllLines, Exists, Delete, ReadAllTextAsync
+ReadAllText	File.ReadAllText(string path) -> string
+WriteAllText	File.WriteAllText(string path, string contents)
+Exists	File.Exists(string path) -> bool  ·  Directory.Exists
+Combine	Path.Combine(params string[] paths) -> string
+DateTime	struct DateTime — Now, UtcNow, Today, AddDays, ToString("yyyy-MM-dd"); prefer DateTimeOffset
+Now	DateTime.Now  ·  DateTimeOffset.Now
+UtcNow	DateTime.UtcNow
+Guid	struct Guid — Guid.NewGuid(), Guid.Parse(s), Guid.Empty
+NewGuid	Guid.NewGuid() -> Guid
+IEnumerable	interface IEnumerable<T> — GetEnumerator(); foreach and LINQ
+IList	interface IList<T>
+IDictionary	interface IDictionary<TKey, TValue>
+Action	delegate Action<T1, …> — returns void
+Func	delegate Func<T1, …, TResult>
+Nullable	Nullable<T> / T? — HasValue, Value, GetValueOrDefault()
+GetEnvironmentVariable	Environment.GetEnvironmentVariable(string variable) -> string?
+ToString	ToString() -> string  ·  ToString(string format)
+Equals	Equals(object? obj) -> bool — pair with GetHashCode()
+GetHashCode	GetHashCode() -> int — HashCode.Combine(a, b)

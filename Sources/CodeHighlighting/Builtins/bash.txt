@@ -1,0 +1,105 @@
+# Bash — builtins, common commands, variables, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+if
+then
+else
+elif
+fi
+for
+while
+until
+do
+done
+case
+esac
+in
+function
+select
+time
+coproc
+echo	echo [-neE] [arg …] — -n no newline, -e escapes; printf is more portable
+printf	printf FORMAT [ARG …] — %s %d %q %b; printf -v var to assign
+read	read [-r] [-p prompt] [-a array] [-t timeout] [name …] — -r keeps backslashes; IFS= read -r line
+cd	cd [dir] — cd - for the previous directory
+pwd	pwd [-P] — physical path
+test	test EXPR  ·  [ EXPR ]  ·  [[ EXPR ]] — -f file, -d dir, -z empty, -n non-empty, = != -eq -lt
+[[	[[ expr ]] — no word splitting; == globs, =~ regex, && ||
+let	let "x = x + 1"  ·  (( x++ )) — arithmetic
+eval	eval STRING — parses and runs; dangerous with untrusted input
+exec	exec COMMAND — replace the shell  ·  exec 3< file — redirect a descriptor
+trap	trap 'cleanup' EXIT  ·  trap 'handler' INT TERM ERR
+set	set -euo pipefail — exit on error, unset vars, pipe failures; set -x traces
+shopt	shopt -s nullglob globstar extglob
+getopts	while getopts "ab:" opt; do case $opt in …; esac; done — $OPTARG, $OPTIND
+local	local [-r] name[=value] — function scope
+export	export NAME[=value] — into the environment of children
+readonly	readonly NAME[=value]
+declare	declare -a array, -A assoc, -i integer, -r readonly, -x export, -p print
+unset	unset [-v] NAME  ·  unset -f function
+shift	shift [n] — drop positional parameters
+return	return [n] — from a function; $? for the caller
+exit	exit [n] — 0 success, 1–255 failure
+source	source FILE  ·  . FILE — run in the current shell
+alias	alias name='command'
+type	type NAME — alias, keyword, function, builtin or file
+command	command -v NAME — path or name; command NAME bypasses functions
+wait	wait [pid|%job] — for background jobs; $! is the last pid
+kill	kill [-s SIG] pid  ·  kill -9 pid  ·  kill %1
+jobs	jobs [-l] — background jobs
+bg	bg [%job]
+fg	fg [%job]
+pushd	pushd DIR — push and cd; popd returns
+popd	popd
+umask	umask [mode] — default permission mask
+ulimit	ulimit -n 4096 — resource limits
+history	history [n]  ·  !! !$ !n
+ls	ls [-lah] [path …] — -l long, -a hidden, -h human sizes, -t by time
+cat	cat [file …] — concatenate to stdout
+grep	grep [-rniEvlc] PATTERN [file …] — -r recursive, -n line numbers, -i ignore case, -E extended, -v invert
+sed	sed [-i] 's/old/new/g' file — -i in place (macOS: -i '')
+awk	awk '{ print $1 }' file — -F sep; NR, NF, BEGIN{}, END{}
+find	find PATH [-name PAT] [-type f|d] [-mtime N] [-exec cmd {} \;]
+xargs	xargs [-0] [-n N] [-I {}] COMMAND — pair with find -print0
+sort	sort [-n] [-r] [-k N] [-u] [file]
+uniq	uniq [-c] — adjacent duplicates; sort first
+head	head [-n N] [file]
+tail	tail [-n N] [-f] [file] — -f follows
+wc	wc [-l] [-w] [-c] [file]
+cut	cut -d DELIM -f FIELDS  ·  cut -c RANGE
+tr	tr SET1 SET2 — tr -d to delete, tr a-z A-Z
+tee	tee [-a] FILE — copy stdin to a file and stdout
+mkdir	mkdir [-p] DIR — -p parents, no error if present
+rm	rm [-rf] PATH — -r recursive, -f force
+cp	cp [-r] SRC DST
+mv	mv SRC DST
+chmod	chmod [-R] MODE PATH — 755, u+x
+chown	chown [-R] USER[:GROUP] PATH
+touch	touch FILE — create or update mtime
+ln	ln -s TARGET LINK — symbolic link
+tar	tar -czf out.tgz DIR  ·  tar -xzf in.tgz
+curl	curl [-sSL] [-o FILE] [-H hdr] [-d data] URL
+wget	wget [-O FILE] URL
+ssh	ssh [-i key] [-p port] user@host [command]
+scp	scp [-r] SRC user@host:DST
+rsync	rsync -avz [--delete] SRC/ DST/ — trailing slash copies contents
+ps	ps aux  ·  ps -ef — running processes
+env	env — print the environment  ·  env VAR=x command
+date	date [+FORMAT] — date +%Y-%m-%d
+sleep	sleep SECONDS
+basename	basename PATH [suffix]
+dirname	dirname PATH
+realpath	realpath PATH — absolute, symlinks resolved
+which	which COMMAND — prefer command -v
+mktemp	mktemp [-d] — temp file or directory
+diff	diff [-u] FILE1 FILE2
+seq	seq [FIRST [STEP]] LAST
+true	true — exit 0
+false	false — exit 1
+HOME	$HOME — the user's home directory
+PATH	$PATH — colon-separated command search path
+PWD	$PWD — current directory
+IFS	$IFS — field separators for word splitting (space, tab, newline)
+RANDOM	$RANDOM — 0..32767
+BASH_SOURCE	${BASH_SOURCE[0]} — the running script's path; dirname for its directory
+LINENO	$LINENO — current line number
+OSTYPE	$OSTYPE — darwin24, linux-gnu

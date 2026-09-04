@@ -1,0 +1,112 @@
+# C++ additions on top of c.txt (loaded after it): std library, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+class
+namespace
+template
+typename
+public
+private
+protected
+virtual
+override
+final
+new
+delete
+this
+nullptr
+using
+constexpr
+consteval
+static_cast
+dynamic_cast
+reinterpret_cast
+const_cast
+decltype
+noexcept
+throw
+try
+catch
+operator
+friend
+explicit
+mutable
+co_await
+co_return
+concept
+requires
+cout	std::cout << x << '\n' — buffered stdout
+cin	std::cin >> x — stdin
+cerr	std::cerr << x — unbuffered stderr
+endl	std::endl — newline AND flush; '\n' is cheaper
+string	std::string — size(), substr(pos, n), find(s), +, ==, c_str(), starts_with() (C++20)
+string_view	std::string_view — non-owning view of characters; cheap to pass by value
+vector	std::vector<T> — contiguous, growable; push_back, emplace_back, size, [], at, reserve
+array	std::array<T, N> — fixed size on the stack; size(), []
+deque	std::deque<T> — push_front/push_back
+list	std::list<T> — doubly linked
+map	std::map<K, V> — sorted tree; [], at, find, count, contains (C++20), emplace
+unordered_map	std::unordered_map<K, V> — hash table; [], find, count, contains
+set	std::set<T> — sorted unique; insert, find, count
+unordered_set	std::unordered_set<T>
+pair	std::pair<A, B> — first, second; std::make_pair
+tuple	std::tuple<Ts...> — std::get<i>(t), structured bindings auto [a, b] = t
+optional	std::optional<T> — has_value(), value(), value_or(d), *opt; std::nullopt
+variant	std::variant<Ts...> — std::get<T>, std::visit, index()
+unique_ptr	std::unique_ptr<T> — sole owner; std::make_unique<T>(args); movable, not copyable
+shared_ptr	std::shared_ptr<T> — reference counted; std::make_shared<T>(args)
+weak_ptr	std::weak_ptr<T> — non-owning; lock() -> shared_ptr
+make_unique	std::make_unique<T>(args...) -> std::unique_ptr<T>
+make_shared	std::make_shared<T>(args...) -> std::shared_ptr<T>
+move	std::move(x) — cast to rvalue; the source is left valid but unspecified
+forward	std::forward<T>(x) — perfect forwarding
+swap	std::swap(a, b)
+sort	std::sort(first, last, comp = std::less{}) — not stable; std::stable_sort
+find	std::find(first, last, value) -> iterator — last when absent  ·  container.find(key)
+find_if	std::find_if(first, last, pred) -> iterator
+for_each	std::for_each(first, last, f)
+transform	std::transform(first, last, out, f)
+accumulate	std::accumulate(first, last, init, op = +) — <numeric>
+begin	begin() -> iterator  ·  std::begin(c)
+end	end() -> iterator one past the last  ·  std::end(c)
+size	size() -> size_t  ·  std::size(c)
+empty	empty() -> bool
+push_back	push_back(const T& value)
+emplace_back	emplace_back(args...) — constructs in place
+pop_back	pop_back()
+front	front() -> T&
+back	back() -> T&
+at	at(i) -> T& — bounds-checked, throws std::out_of_range
+insert	insert(pos, value)  ·  map/set: insert(value) -> pair<iterator, bool>
+erase	erase(pos)  ·  erase(first, last)  ·  map: erase(key)
+clear	clear()
+reserve	reserve(n) — capacity without size
+resize	resize(n, value = T{})
+count	count(key) -> size_t  ·  std::count(first, last, value)
+contains	contains(key) -> bool — C++20
+to_string	std::to_string(value) -> std::string
+stoi	std::stoi(const std::string&, size_t* pos = nullptr, int base = 10) -> int
+stod	std::stod(const std::string&) -> double
+getline	std::getline(std::istream&, std::string&, char delim = '\n')
+ifstream	std::ifstream file(path) — is_open(), >> and getline
+ofstream	std::ofstream file(path, std::ios::app)
+stringstream	std::stringstream — << to build, >> to parse, str()
+function	std::function<R(Args...)> — type-erased callable
+thread	std::thread t(f, args...) — join() or detach(); std::jthread auto-joins (C++20)
+mutex	std::mutex — lock()/unlock(); use std::lock_guard / std::scoped_lock
+lock_guard	std::lock_guard<std::mutex> lock(m) — RAII lock
+unique_lock	std::unique_lock<std::mutex> — deferrable, movable; for condition_variable
+async	std::async(std::launch::async, f, args...) -> std::future<T>
+future	std::future<T> — get() blocks once
+atomic	std::atomic<T> — load(), store(), fetch_add(); lock-free for ints
+chrono	std::chrono — steady_clock::now(), duration_cast<milliseconds>(d).count(), 100ms literals
+span	std::span<T> — non-owning view over contiguous memory (C++20)
+format	std::format("{} {:.2f}", a, b) -> std::string — C++20
+println	std::println("{}", x) — C++23; std::print without newline
+ranges	std::ranges — ranges::sort(v), ranges::find(v, x); views::filter, views::transform (C++20)
+iota	std::iota(first, last, value) — fill with increments; std::views::iota(0, n)
+max	std::max(a, b)  ·  std::max({a, b, c})  ·  std::max_element(first, last)
+min	std::min(a, b)  ·  std::min_element
+abs	std::abs(x) — overloaded for ints and floats
+auto	auto — deduced type; auto& / const auto& to avoid copies
+exception	std::exception — what(); std::runtime_error, std::logic_error, std::out_of_range
+runtime_error	std::runtime_error(const std::string& what)

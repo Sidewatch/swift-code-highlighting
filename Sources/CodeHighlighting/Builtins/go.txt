@@ -1,0 +1,118 @@
+# Go — builtins, common standard-library calls (hover word is the unqualified name), types.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+package
+import
+func
+var
+const
+type
+struct
+interface
+map
+chan
+go
+defer
+return
+if
+else
+for
+range
+switch
+case
+default
+break
+continue
+fallthrough
+select
+goto
+nil
+true
+false
+iota
+len	len(v) int — length of string, slice, array, map or channel
+cap	cap(v) int — capacity of slice, array or channel
+append	append(slice []T, elems ...T) []T — may reallocate; always assign the result
+make	make([]T, len, cap) / make(map[K]V) / make(chan T, buf)
+new	new(T) *T — pointer to a zeroed T
+delete	delete(m map[K]V, key K)
+copy	copy(dst, src []T) int — elements copied
+panic	panic(v any) — unwinds the stack running deferred calls
+recover	recover() any — inside a deferred call; stops a panic
+close	close(c chan<- T) — receivers see zero value, ok == false
+clear	clear(m map | slice) — Go 1.21
+min	min(x, y T, rest ...T) T — Go 1.21
+max	max(x, y T, rest ...T) T — Go 1.21
+Println	fmt.Println(a ...any) (n int, err error)
+Printf	fmt.Printf(format string, a ...any) (n int, err error) — %v %d %s %q %+v %T
+Sprintf	fmt.Sprintf(format string, a ...any) string
+Errorf	fmt.Errorf(format string, a ...any) error — %w wraps
+Fprintf	fmt.Fprintf(w io.Writer, format string, a ...any) (n int, err error)
+Sprint	fmt.Sprint(a ...any) string
+Fprintln	fmt.Fprintln(w io.Writer, a ...any) (n int, err error)
+Sscanf	fmt.Sscanf(str string, format string, a ...any) (n int, err error)
+New	errors.New(text string) error  ·  sync/other packages: New constructors
+Is	errors.Is(err, target error) bool — walks the wrap chain
+As	errors.As(err error, target any) bool — target is a pointer to the error type
+Unwrap	errors.Unwrap(err error) error
+Join	errors.Join(errs ...error) error  ·  strings.Join(elems []string, sep string) string
+Contains	strings.Contains(s, substr string) bool
+Split	strings.Split(s, sep string) []string
+TrimSpace	strings.TrimSpace(s string) string
+HasPrefix	strings.HasPrefix(s, prefix string) bool
+HasSuffix	strings.HasSuffix(s, suffix string) bool
+ReplaceAll	strings.ReplaceAll(s, old, new string) string
+Replace	strings.Replace(s, old, new string, n int) string — n < 0 for all
+ToLower	strings.ToLower(s string) string
+ToUpper	strings.ToUpper(s string) string
+Fields	strings.Fields(s string) []string — split on whitespace
+Index	strings.Index(s, substr string) int — -1 when absent
+Builder	strings.Builder — WriteString(s), String(); zero value ready
+Itoa	strconv.Itoa(i int) string
+Atoi	strconv.Atoi(s string) (int, error)
+ParseInt	strconv.ParseInt(s string, base int, bitSize int) (int64, error)
+ParseFloat	strconv.ParseFloat(s string, bitSize int) (float64, error)
+FormatInt	strconv.FormatInt(i int64, base int) string
+Quote	strconv.Quote(s string) string
+Open	os.Open(name string) (*os.File, error) — read-only
+ReadFile	os.ReadFile(name string) ([]byte, error)
+WriteFile	os.WriteFile(name string, data []byte, perm os.FileMode) error
+Getenv	os.Getenv(key string) string
+Exit	os.Exit(code int) — deferred calls do not run
+Args	os.Args []string — Args[0] is the program
+Stdout	os.Stdout *os.File
+Stderr	os.Stderr *os.File
+Stdin	os.Stdin *os.File
+Reader	io.Reader — Read(p []byte) (n int, err error)
+Writer	io.Writer — Write(p []byte) (n int, err error)
+ReadAll	io.ReadAll(r io.Reader) ([]byte, error)
+Copy	io.Copy(dst io.Writer, src io.Reader) (written int64, err error)
+EOF	io.EOF error — clean end of input
+Background	context.Background() context.Context — root context
+WithCancel	context.WithCancel(parent) (ctx context.Context, cancel context.CancelFunc)
+WithTimeout	context.WithTimeout(parent, timeout time.Duration) (ctx, cancel) — always defer cancel()
+Context	context.Context — Done() <-chan struct{}, Err(), Value(key), Deadline()
+Now	time.Now() time.Time
+Since	time.Since(t time.Time) time.Duration
+Sleep	time.Sleep(d time.Duration)
+Duration	time.Duration int64 nanoseconds — time.Second, time.Millisecond
+Second	time.Second Duration
+Millisecond	time.Millisecond Duration
+Mutex	sync.Mutex — Lock(), Unlock(); zero value ready; do not copy
+RWMutex	sync.RWMutex — RLock()/RUnlock() for readers, Lock() for writers
+WaitGroup	sync.WaitGroup — Add(n), Done(), Wait()
+Once	sync.Once — Do(f func())
+Marshal	json.Marshal(v any) ([]byte, error) — exported fields, `json:"name"` tags
+MarshalIndent	json.MarshalIndent(v any, prefix, indent string) ([]byte, error)
+Unmarshal	json.Unmarshal(data []byte, v any) error — v is a pointer
+Slice	sort.Slice(x any, less func(i, j int) bool)  ·  slices.Sort(s)
+Ints	sort.Ints(x []int)
+Strings	sort.Strings(x []string)
+error	error — interface { Error() string }
+string	string — immutable UTF-8 bytes; range yields runes
+int	int — platform word size (64-bit); int8/16/32/64, uint…
+int64	int64
+float64	float64
+bool	bool
+byte	byte = uint8
+rune	rune = int32 — a Unicode code point
+any	any = interface{}

@@ -1,158 +1,153 @@
 # Swift standard library — common types, global functions, and methods (names only).
-print
-debugPrint
-assert
-assertionFailure
-precondition
-preconditionFailure
-fatalError
-abs
-min
-max
-stride
-zip
-repeatElement
-sequence
-swap
-type
-withUnsafePointer
-withUnsafeBytes
-MemoryLayout
-Int
-Int8
-Int16
-Int32
-Int64
-UInt
-UInt8
-UInt16
-UInt32
-UInt64
-Double
-Float
-Bool
-String
-Substring
-Character
-Unicode
-Array
-ArraySlice
-ContiguousArray
-Dictionary
-Set
-Optional
-Result
-Range
-ClosedRange
-Slice
-Sequence
-Collection
-IteratorProtocol
-Comparable
-Equatable
-Hashable
-Codable
-Encodable
-Decodable
-CustomStringConvertible
-CustomDebugStringConvertible
-Error
-Any
-AnyObject
-Void
-Never
-Data
-Date
-URL
-UUID
-map
-flatMap
-compactMap
-filter
-reduce
-forEach
-sorted
-sort
-reversed
-reverse
-enumerated
-first
-last
-firstIndex
-lastIndex
-contains
-allSatisfy
-count
-isEmpty
-append
-insert
-remove
-removeAll
-removeFirst
-removeLast
-popLast
-prefix
-suffix
-dropFirst
-dropLast
-split
-joined
-min
-max
-zip
-indices
-startIndex
-endIndex
-index
-distance
-formIndex
-lowercased
-uppercased
-capitalized
-hasPrefix
-hasSuffix
-replacingOccurrences
-components
-trimmingCharacters
-padding
-prefix
-suffix
-utf8
-utf16
-unicodeScalars
-description
-debugDescription
-hashValue
-hash
-keys
-values
-updateValue
-removeValue
-merge
-merging
-mapValues
-compactMapValues
-union
-intersection
-subtracting
-isSubset
-isSuperset
-formUnion
+print	func print(_ items: Any..., separator: String = " ", terminator: String = "\n")
+debugPrint	func debugPrint(_ items: Any..., separator: String = " ", terminator: String = "\n")
+assert	func assert(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> String = String()) — debug builds only
+assertionFailure	func assertionFailure(_ message: @autoclosure () -> String = String()) — debug builds only
+precondition	func precondition(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> String = String()) — traps in release too
+preconditionFailure	func preconditionFailure(_ message: @autoclosure () -> String = String()) -> Never
+fatalError	func fatalError(_ message: @autoclosure () -> String = String()) -> Never
+abs	func abs<T: SignedNumeric & Comparable>(_ x: T) -> T
+min	func min<T: Comparable>(_ x: T, _ y: T, _ rest: T...) -> T  ·  Sequence.min() -> Element?  ·  min(by:)
+max	func max<T: Comparable>(_ x: T, _ y: T, _ rest: T...) -> T  ·  Sequence.max() -> Element?  ·  max(by:)
+stride	func stride<T: Strideable>(from: T, to: T, by: T.Stride) -> StrideTo<T>  ·  stride(from:through:by:)
+zip	func zip<A: Sequence, B: Sequence>(_ a: A, _ b: B) -> Zip2Sequence<A, B>
+repeatElement	func repeatElement<T>(_ element: T, count: Int) -> Repeated<T>
+sequence	func sequence<T>(first: T, next: @escaping (T) -> T?) -> UnfoldFirstSequence<T>  ·  sequence(state:next:)
+swap	func swap<T>(_ a: inout T, _ b: inout T)
+type	func type<T, Metatype>(of value: T) -> Metatype — the dynamic type
+withUnsafePointer	func withUnsafePointer<T, R>(to value: inout T, _ body: (UnsafePointer<T>) throws -> R) rethrows -> R
+withUnsafeBytes	func withUnsafeBytes<T, R>(of value: inout T, _ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R
+MemoryLayout	enum MemoryLayout<T> — .size, .stride, .alignment; MemoryLayout.size(ofValue:)
+Int	struct Int — signed integer, 64-bit on Apple platforms; Int.min … Int.max
+Int8	struct Int8 — 8-bit signed integer
+Int16	struct Int16 — 16-bit signed integer
+Int32	struct Int32 — 32-bit signed integer
+Int64	struct Int64 — 64-bit signed integer
+UInt	struct UInt — unsigned integer, 64-bit on Apple platforms
+UInt8	struct UInt8 — 8-bit unsigned integer (a byte)
+UInt16	struct UInt16 — 16-bit unsigned integer
+UInt32	struct UInt32 — 32-bit unsigned integer
+UInt64	struct UInt64 — 64-bit unsigned integer
+Double	struct Double — 64-bit IEEE 754 floating point
+Float	struct Float — 32-bit IEEE 754 floating point
+Bool	struct Bool — true or false; toggle()
+String	struct String — Unicode-correct text; a BidirectionalCollection of Character
+Substring	struct Substring — a slice of a String sharing its storage; String(sub) to copy out
+Character	struct Character — one extended grapheme cluster; isLetter, isNumber, isWhitespace
+Unicode	enum Unicode — Unicode.Scalar, Unicode.Scalar.Properties, the encodings
+Array	struct Array<Element> — ordered, random-access, value-semantic; [Element]
+ArraySlice	struct ArraySlice<Element> — a slice of an Array sharing its storage; indices are the base's
+ContiguousArray	struct ContiguousArray<Element> — Array with always-contiguous storage (no NSArray bridging)
+Dictionary	struct Dictionary<Key: Hashable, Value> — unordered key–value collection; [Key: Value]
+Set	struct Set<Element: Hashable> — unordered collection of unique elements
+Optional	enum Optional<Wrapped> — .none or .some(Wrapped); written Wrapped?
+Result	enum Result<Success, Failure: Error> — .success(Success) or .failure(Failure); get() throws
+Range	struct Range<Bound: Comparable> — half-open interval a..<b
+ClosedRange	struct ClosedRange<Bound: Comparable> — closed interval a...b
+Slice	struct Slice<Base: Collection> — a view onto a subrange of a collection
+Sequence	protocol Sequence — makeIterator(); gives map, filter, reduce, contains, sorted…
+Collection	protocol Collection: Sequence — indexed and multi-pass; startIndex, endIndex, subscript(Index)
+IteratorProtocol	protocol IteratorProtocol — mutating func next() -> Element?
+Comparable	protocol Comparable: Equatable — static func < (lhs: Self, rhs: Self) -> Bool
+Equatable	protocol Equatable — static func == (lhs: Self, rhs: Self) -> Bool
+Hashable	protocol Hashable: Equatable — func hash(into hasher: inout Hasher)
+Codable	typealias Codable = Decodable & Encodable
+Encodable	protocol Encodable — func encode(to encoder: any Encoder) throws
+Decodable	protocol Decodable — init(from decoder: any Decoder) throws
+CustomStringConvertible	protocol CustomStringConvertible — var description: String { get }
+CustomDebugStringConvertible	protocol CustomDebugStringConvertible — var debugDescription: String { get }
+Error	protocol Error: Sendable — anything that can be thrown; localizedDescription via Foundation
+Any	typealias Any — any type at all, including functions and optionals
+AnyObject	protocol AnyObject — any class instance
+Void	typealias Void = ()
+Never	enum Never — return type of a function that never returns
+Data	struct Data — byte buffer (Foundation); Data(contentsOf:), .count, .write(to:)
+Date	struct Date — a point in time (Foundation); Date(), .timeIntervalSince(_:), .formatted()
+URL	struct URL — resource locator (Foundation); URL(string:), URL(fileURLWithPath:), .path, .appending(path:)
+UUID	struct UUID — 128-bit universally unique identifier (Foundation); UUID().uuidString
+map	func map<T>(_ transform: (Element) throws -> T) rethrows -> [T]
+flatMap	func flatMap<S: Sequence>(_ transform: (Element) throws -> S) rethrows -> [S.Element]  ·  Optional.flatMap
+compactMap	func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> [T] — drops nils
+filter	func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> [Element]
+reduce	func reduce<R>(_ initial: R, _ next: (R, Element) throws -> R) rethrows -> R  ·  reduce(into:_:)
+forEach	func forEach(_ body: (Element) throws -> Void) rethrows — no break/continue; use for-in for that
+sorted	func sorted() -> [Element]  ·  sorted(by: (Element, Element) throws -> Bool) rethrows -> [Element]
+sort	mutating func sort()  ·  sort(by: (Element, Element) throws -> Bool) rethrows
+reversed	func reversed() -> ReversedCollection<Self> — lazy view; Array(…) to materialise
+reverse	mutating func reverse() — in place
+enumerated	func enumerated() -> EnumeratedSequence<Self> — (offset: Int, element: Element) pairs
+first	var first: Element? { get }  ·  first(where: (Element) throws -> Bool) rethrows -> Element?
+last	var last: Element? { get }  ·  last(where: (Element) throws -> Bool) rethrows -> Element?
+firstIndex	func firstIndex(of element: Element) -> Index?  ·  firstIndex(where:)
+lastIndex	func lastIndex(of element: Element) -> Index?  ·  lastIndex(where:)
+contains	func contains(_ element: Element) -> Bool  ·  contains(where: (Element) throws -> Bool) rethrows -> Bool
+allSatisfy	func allSatisfy(_ predicate: (Element) throws -> Bool) rethrows -> Bool
+count	var count: Int { get } — O(1) for Array, O(n) for String
+isEmpty	var isEmpty: Bool { get } — prefer over count == 0
+append	mutating func append(_ newElement: Element)  ·  append(contentsOf: some Sequence<Element>)
+insert	mutating func insert(_ newElement: Element, at i: Index)  ·  Set: insert(_:) -> (inserted: Bool, memberAfterInsert: Element)
+remove	mutating func remove(at index: Index) -> Element  ·  Set: remove(_ member: Element) -> Element?
+removeAll	mutating func removeAll(keepingCapacity: Bool = false)  ·  removeAll(where: (Element) throws -> Bool) rethrows
+removeFirst	mutating func removeFirst() -> Element  ·  removeFirst(_ k: Int) — traps when empty
+removeLast	mutating func removeLast() -> Element  ·  removeLast(_ k: Int) — traps when empty
+popLast	mutating func popLast() -> Element? — nil when empty
+prefix	func prefix(_ maxLength: Int) -> SubSequence  ·  prefix(while:)  ·  prefix(upTo:)  ·  prefix(through:)
+suffix	func suffix(_ maxLength: Int) -> SubSequence  ·  suffix(from:)
+dropFirst	func dropFirst(_ k: Int = 1) -> SubSequence
+dropLast	func dropLast(_ k: Int = 1) -> SubSequence
+split	func split(separator: Element, maxSplits: Int = .max, omittingEmptySubsequences: Bool = true) -> [SubSequence]  ·  split(whereSeparator:)
+joined	func joined(separator: String = "") -> String  ·  sequence of sequences: joined() -> FlattenSequence
+indices	var indices: Indices { get }
+startIndex	var startIndex: Index { get }
+endIndex	var endIndex: Index { get } — one past the last valid subscript
+index	func index(after i: Index) -> Index  ·  index(_ i: Index, offsetBy: Int) -> Index  ·  index(before:)
+distance	func distance(from start: Index, to end: Index) -> Int
+formIndex	func formIndex(after i: inout Index)  ·  formIndex(_:offsetBy:)
+lowercased	func lowercased() -> String
+uppercased	func uppercased() -> String
+capitalized	var capitalized: String { get } (Foundation) — first letter of each word
+hasPrefix	func hasPrefix(_ prefix: String) -> Bool
+hasSuffix	func hasSuffix(_ suffix: String) -> Bool
+replacingOccurrences	func replacingOccurrences(of target: String, with replacement: String) -> String (Foundation)
+components	func components(separatedBy separator: String) -> [String] (Foundation)  ·  separatedBy: CharacterSet
+trimmingCharacters	func trimmingCharacters(in set: CharacterSet) -> String (Foundation) — .whitespacesAndNewlines
+padding	func padding(toLength: Int, withPad: String, startingAt: Int) -> String (Foundation)
+utf8	var utf8: String.UTF8View { get }
+utf16	var utf16: String.UTF16View { get }
+unicodeScalars	var unicodeScalars: String.UnicodeScalarView { get }
+description	var description: String { get } — CustomStringConvertible; what String(describing:) uses
+debugDescription	var debugDescription: String { get } — CustomDebugStringConvertible
+hashValue	var hashValue: Int { get } — implement hash(into:) instead
+hash	func hash(into hasher: inout Hasher) — hasher.combine(field)
+keys	var keys: Dictionary<Key, Value>.Keys { get }
+values	var values: Dictionary<Key, Value>.Values { get }
+updateValue	mutating func updateValue(_ value: Value, forKey key: Key) -> Value? — the old value
+removeValue	mutating func removeValue(forKey key: Key) -> Value?
+merge	mutating func merge(_ other: [Key: Value], uniquingKeysWith combine: (Value, Value) throws -> Value) rethrows
+merging	func merging(_ other: [Key: Value], uniquingKeysWith combine: (Value, Value) throws -> Value) rethrows -> [Key: Value]
+mapValues	func mapValues<T>(_ transform: (Value) throws -> T) rethrows -> [Key: T]
+compactMapValues	func compactMapValues<T>(_ transform: (Value) throws -> T?) rethrows -> [Key: T]
+union	func union(_ other: some Sequence<Element>) -> Set<Element>
+intersection	func intersection(_ other: some Sequence<Element>) -> Set<Element>
+subtracting	func subtracting(_ other: some Sequence<Element>) -> Set<Element>
+isSubset	func isSubset(of other: some Sequence<Element>) -> Bool
+isSuperset	func isSuperset(of other: some Sequence<Element>) -> Bool
+formUnion	mutating func formUnion(_ other: some Sequence<Element>)
 async
 await
-Task
+Task	struct Task<Success, Failure: Error> — Task { … }, Task.detached, .value, .cancel(), Task.sleep(for:)
 actor
-TaskGroup
-withTaskGroup
-withThrowingTaskGroup
-AsyncSequence
-AsyncStream
-Sendable
-MainActor
-Continuation
-withCheckedContinuation
-DispatchQueue
-DispatchGroup
+TaskGroup	struct TaskGroup<ChildTaskResult> — addTask { … }, next(), waitForAll(); made by withTaskGroup
+withTaskGroup	func withTaskGroup<Child, Result>(of: Child.Type, body: (inout TaskGroup<Child>) async -> Result) async -> Result
+withThrowingTaskGroup	func withThrowingTaskGroup<Child, Result>(of: Child.Type, body: (inout ThrowingTaskGroup<Child, any Error>) async throws -> Result) async throws -> Result
+AsyncSequence	protocol AsyncSequence — makeAsyncIterator(); for await x in seq
+AsyncStream	struct AsyncStream<Element> — AsyncStream { continuation in … }; continuation.yield(_:), .finish()
+Sendable	protocol Sendable — safe to share across isolation domains; checked by the compiler
+MainActor	@globalActor actor MainActor — main-thread isolation; MainActor.run { … }, assumeIsolated { … }
+Continuation	CheckedContinuation<T, E> — resume(returning:) / resume(throwing:), exactly once
+withCheckedContinuation	func withCheckedContinuation<T>(_ body: (CheckedContinuation<T, Never>) -> Void) async -> T  ·  withCheckedThrowingContinuation
+DispatchQueue	class DispatchQueue — .main, .global(qos:), DispatchQueue(label:); async { }, asyncAfter(deadline:), sync { }
+DispatchGroup	class DispatchGroup — enter(), leave(), notify(queue:execute:), wait()
 guard
 defer
 throws
@@ -172,7 +167,6 @@ let
 return
 if
 else
-guard
 for
 while
 switch

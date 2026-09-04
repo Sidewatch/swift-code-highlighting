@@ -1,0 +1,160 @@
+# Kotlin — stdlib functions and types, coroutines, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+fun
+val
+var
+class
+object
+interface
+data
+sealed
+enum
+abstract
+open
+override
+private
+public
+internal
+protected
+companion
+init
+constructor
+return
+if
+else
+when
+for
+while
+do
+in
+is
+as
+null
+true
+false
+this
+super
+import
+package
+try
+catch
+finally
+throw
+suspend
+inline
+lateinit
+by
+get
+set
+out
+vararg
+typealias
+where
+println	println(message: Any?) — stdout with newline
+print	print(message: Any?)
+listOf	listOf(vararg elements: T): List<T> — read-only
+mutableListOf	mutableListOf(vararg elements: T): MutableList<T>
+mapOf	mapOf(vararg pairs: Pair<K, V>): Map<K, V> — "a" to 1
+mutableMapOf	mutableMapOf(vararg pairs: Pair<K, V>): MutableMap<K, V>
+setOf	setOf(vararg elements: T): Set<T>
+mutableSetOf	mutableSetOf(vararg elements: T): MutableSet<T>
+arrayOf	arrayOf(vararg elements: T): Array<T>
+emptyList	emptyList<T>(): List<T>
+emptyMap	emptyMap<K, V>(): Map<K, V>
+let	T.let { it -> R }: R — scope function; null-safe with ?.let
+apply	T.apply { this.… }: T — configure and return the receiver
+also	T.also { it -> }: T — side effect, returns the receiver
+run	T.run { this.… }: R — compute with the receiver
+with	with(receiver) { this.… }: R
+takeIf	T.takeIf { predicate }: T? — the value or null
+takeUnless	T.takeUnless { predicate }: T?
+map	map { it -> R }: List<R>
+filter	filter { it -> Boolean }: List<T>
+forEach	forEach { it -> Unit }
+first	first(): T  ·  first { predicate }: T — throws when none
+firstOrNull	firstOrNull(): T?  ·  firstOrNull { predicate }: T?
+last	last(): T  ·  last { predicate }
+find	find { predicate }: T? — same as firstOrNull
+any	any { predicate }: Boolean
+all	all { predicate }: Boolean
+none	none { predicate }: Boolean
+count	count(): Int  ·  count { predicate }: Int
+sumOf	sumOf { selector }: Int | Long | Double
+maxOf	maxOf { selector }: R  ·  maxOf(a, b)
+minOf	minOf { selector }: R  ·  minOf(a, b)
+sorted	sorted(): List<T> — natural order; sortedDescending()
+sortedBy	sortedBy { selector }: List<T>
+groupBy	groupBy { key }: Map<K, List<T>>
+associate	associate { it to value }: Map<K, V>
+associateBy	associateBy { key }: Map<K, T>
+joinToString	joinToString(separator = ", ", prefix = "", postfix = "", limit = -1, truncated = "...", transform = null): String
+toList	toList(): List<T>
+toMutableList	toMutableList(): MutableList<T>
+toSet	toSet(): Set<T>
+toMap	toMap(): Map<K, V> — from pairs
+flatMap	flatMap { it -> Iterable<R> }: List<R>
+zip	zip(other): List<Pair<T, R>>
+fold	fold(initial: R) { acc, it -> R }: R
+reduce	reduce { acc, it -> T }: T — throws on empty
+distinct	distinct(): List<T>
+reversed	reversed(): List<T>
+take	take(n: Int): List<T>
+drop	drop(n: Int): List<T>
+indexOf	indexOf(element): Int — -1 when absent
+contains	contains(element): Boolean — also `in`
+isEmpty	isEmpty(): Boolean
+isNotEmpty	isNotEmpty(): Boolean
+isNullOrEmpty	isNullOrEmpty(): Boolean — on a nullable receiver
+isBlank	isBlank(): Boolean — String
+ifEmpty	ifEmpty { default }: T
+getOrNull	getOrNull(index: Int): T?
+getOrDefault	getOrDefault(key, defaultValue): V
+getOrElse	getOrElse(key) { default }: V
+getOrPut	getOrPut(key) { default }: V — MutableMap
+require	require(value: Boolean) { "message" } — IllegalArgumentException
+check	check(value: Boolean) { "message" } — IllegalStateException
+error	error(message: Any): Nothing — IllegalStateException
+TODO	TODO(reason: String = ""): Nothing — NotImplementedError
+lazy	by lazy { … } — computed on first access, thread-safe by default
+String	class String — "$name ${expr}", """raw"""; length, substring, split, trim, uppercase
+Int	class Int — 32-bit; Long, Short, Byte
+Long	class Long — 64-bit; 1L
+Double	class Double
+Boolean	class Boolean
+List	interface List<out E> — read-only; MutableList to modify
+MutableList	interface MutableList<E> — add, remove, set, removeAt
+Map	interface Map<K, out V> — read-only; MutableMap to modify
+Set	interface Set<out E>
+Array	class Array<T> — fixed size; IntArray, arrayOf; size, indices
+Pair	data class Pair<A, B>(first, second) — a to b
+Triple	data class Triple<A, B, C>
+Unit	object Unit — the return type of nothing-returning functions
+Nothing	class Nothing — no values; throw and error() return it
+Any	open class Any — the root of the hierarchy
+Result	class Result<T> — runCatching { }, getOrNull(), getOrThrow(), onFailure, onSuccess
+Sequence	interface Sequence<T> — lazy; asSequence(), sequence { yield() }
+launch	CoroutineScope.launch(context = EmptyCoroutineContext) { … }: Job — fire and forget
+async	CoroutineScope.async { … }: Deferred<T> — await() for the result
+await	Deferred<T>.await(): T — suspends
+withContext	withContext(Dispatchers.IO) { … }: T — switch dispatcher
+delay	delay(timeMillis: Long) — suspends, does not block
+runBlocking	runBlocking { … }: T — bridges blocking code; not for production coroutines
+Dispatchers	object Dispatchers — Main, IO, Default, Unconfined
+CoroutineScope	interface CoroutineScope — coroutineContext; viewModelScope, lifecycleScope
+Flow	interface Flow<T> — flow { emit(x) }, collect { }, map, filter, stateIn
+collect	Flow<T>.collect { value -> } — suspends until complete
+toInt	toInt(): Int — throws NumberFormatException; toIntOrNull()
+toIntOrNull	toIntOrNull(): Int?
+toDouble	toDouble(): Double
+toString	toString(): String
+split	split(vararg delimiters: String, ignoreCase = false, limit = 0): List<String>
+trim	trim(): String
+uppercase	uppercase(): String
+lowercase	lowercase(): String
+substring	substring(startIndex: Int, endIndex: Int = length): String
+startsWith	startsWith(prefix: String, ignoreCase = false): Boolean
+endsWith	endsWith(suffix: String, ignoreCase = false): Boolean
+replace	replace(oldValue: String, newValue: String, ignoreCase = false): String
+repeat	repeat(times: Int) { i -> }  ·  String.repeat(n): String
+length	length: Int
+lines	lines(): List<String>

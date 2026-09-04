@@ -47,155 +47,155 @@ input	input(prompt='') -> str
 callable	callable(obj) -> bool
 vars	vars(object) -> dict
 dir	dir(object) -> list
-bytes
-bytearray
-frozenset
-complex
-memoryview
-slice
-super
-property
-staticmethod
-classmethod
-globals
-locals
-eval
-exec
-compile
-ascii
-delattr
+bytes	class bytes(source=b'', encoding=None, errors=None) — immutable byte sequence; b'…' literals
+bytearray	class bytearray(source=b'', encoding=None, errors=None) — mutable byte sequence
+frozenset	class frozenset(iterable=(), /)
+complex	class complex(real=0, imag=0)
+memoryview	class memoryview(object)
+slice	class slice(start, stop, step=None) — what seq[start:stop:step] builds
+super	super() -> proxy to the parent class; super().__init__(...)
+property	class property(fget=None, fset=None, fdel=None, doc=None)
+staticmethod	class staticmethod(function, /)
+classmethod	class classmethod(function, /)
+globals	globals()
+locals	locals()
+eval	eval(source, /, globals=None, locals=None)
+exec	exec(source, /, globals=None, locals=None, *, closure=None)
+compile	compile(source, filename, mode, flags=0, dont_inherit=False, optimize=-1, *, _feature_version=-1)
+ascii	ascii(obj, /)
+delattr	delattr(obj, name, /)
 # common methods (names only — receiver type varies)
-append
-extend
-insert
-remove
-pop
-clear
-index
-count
-sort
-reverse
-copy
-keys
-values
-items
-get
-setdefault
-update
-popitem
-fromkeys
-add
-discard
-union
-intersection
-difference
-issubset
-issuperset
-startswith
-endswith
-strip
-lstrip
-rstrip
-split
-rsplit
-splitlines
-join
-replace
-find
-rfind
-lower
-upper
-title
-capitalize
-casefold
-center
-ljust
-rjust
-zfill
-encode
-isdigit
-isalpha
-isalnum
-isspace
-isupper
-islower
-format_map
+append	list.append(object, /)
+extend	list.extend(iterable, /)
+insert	list.insert(index, object, /)
+remove	list.remove(value, /)
+pop	list.pop(index=-1, /)
+clear	list.clear()
+index	list.index(value, start=0, stop=9223372036854775807, /)
+count	list.count(value, /)
+sort	list.sort(*, key=None, reverse=False)
+reverse	list.reverse()
+copy	list.copy()
+keys	dict.keys()
+values	dict.values()
+items	dict.items()
+get	dict.get(key, default=None, /)
+setdefault	dict.setdefault(key, default=None, /)
+update	set.update(*others)
+popitem	dict.popitem()
+fromkeys	dict.fromkeys(iterable, value=None, /)
+add	set.add(object, /)
+discard	set.discard(object, /)
+union	set.union(*others)
+intersection	set.intersection(*others)
+difference	set.difference(*others)
+issubset	set.issubset(other, /)
+issuperset	set.issuperset(other, /)
+startswith	str.startswith(prefix: str | tuple[str, ...], start=None, end=None) -> bool
+endswith	str.endswith(suffix: str | tuple[str, ...], start=None, end=None) -> bool
+strip	str.strip(chars=None, /)
+lstrip	str.lstrip(chars=None, /)
+rstrip	str.rstrip(chars=None, /)
+split	str.split(sep=None, maxsplit=-1)
+rsplit	str.rsplit(sep=None, maxsplit=-1)
+splitlines	str.splitlines(keepends=False)
+join	str.join(iterable, /)
+replace	str.replace(old, new, /, count=-1)
+find	str.find(sub, start=None, end=None) -> int — -1 when absent
+rfind	str.rfind(sub, start=None, end=None) -> int — last occurrence, -1 when absent
+lower	str.lower()
+upper	str.upper()
+title	str.title()
+capitalize	str.capitalize()
+casefold	str.casefold()
+center	str.center(width, fillchar=' ', /)
+ljust	str.ljust(width, fillchar=' ', /)
+rjust	str.rjust(width, fillchar=' ', /)
+zfill	str.zfill(width, /)
+encode	str.encode(encoding='utf-8', errors='strict')
+isdigit	str.isdigit()
+isalpha	str.isalpha()
+isalnum	str.isalnum()
+isspace	str.isspace()
+isupper	str.isupper()
+islower	str.islower()
+format_map	str.format_map(mapping, /)
 # common stdlib modules / names
-os
-sys
-re
-json
-math
-random
-datetime
-collections
-itertools
-functools
-pathlib
-typing
-argparse
-logging
-subprocess
-shutil
-glob
-time
-path
-exists
-isfile
-isdir
-dirname
-basename
-abspath
-listdir
-makedirs
-walk
-getenv
-environ
-argv
-match
-search
-findall
-finditer
-sub
-loads
-dumps
-load
-dump
-sqrt
-ceil
-floor
-pi
-randint
-choice
-shuffle
-sample
-uniform
-now
-today
-timedelta
-strftime
-strptime
-defaultdict
-OrderedDict
-Counter
-namedtuple
-deque
-chain
-product
-permutations
-combinations
-reduce
-partial
-lru_cache
-wraps
-Path
-List
-Dict
-Optional
-Union
-Any
-Tuple
-Callable
+os	module os — process, environment and filesystem calls; os.path, os.environ, os.getenv(), os.walk()
+sys	module sys — interpreter state; sys.argv, sys.exit(), sys.path, sys.stdin/stdout/stderr
+re	module re — regular expressions; re.match(), re.search(), re.findall(), re.sub(), re.compile()
+json	module json — json.loads(str), json.dumps(obj, indent=2), json.load(f), json.dump(obj, f)
+math	module math — sqrt, floor, ceil, pi, e, inf, log, sin/cos, isclose(), gcd()
+random	module random — random(), randint(a, b), choice(seq), shuffle(seq), sample(), uniform(), seed()
+datetime	module datetime — datetime, date, time, timedelta, timezone; datetime.now(), .strftime()
+collections	module collections — defaultdict, Counter, deque, OrderedDict, namedtuple, ChainMap
+itertools	module itertools — chain, product, permutations, combinations, groupby, islice, cycle, count
+functools	module functools — reduce, partial, lru_cache/cache, wraps, cached_property, total_ordering
+pathlib	module pathlib — Path: object-oriented filesystem paths; Path('a') / 'b', .read_text(), .glob()
+typing	module typing — Optional, Union, Any, Callable, TypeVar, Protocol, Literal, TypedDict, cast()
+argparse	module argparse — ArgumentParser(); add_argument(), parse_args()
+logging	module logging — getLogger(name), basicConfig(level=…), logger.info/warning/error/exception()
+subprocess	module subprocess — run(args, capture_output=True, text=True, check=True), Popen, PIPE
+shutil	module shutil — copy(), copy2(), copytree(), move(), rmtree(), which(), disk_usage()
+glob	module glob — glob(pattern, recursive=False), iglob(); ** with recursive=True
+time	module time — time(), sleep(secs), perf_counter(), monotonic(), strftime()
+path	module os.path — join(), exists(), isfile(), isdir(), dirname(), basename(), abspath(), splitext()
+exists	os.path.exists(path)
+isfile	os.path.isfile(path)
+isdir	os.path.isdir(s)
+dirname	os.path.dirname(p)
+basename	os.path.basename(p)
+abspath	os.path.abspath(path)
+listdir	os.listdir(path=None)
+makedirs	os.makedirs(name, mode=511, exist_ok=False)
+walk	os.walk(top, topdown=True, onerror=None, followlinks=False)
+getenv	os.getenv(key, default=None)
+environ	os.environ: _Environ
+argv	sys.argv: list
+match	re.match(pattern, string, flags=0)
+search	re.search(pattern, string, flags=0)
+findall	re.findall(pattern, string, flags=0)
+finditer	re.finditer(pattern, string, flags=0)
+sub	re.sub(pattern, repl, string, count=0, flags=0)
+loads	json.loads(s, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)
+dumps	json.dumps(obj, *, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=None, separators=None, default=None, sort_keys=False, **kw)
+load	json.load(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)
+dump	json.dump(obj, fp, *, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=None, separators=None, default=None, sort_keys=False, **kw)
+sqrt	math.sqrt(x, /)
+ceil	math.ceil(x, /)
+floor	math.floor(x, /)
+pi	math.pi: float = 3.141592653589793
+randint	random.randint(a, b)
+choice	random.choice(seq)
+shuffle	random.shuffle(x)
+sample	random.sample(population, k, *, counts=None)
+uniform	random.uniform(a, b)
+now	datetime.now(tz=None)
+today	datetime.today()
+timedelta	class datetime.timedelta(days=0, seconds=0, microseconds=0, milliseconds=0, minutes=0, hours=0, weeks=0)
+strftime	datetime.strftime(format: str) -> str — e.g. '%Y-%m-%d %H:%M'
+strptime	datetime.strptime(date_string: str, format: str) -> datetime
+defaultdict	class collections.defaultdict(default_factory=None, /, *args, **kwargs) — missing keys get default_factory()
+OrderedDict	class collections.OrderedDict(*args, **kwargs) — insertion-ordered dict; move_to_end(), popitem(last=True)
+Counter	class collections.Counter(iterable | mapping = None, /, **kwargs) — most_common(n), elements(), update()
+namedtuple	collections.namedtuple(typename, field_names, *, rename=False, defaults=None, module=None)
+deque	class collections.deque(iterable=(), maxlen=None) — append/appendleft/pop/popleft in O(1)
+chain	class itertools.chain(*iterables)
+product	class itertools.product(*iterables, repeat=1)
+permutations	class itertools.permutations(iterable, r=None)
+combinations	class itertools.combinations(iterable, r)
+reduce	functools.reduce(function, iterable, initial=...) -> value
+partial	class functools.partial(func, /, *args, **keywords)
+lru_cache	functools.lru_cache(maxsize=128, typed=False)
+wraps	functools.wraps(wrapped, assigned=('__module__', '__name__', '__qualname__', '__doc__', '__annotate__', '__type_params__'), updated=('__dict__',))
+Path	class pathlib.Path(*pathsegments) — p / 'sub', .exists(), .read_text(), .glob(), .parent, .name, .suffix
+List	typing.List[T] — prefer list[T] (3.9+)
+Dict	typing.Dict[K, V] — prefer dict[K, V] (3.9+)
+Optional	typing.Optional[T] — same as T | None
+Union	typing.Union[A, B] — same as A | B (3.10+)
+Any	typing.Any — unconstrained type; disables checking for that value
+Tuple	typing.Tuple[A, B] — prefer tuple[A, B]; tuple[T, ...] for any length
+Callable	typing.Callable[[Arg1, Arg2], Ret] — prefer collections.abc.Callable
 # keywords / language constructs
 def
 class
@@ -232,6 +232,5 @@ or
 None
 True
 False
-match
 case
 self

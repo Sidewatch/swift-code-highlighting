@@ -1,0 +1,157 @@
+# Rust — macros (hover word is the name before !), std types, common methods, traits.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+fn
+let
+mut
+const
+static
+struct
+enum
+impl
+trait
+for
+in
+while
+loop
+if
+else
+match
+return
+use
+mod
+pub
+crate
+self
+Self
+super
+as
+ref
+move
+dyn
+where
+unsafe
+async
+await
+type
+break
+continue
+true
+false
+println	println!("{} {:?}", a, b) — stdout with newline; {:#?} pretty debug
+print	print!(…) — stdout, no newline
+eprintln	eprintln!(…) — stderr with newline
+format	format!("{}", x) -> String
+vec	vec![1, 2, 3] -> Vec<T>  ·  vec![0; n]
+panic	panic!("msg {}", x) -> ! — unwinds
+assert	assert!(cond, "msg")
+assert_eq	assert_eq!(left, right)
+dbg	dbg!(expr) — prints file:line = value to stderr, returns expr
+todo	todo!() -> ! — panics: not yet implemented
+unimplemented	unimplemented!() -> !
+unreachable	unreachable!() -> !
+write	write!(f, "{}", x) -> fmt::Result / io::Result
+writeln	writeln!(f, …)
+matches	matches!(expr, Pattern) -> bool
+derive	#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+String	String — owned, growable UTF-8; String::new(), String::from("…"), .push_str(), .as_str()
+str	str — string slice; usually &str; .len(), .chars(), .split(), .trim(), .parse()
+Vec	Vec<T> — growable array; Vec::new(), Vec::with_capacity(n); push, pop, len, iter
+Option	Option<T> — Some(T) | None; unwrap, map, and_then, unwrap_or, ok_or, ? in Option-returning fns
+Result	Result<T, E> — Ok(T) | Err(E); ?, map_err, unwrap_or_else, expect
+Some	Some(value) — Option::Some
+None	None — Option::None
+Ok	Ok(value) — Result::Ok
+Err	Err(error) — Result::Err
+Box	Box<T> — heap allocation, single owner; Box::new(x)
+Rc	Rc<T> — reference counted, single thread; Rc::clone(&rc)
+Arc	Arc<T> — atomically reference counted, Send + Sync
+RefCell	RefCell<T> — interior mutability, checked at runtime; borrow(), borrow_mut()
+Cell	Cell<T> — interior mutability for Copy types; get(), set()
+HashMap	HashMap<K, V> — insert, get, entry(k).or_insert(v), contains_key, remove; std::collections
+HashSet	HashSet<T> — insert, contains, remove; set ops union/intersection
+BTreeMap	BTreeMap<K, V> — sorted map; range queries
+VecDeque	VecDeque<T> — push_front/push_back, pop_front/pop_back
+Mutex	Mutex<T> — lock() -> LockResult<MutexGuard<T>>; std::sync
+RwLock	RwLock<T> — read() / write()
+i32	i32 — 32-bit signed; i8 i16 i64 i128
+u8	u8 — byte; u16 u32 u64 u128
+usize	usize — pointer-sized unsigned; indexes and lengths
+f64	f64 — 64-bit float; f32
+bool	bool
+char	char — a Unicode scalar value, 4 bytes
+unwrap	unwrap(self) -> T — panics on None / Err
+expect	expect(self, msg: &str) -> T — panics with msg
+unwrap_or	unwrap_or(self, default: T) -> T
+unwrap_or_else	unwrap_or_else(self, f: impl FnOnce() -> T) -> T
+unwrap_or_default	unwrap_or_default(self) -> T where T: Default
+map	map(self, f: impl FnOnce(T) -> U) -> Option<U> / Result<U, E>  ·  Iterator::map
+and_then	and_then(self, f: impl FnOnce(T) -> Option<U>) -> Option<U> — flat map
+ok_or	ok_or(self, err: E) -> Result<T, E>
+ok	ok(self) -> Option<T> — drops the error
+is_some	is_some(&self) -> bool
+is_none	is_none(&self) -> bool
+is_ok	is_ok(&self) -> bool
+is_err	is_err(&self) -> bool
+iter	iter(&self) -> impl Iterator<Item = &T>
+iter_mut	iter_mut(&mut self) -> impl Iterator<Item = &mut T>
+into_iter	into_iter(self) -> impl Iterator<Item = T> — consumes
+collect	collect::<B: FromIterator>(self) -> B — Vec<_>, String, HashMap<_, _>, Result<Vec<_>, E>
+filter	filter(self, p: impl FnMut(&Item) -> bool)
+enumerate	enumerate(self) -> (usize, Item)
+zip	zip(self, other: impl IntoIterator)
+sum	sum::<S>(self) -> S
+count	count(self) -> usize
+fold	fold(self, init: B, f: impl FnMut(B, Item) -> B) -> B
+find	find(&mut self, p: impl FnMut(&Item) -> bool) -> Option<Item>
+position	position(&mut self, p) -> Option<usize>
+any	any(&mut self, p) -> bool
+all	all(&mut self, p) -> bool
+rev	rev(self) — reverse a DoubleEndedIterator
+take	take(self, n: usize)
+skip	skip(self, n: usize)
+cloned	cloned(self) — &T items to T
+copied	copied(self) — &T items to T for Copy
+len	len(&self) -> usize
+is_empty	is_empty(&self) -> bool
+push	push(&mut self, value: T)
+pop	pop(&mut self) -> Option<T>
+insert	insert(&mut self, k, v) -> Option<V>  ·  Vec: insert(index, value)
+remove	remove(&mut self, k) -> Option<V>  ·  Vec: remove(index) -> T
+get	get(&self, k) -> Option<&V>  ·  slice: get(index)
+contains	contains(&self, x: &T) -> bool
+contains_key	contains_key(&self, k) -> bool
+entry	entry(&mut self, k) -> Entry — .or_insert(v), .or_insert_with(f), .and_modify(f)
+to_string	to_string(&self) -> String — via Display
+to_owned	to_owned(&self) -> Owned — &str to String
+as_str	as_str(&self) -> &str
+clone	clone(&self) -> Self
+into	into(self) -> T — via From<Self> for T
+from	From::from(value) — conversion; gives .into() for free
+parse	parse::<T: FromStr>(&self) -> Result<T, T::Err>
+split	split(&self, pat) -> impl Iterator<Item = &str>
+trim	trim(&self) -> &str
+lines	lines(&self) -> impl Iterator<Item = &str>
+chars	chars(&self) -> Chars
+join	join(&self, sep: &str) -> String — on slices of strings
+sort	sort(&mut self) — stable; sort_unstable, sort_by(cmp), sort_by_key(f)
+dedup	dedup(&mut self) — consecutive duplicates
+extend	extend(&mut self, iter)
+first	first(&self) -> Option<&T>
+last	last(&self) -> Option<&T>
+as_ref	as_ref(&self) -> Option<&T> / &U
+borrow	borrow(&self) -> Ref<T> — RefCell
+borrow_mut	borrow_mut(&self) -> RefMut<T> — RefCell
+lock	lock(&self) -> LockResult<MutexGuard<T>>
+Default	trait Default — fn default() -> Self; #[derive(Default)]
+Clone	trait Clone — fn clone(&self) -> Self
+Copy	trait Copy: Clone — bitwise copy marker; no move semantics
+Debug	trait Debug — {:?}; #[derive(Debug)]
+Display	trait Display — {}; impl fmt::Display for T { fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result }
+From	trait From<T> — fn from(value: T) -> Self
+Into	trait Into<T> — fn into(self) -> T; blanket from From
+Iterator	trait Iterator — type Item; fn next(&mut self) -> Option<Self::Item>
+Send	marker trait Send — safe to move across threads
+Sync	marker trait Sync — &T is Send
+Drop	trait Drop — fn drop(&mut self); runs when the value goes out of scope
+PartialEq	trait PartialEq — ==; Eq for total equality
+Hash	trait Hash — fn hash<H: Hasher>(&self, state: &mut H)

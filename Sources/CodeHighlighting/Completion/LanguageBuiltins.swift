@@ -24,22 +24,47 @@ public enum LanguageBuiltins {
     public static func completions(for language: Language) -> [CompletionItem] {
         lock.lock(); defer { lock.unlock() }
         if let cached = cache[language] { return cached }
-        let items = load(resourceName(for: language))
+        let items = load(resourceNames(for: language))
         let sorted = items.sorted { $0.text.caseInsensitiveCompare($1.text) == .orderedAscending }
         cache[language] = sorted
         return sorted
     }
 
-    /// The resource file (in `Builtins/`) backing a language, or nil when there's no
-    /// list. TypeScript reuses the JavaScript set.
-    private static func resourceName(for language: Language) -> String? {
+    /// The resource files (in `Builtins/`) backing a language, in load order — a
+    /// later file's entry replaces an earlier one with the same identifier, so
+    /// TypeScript is JavaScript plus its own additions and C++ is C plus std.
+    /// Empty when there's no list.
+    private static func resourceNames(for language: Language) -> [String] {
         switch language {
-        case .php:                      return "php"
-        case .javascript, .typescript:  return "javascript"
-        case .python:                   return "python"
-        case .swift:                    return "swift"
-        default:                        return nil
+        case .php:          return ["php"]
+        case .javascript:   return ["javascript"]
+        case .typescript:   return ["javascript", "typescript"]
+        case .python:       return ["python"]
+        case .swift:        return ["swift"]
+        case .go:           return ["go"]
+        case .rust:         return ["rust"]
+        case .ruby:         return ["ruby"]
+        case .java:         return ["java"]
+        case .kotlin:       return ["kotlin"]
+        case .csharp:       return ["csharp"]
+        case .c:            return ["c"]
+        case .cpp:          return ["c", "cpp"]
+        case .bash:         return ["bash"]
+        default:            return []
         }
+    }
+
+    /// Loads every file in order; same identifier → the later file wins.
+    private static func load(_ names: [String]) -> [CompletionItem] {
+        var byText: [String: CompletionItem] = [:]
+        var order: [String] = []
+        for name in names {
+            for item in load(name) {
+                if byText[item.text] == nil { order.append(item.text) }
+                byText[item.text] = item
+            }
+        }
+        return order.compactMap { byText[$0] }
     }
 
     /// Reads a `Builtins/<name>.txt` resource into completion items, dropping blanks

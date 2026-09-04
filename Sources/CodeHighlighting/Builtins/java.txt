@@ -1,0 +1,156 @@
+# Java — common JDK API (hover word is the unqualified name), keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+public
+private
+protected
+static
+final
+abstract
+class
+interface
+enum
+record
+extends
+implements
+new
+return
+if
+else
+for
+while
+do
+switch
+case
+default
+break
+continue
+try
+catch
+finally
+throw
+throws
+import
+package
+this
+super
+void
+int
+long
+double
+float
+boolean
+char
+byte
+short
+null
+true
+false
+instanceof
+var
+sealed
+permits
+yield
+synchronized
+volatile
+transient
+native
+println	System.out.println(Object x)  ·  System.err.println(x)
+print	System.out.print(Object x)
+printf	System.out.printf(String format, Object... args) — %s %d %.2f %n
+String	class String — immutable; length(), charAt(i), substring(a, b), split(re), String.format()
+length	length() — String; array.length is a field
+charAt	charAt(int index) -> char
+substring	substring(int beginIndex, int endIndex) -> String  ·  substring(beginIndex)
+indexOf	indexOf(String str) -> int — -1 when absent  ·  List.indexOf(Object)
+contains	contains(CharSequence s) -> boolean  ·  Collection.contains(Object)
+equals	equals(Object other) -> boolean — override with hashCode()
+equalsIgnoreCase	equalsIgnoreCase(String other) -> boolean
+split	split(String regex) -> String[]  ·  split(regex, limit)
+trim	trim() -> String  ·  strip() is Unicode-aware
+strip	strip() -> String — Unicode whitespace; stripLeading(), stripTrailing()
+toLowerCase	toLowerCase() -> String
+toUpperCase	toUpperCase() -> String
+replace	replace(CharSequence target, CharSequence replacement) -> String — all occurrences; replaceAll(regex, repl)
+startsWith	startsWith(String prefix) -> boolean
+endsWith	endsWith(String suffix) -> boolean
+isEmpty	isEmpty() -> boolean
+isBlank	isBlank() -> boolean — empty or only whitespace
+format	String.format(String format, Object... args) -> String
+join	String.join(CharSequence delimiter, elements) -> String
+valueOf	String.valueOf(x) -> String  ·  Integer.valueOf(s) -> Integer
+StringBuilder	class StringBuilder — append(x), insert(i, x), reverse(), toString(); mutable
+append	append(x) -> StringBuilder — chainable
+toString	toString() -> String — override for readable output
+hashCode	hashCode() -> int — consistent with equals()
+List	interface List<E> — ArrayList, LinkedList; List.of(a, b) immutable
+ArrayList	class ArrayList<E> — resizable array; add, get, set, remove, size
+add	add(E e) -> boolean  ·  add(int index, E e)
+get	get(int index) -> E  ·  Map.get(Object key) -> V | null
+set	set(int index, E e) -> E
+remove	remove(int index) -> E  ·  remove(Object o) -> boolean
+size	size() -> int
+forEach	forEach(Consumer<? super T> action)
+stream	stream() -> Stream<E>
+of	List.of(...)  ·  Set.of(...)  ·  Map.of(k1, v1, …)  ·  Optional.of(x)  ·  Stream.of(...)
+Map	interface Map<K, V> — HashMap, TreeMap, LinkedHashMap; put, get, getOrDefault, containsKey, entrySet
+HashMap	class HashMap<K, V> — hash table, unordered; initial capacity 16
+put	put(K key, V value) -> V | null — previous value
+getOrDefault	getOrDefault(Object key, V defaultValue) -> V
+containsKey	containsKey(Object key) -> boolean
+keySet	keySet() -> Set<K>
+values	values() -> Collection<V>
+entrySet	entrySet() -> Set<Map.Entry<K, V>> — getKey(), getValue()
+computeIfAbsent	computeIfAbsent(K key, Function<K, V> mappingFunction) -> V
+Set	interface Set<E> — HashSet, TreeSet, LinkedHashSet; no duplicates
+HashSet	class HashSet<E>
+Optional	class Optional<T> — of, ofNullable, empty; isPresent, get, orElse, orElseThrow, map, ifPresent
+ofNullable	Optional.ofNullable(T value) -> Optional<T>
+orElse	orElse(T other) -> T
+orElseThrow	orElseThrow() -> T  ·  orElseThrow(Supplier<X>)
+isPresent	isPresent() -> boolean
+ifPresent	ifPresent(Consumer<T> action)
+map	map(Function<T, R> mapper) -> Stream<R> / Optional<R>
+filter	filter(Predicate<T> predicate) -> Stream<T> / Optional<T>
+collect	collect(Collector<T, A, R> collector) -> R — Collectors.toList(), joining(), groupingBy()
+Collectors	class Collectors — toList(), toSet(), toMap(k, v), joining(sep), groupingBy(f), counting()
+toList	toList() -> List<T> — Stream, Java 16+ (unmodifiable)
+sorted	sorted() -> Stream<T>  ·  sorted(Comparator)
+findFirst	findFirst() -> Optional<T>
+anyMatch	anyMatch(Predicate<T> predicate) -> boolean
+count	count() -> long
+Math	class Math — abs, max, min, pow, sqrt, floor, ceil, round, random()
+abs	Math.abs(x)
+max	Math.max(a, b)
+min	Math.min(a, b)
+pow	Math.pow(double a, double b) -> double
+sqrt	Math.sqrt(double a) -> double
+random	Math.random() -> double in [0, 1)
+Integer	class Integer — parseInt(s), valueOf, MAX_VALUE, MIN_VALUE; boxed int
+parseInt	Integer.parseInt(String s) -> int — NumberFormatException
+Objects	class Objects — equals(a, b), hash(values...), requireNonNull(obj, msg), isNull, toString(obj, default)
+requireNonNull	Objects.requireNonNull(T obj, String message) -> T
+Arrays	class Arrays — asList, sort, stream, toString, fill, copyOf, equals
+asList	Arrays.asList(T... a) -> List<T> — fixed size
+sort	Arrays.sort(array)  ·  List.sort(Comparator)  ·  Collections.sort(list)
+Collections	class Collections — sort, reverse, shuffle, unmodifiableList, emptyList, max, min
+Exception	class Exception — checked; extends Throwable; getMessage(), printStackTrace()
+RuntimeException	class RuntimeException — unchecked
+IllegalArgumentException	class IllegalArgumentException extends RuntimeException
+IllegalStateException	class IllegalStateException extends RuntimeException
+NullPointerException	class NullPointerException
+Thread	class Thread — new Thread(runnable).start(); Thread.sleep(ms); virtual threads: Thread.ofVirtual()
+sleep	Thread.sleep(long millis) throws InterruptedException
+System	class System — out, err, in, currentTimeMillis(), nanoTime(), getenv(), exit(), getProperty()
+currentTimeMillis	System.currentTimeMillis() -> long
+nanoTime	System.nanoTime() -> long — for elapsed time
+getenv	System.getenv(String name) -> String | null
+exit	System.exit(int status)
+Iterator	interface Iterator<E> — hasNext(), next(), remove()
+Comparable	interface Comparable<T> — compareTo(T o) -> int
+Comparator	interface Comparator<T> — compare(a, b); Comparator.comparing(f), reversed(), thenComparing()
+Runnable	interface Runnable — void run()
+Callable	interface Callable<V> — V call() throws Exception
+Object	class Object — root; equals, hashCode, toString, getClass
+Files	class Files — readString(path), writeString(path, s), readAllLines, exists, walk, createDirectories
+Path	interface Path — Path.of("a", "b"), resolve, getFileName, toAbsolutePath
+Override	@Override — compile-time check that a supertype method is overridden

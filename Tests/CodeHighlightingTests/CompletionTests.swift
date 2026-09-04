@@ -122,12 +122,13 @@ final class CompletionTests: XCTestCase {
         XCTAssertTrue(out.contains { $0.text == "array_filter" })
     }
 
-    func testJavaScriptAndTypeScriptShareBuiltins() {
-        let js = LanguageBuiltins.completions(for: .javascript)
-        let ts = LanguageBuiltins.completions(for: .typescript)
-        XCTAssertFalse(js.isEmpty)
-        XCTAssertEqual(js.map(\.text), ts.map(\.text))   // TS reuses the JS set
-        XCTAssertTrue(js.contains { $0.text == "forEach" })
+    func testTypeScriptIsASupersetOfJavaScript() {
+        // TypeScript loads javascript.txt then typescript.txt: every JS identifier is still
+        // there, plus the TS-only ones.
+        let js = Set(LanguageBuiltins.completions(for: .javascript).map(\.text))
+        let ts = Set(LanguageBuiltins.completions(for: .typescript).map(\.text))
+        XCTAssertTrue(js.isSubset(of: ts))
+        XCTAssertTrue(ts.contains("Record") && !js.contains("Record"))
     }
 
     func testPythonBuiltins() {
@@ -207,6 +208,42 @@ final class CompletionTests: XCTestCase {
             let item = items.first { $0.text == name }
             XCTAssertNotNil(item, name)
             XCTAssertFalse(item?.detail?.isEmpty ?? true, "\(name) has a signature")
+        }
+    }
+
+    func testTypeScriptOverridesJavaScriptEntry() {
+        // typescript.txt is loaded after javascript.txt and wins on the same identifier.
+        let js = LanguageBuiltins.completions(for: .javascript).first { $0.text == "unknown" }
+        let ts = LanguageBuiltins.completions(for: .typescript).first { $0.text == "unknown" }
+        XCTAssertNil(js?.detail)
+        XCTAssertTrue(ts?.detail?.contains("top type") ?? false)
+        XCTAssertEqual(LanguageBuiltins.completions(for: .typescript).filter { $0.text == "unknown" }.count, 1)
+    }
+
+    func testCommonBuiltinsHaveSignaturesInEveryLanguage() {
+        // Hover shows `.detail`; a bare entry completes but never hovers. Keywords stay bare on
+        // purpose (no "Built-in function" card on `if`), everything else must carry a signature.
+        let samples: [(String, [CompletionItem], [String])] = [
+            ("swift", LanguageBuiltins.completions(for: .swift), ["print", "map", "String", "Task", "count", "DispatchQueue"]),
+            ("python", LanguageBuiltins.completions(for: .python), ["defaultdict", "split", "os", "Path", "startswith", "reduce"]),
+            ("javascript", LanguageBuiltins.completions(for: .javascript), ["console", "isArray", "structuredClone", "Promise", "localStorage", "PI"]),
+            ("typescript", LanguageBuiltins.completions(for: .typescript), ["console", "Record", "Partial", "unknown", "Awaited"]),
+            ("go", LanguageBuiltins.completions(for: .go), ["append", "Println", "Errorf", "Mutex", "error"]),
+            ("rust", LanguageBuiltins.completions(for: .rust), ["println", "Vec", "unwrap", "collect", "Arc"]),
+            ("ruby", LanguageBuiltins.completions(for: .ruby), ["puts", "each", "map", "attr_accessor", "Hash"]),
+            ("java", LanguageBuiltins.completions(for: .java), ["println", "ArrayList", "stream", "Optional", "Collectors"]),
+            ("kotlin", LanguageBuiltins.completions(for: .kotlin), ["listOf", "let", "launch", "joinToString", "Flow"]),
+            ("csharp", LanguageBuiltins.completions(for: .csharp), ["WriteLine", "Where", "Task", "Dictionary", "TryParse"]),
+            ("c", LanguageBuiltins.completions(for: .c), ["printf", "malloc", "strlen", "size_t", "qsort"]),
+            ("cpp", LanguageBuiltins.completions(for: .cpp), ["printf", "vector", "unique_ptr", "cout", "ranges"]),
+            ("bash", LanguageBuiltins.completions(for: .bash), ["echo", "read", "grep", "set", "BASH_SOURCE"]),
+        ]
+        for (language, items, names) in samples {
+            for name in names {
+                let item = items.first { $0.text == name }
+                XCTAssertNotNil(item, "\(language) \(name)")
+                XCTAssertFalse(item?.detail?.isEmpty ?? true, "\(language) \(name) has a signature")
+            }
         }
     }
 }

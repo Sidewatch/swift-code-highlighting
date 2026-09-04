@@ -1,0 +1,114 @@
+# C — standard library (C17) and keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+int
+char
+float
+double
+void
+long
+short
+unsigned
+signed
+struct
+union
+enum
+typedef
+static
+extern
+const
+volatile
+register
+auto
+sizeof
+return
+if
+else
+for
+while
+do
+switch
+case
+default
+break
+continue
+goto
+inline
+restrict
+printf	int printf(const char *format, ...) — %d %s %f %zu %p %x
+fprintf	int fprintf(FILE *stream, const char *format, ...)
+sprintf	int sprintf(char *str, const char *format, ...) — unbounded; prefer snprintf
+snprintf	int snprintf(char *str, size_t size, const char *format, ...) — always NUL-terminates
+scanf	int scanf(const char *format, ...) — returns items matched
+sscanf	int sscanf(const char *str, const char *format, ...)
+fgets	char *fgets(char *s, int size, FILE *stream) — keeps the newline; NULL at EOF
+fputs	int fputs(const char *s, FILE *stream)
+puts	int puts(const char *s) — adds a newline
+putchar	int putchar(int c)
+getchar	int getchar(void) — EOF at end
+fopen	FILE *fopen(const char *path, const char *mode) — "r" "w" "a" "rb"; NULL on failure
+fclose	int fclose(FILE *stream)
+fread	size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
+fwrite	size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
+fseek	int fseek(FILE *stream, long offset, int whence) — SEEK_SET, SEEK_CUR, SEEK_END
+ftell	long ftell(FILE *stream)
+fflush	int fflush(FILE *stream)
+perror	void perror(const char *s) — prints s: strerror(errno)
+malloc	void *malloc(size_t size) — uninitialised; NULL on failure
+calloc	void *calloc(size_t nmemb, size_t size) — zeroed
+realloc	void *realloc(void *ptr, size_t size) — may move; keep the old pointer until checked
+free	void free(void *ptr) — NULL is fine
+exit	void exit(int status) — runs atexit handlers, flushes stdio
+abort	void abort(void) — SIGABRT, no cleanup
+atoi	int atoi(const char *nptr) — no error reporting; prefer strtol
+atol	long atol(const char *nptr)
+strtol	long strtol(const char *nptr, char **endptr, int base)
+strtod	double strtod(const char *nptr, char **endptr)
+qsort	void qsort(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *))
+bsearch	void *bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *))
+rand	int rand(void) — 0..RAND_MAX; srand(seed) first
+srand	void srand(unsigned int seed)
+getenv	char *getenv(const char *name) — NULL when unset
+system	int system(const char *command)
+strlen	size_t strlen(const char *s)
+strcpy	char *strcpy(char *dest, const char *src) — unbounded; prefer strncpy/strlcpy
+strncpy	char *strncpy(char *dest, const char *src, size_t n) — may not NUL-terminate
+strcat	char *strcat(char *dest, const char *src)
+strncat	char *strncat(char *dest, const char *src, size_t n)
+strcmp	int strcmp(const char *s1, const char *s2) — 0 when equal
+strncmp	int strncmp(const char *s1, const char *s2, size_t n)
+strchr	char *strchr(const char *s, int c) — first occurrence
+strrchr	char *strrchr(const char *s, int c) — last occurrence
+strstr	char *strstr(const char *haystack, const char *needle)
+strtok	char *strtok(char *str, const char *delim) — modifies str; not reentrant (strtok_r)
+strdup	char *strdup(const char *s) — malloc'd copy; free it
+memcpy	void *memcpy(void *dest, const void *src, size_t n) — regions must not overlap
+memmove	void *memmove(void *dest, const void *src, size_t n) — overlap safe
+memset	void *memset(void *s, int c, size_t n)
+memcmp	int memcmp(const void *s1, const void *s2, size_t n)
+isdigit	int isdigit(int c)
+isalpha	int isalpha(int c)
+isspace	int isspace(int c)
+toupper	int toupper(int c)
+tolower	int tolower(int c)
+sqrt	double sqrt(double x) — <math.h>, link -lm
+pow	double pow(double x, double y)
+fabs	double fabs(double x)
+floor	double floor(double x)
+ceil	double ceil(double x)
+assert	assert(expression) — aborts when false; compiled out with NDEBUG
+errno	errno — thread-local error code set by failed calls; strerror(errno)
+size_t	size_t — unsigned size type; result of sizeof
+ssize_t	ssize_t — signed size type (POSIX); -1 for errors
+int32_t	int32_t — exact-width; int8_t int16_t int64_t (<stdint.h>)
+uint8_t	uint8_t — a byte
+uint32_t	uint32_t
+uint64_t	uint64_t
+int64_t	int64_t
+bool	bool — <stdbool.h> before C23; true / false
+NULL	NULL — null pointer constant ((void *)0)
+FILE	FILE — opaque stream; stdin, stdout, stderr
+stdin	FILE *stdin
+stdout	FILE *stdout
+stderr	FILE *stderr — unbuffered
+EOF	EOF — end-of-file marker returned by getchar/fgetc (-1)
+main	int main(int argc, char *argv[]) — argv[0] is the program; return 0 for success

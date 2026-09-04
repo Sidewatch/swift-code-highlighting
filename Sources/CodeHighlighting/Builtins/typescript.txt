@@ -1,0 +1,33 @@
+# TypeScript additions on top of javascript.txt (loaded after it; same identifier wins here).
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+satisfies
+declare
+abstract
+keyof
+infer
+asserts
+Record	Record<K extends keyof any, T> — object type with keys K and values T
+Partial	Partial<T> — all properties of T optional
+Required	Required<T> — all properties of T required
+Readonly	Readonly<T> — all properties of T readonly
+Pick	Pick<T, K extends keyof T> — only the keys K of T
+Omit	Omit<T, K extends keyof any> — T without the keys K
+Exclude	Exclude<U, E> — members of union U not assignable to E
+Extract	Extract<U, E> — members of union U assignable to E
+NonNullable	NonNullable<T> — T without null and undefined
+ReturnType	ReturnType<F> — the return type of function type F
+Parameters	Parameters<F> — the parameter types of F as a tuple
+InstanceType	InstanceType<C> — the instance type of constructor C
+Awaited	Awaited<T> — what await yields for T, unwrapping nested promises
+unknown	unknown — top type; must be narrowed before use (safer any)
+never	never — bottom type; a function that never returns, or an impossible case
+any	any — opts out of type checking; prefer unknown
+void	void — no meaningful return value
+type	type Name = … — type alias; unions, intersections, mapped and conditional types
+interface	interface Name { … } — object shape; declarations merge, classes can implement
+enum	enum Name { A, B } — numeric by default; const enum inlines; prefer union of literals
+namespace	namespace Name { … } — legacy grouping; prefer ES modules
+readonly	readonly prop: T — assignable only in the constructor / initializer
+implements	class C implements I — checks the class against the interface
+as	expr as T — type assertion (no runtime check); `as const` freezes literal types
+Map	Map<K, V> — get(key), set(key, value), has(key), delete(key), size, keys(), values(), entries()
