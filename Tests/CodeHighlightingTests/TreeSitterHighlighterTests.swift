@@ -337,6 +337,12 @@ final class TreeSitterHighlighterTests: XCTestCase {
         let partial = TreeSitterHighlighter.templateTagRanges(in: ns, within: [NSRange(location: 0, length: 20)])
         XCTAssertEqual(partial.code, [])
         XCTAssertEqual(partial.expressions.map { ns.substring(with: $0) }, [" p "])
+        // Masking blanks whole tags, delimiters included, at unchanged length — what the HTML
+        // grammar is handed (it reads `<#` as a tag and loses every element after it).
+        let masked = TreeSitterHighlighter.maskingTemplateTags(ns, tags.all)
+        XCTAssertEqual(masked.length, ns.length)
+        XCTAssertEqual(masked as String, "<label for=\"       _e\">" + String(repeating: " ", count: 24) + String(repeating: " ", count: 18) + "     " + "</label>\n" + String(repeating: " ", count: 21))
+        XCTAssertFalse((masked as String).contains("<#") || (masked as String).contains("{{"))
     }
 
     // MARK: - 3. Range clamping at document/clip edges

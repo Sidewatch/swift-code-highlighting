@@ -1022,8 +1022,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         var hits: [Hit] = []
         // A top-level HTML document owns all of `ns`; injected HTML gets its ranges below.
         if depth == 0, g.templateTags {
-            hits += templateTagHits(source: ns, within: [NSRange(location: 0, length: ns.length)],
-                                    offset: offset, clip: clip, nextBase: &nextBase)
+            // Top-level .html: the JS is coloured; the markup parse itself is not masked here
+            // (the incremental session owns that tree), so elements after a `<#` may stay plain.
+            let tags = templateTagRanges(in: ns, within: [NSRange(location: 0, length: ns.length)])
+            hits += templateTagHits(source: ns, tags: tags, offset: offset, clip: clip, nextBase: &nextBase)
         }
         guard let injQuery = g.injections else { return hits }
         let sourceClip = NSRange(location: max(0, clip.location - offset), length: clip.length)
@@ -1032,13 +1034,20 @@ public final class TreeSitterHighlighter: CodeHighlighter {
             guard site.ranges.contains(where: {
                 NSIntersectionRange(NSRange(location: offset + $0.location, length: $0.length), clip).length > 0
             }) else { continue }
-            guard let subTree = combinedParse(sub, ns: ns, ranges: site.ranges) else { continue }
-            hits += collectHits(sub.highlights, tree: subTree, source: ns,
+            // HTML with template tags is parsed from a copy with the tags blanked to spaces:
+            // tree-sitter-html reads `<#` as a tag opening and produces no elements at all
+            // for the rest of the section (0 tag captures on a real Customizer template vs
+            // 12 masked — 4 Sep 2026). Same UTF-16 length, so every position still holds.
+            let tags: (code: [NSRange], expressions: [NSRange], all: [NSRange]) = sub.templateTags
+                ? templateTagRanges(in: ns, within: site.ranges) : (code: [], expressions: [], all: [])
+            let markup: NSString = tags.all.isEmpty ? ns : maskingTemplateTags(ns, tags.all)
+            guard let subTree = combinedParse(sub, ns: markup, ranges: site.ranges) else { continue }
+            hits += collectHits(sub.highlights, tree: subTree, source: markup,
                                 offset: offset, clip: clip, nextBase: &nextBase)
-            hits += collectInjectionHits(sub, tree: subTree, source: ns, offset: offset,
+            hits += collectInjectionHits(sub, tree: subTree, source: markup, offset: offset,
                                          clip: clip, depth: depth + 1, nextBase: &nextBase)
-            if sub.templateTags {
-                hits += templateTagHits(source: ns, within: site.ranges, offset: offset, clip: clip, nextBase: &nextBase)
+            if !tags.all.isEmpty {
+                hits += templateTagHits(source: ns, tags: tags, offset: offset, clip: clip, nextBase: &nextBase)
             }
         }
         return hits
@@ -1053,24 +1062,35 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     nonisolated(unsafe) private static let templateTagRegex = try! NSRegularExpression(
         pattern: #"<#([\s\S]*?)#>|\{\{\{?([\s\S]*?)\}\}\}?"#)
 
-    /// (`<# #>` fragments, `{{ }}` fragments), each ascending and non-overlapping.
-    static func templateTagRanges(in ns: NSString, within ranges: [NSRange]) -> (code: [NSRange], expressions: [NSRange]) {
-        var code: [NSRange] = [], expressions: [NSRange] = []
+    /// (`<# #>` fragments, `{{ }}` fragments, whole tags including delimiters), each ascending
+    /// and non-overlapping.
+    static func templateTagRanges(in ns: NSString, within ranges: [NSRange]) -> (code: [NSRange], expressions: [NSRange], all: [NSRange]) {
+        var code: [NSRange] = [], expressions: [NSRange] = [], all: [NSRange] = []
         let text = ns as String
         for r in ranges where r.length > 0 && NSMaxRange(r) <= ns.length {
             for m in templateTagRegex.matches(in: text, range: r) {
                 let c = m.range(at: 1), e = m.range(at: 2)
                 if c.location != NSNotFound, c.length > 0 { code.append(c) }
                 if e.location != NSNotFound, e.length > 0 { expressions.append(e) }
+                all.append(m.range)
             }
         }
-        return (mergeAscending(code), mergeAscending(expressions))
+        return (mergeAscending(code), mergeAscending(expressions), mergeAscending(all))
+    }
+
+    /// `ns` with every template tag (delimiters included) replaced by spaces, one per UTF-16
+    /// unit, so the markup grammar sees clean HTML at unchanged positions.
+    static func maskingTemplateTags(_ ns: NSString, _ all: [NSRange]) -> NSString {
+        let m = NSMutableString(string: ns as String)
+        for r in all where NSMaxRange(r) <= m.length {
+            m.replaceCharacters(in: r, with: String(repeating: " ", count: r.length))
+        }
+        return m
     }
 
     @MainActor
-    static func templateTagHits(source ns: NSString, within ranges: [NSRange], offset: Int, clip: NSRange,
-                                nextBase: inout Int) -> [Hit] {
-        let tags = templateTagRanges(in: ns, within: ranges)
+    static func templateTagHits(source ns: NSString, tags: (code: [NSRange], expressions: [NSRange], all: [NSRange]),
+                                offset: Int, clip: NSRange, nextBase: inout Int) -> [Hit] {
         guard !(tags.code.isEmpty && tags.expressions.isEmpty), let js = grammarForInjection("javascript") else { return [] }
         func intersectsClip(_ rs: [NSRange]) -> Bool {
             rs.contains { NSIntersectionRange(NSRange(location: offset + $0.location, length: $0.length), clip).length > 0 }
