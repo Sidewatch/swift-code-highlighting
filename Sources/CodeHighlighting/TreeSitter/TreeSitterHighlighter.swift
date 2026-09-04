@@ -471,7 +471,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
                                       language: CodeLanguage.Language) -> HoverInfo? {
         guard location <= ns.length else { return nil }
         let lineRange = ns.lineRange(for: NSRange(location: location, length: 0))
-        var signature = ns.substring(with: lineRange).trimmingCharacters(in: .whitespacesAndNewlines)
+        var signature = ns.substring(with: lineRange).trimmed
         while signature.hasSuffix("{") || signature.hasSuffix("}") || signature.hasSuffix(";") {
             signature = String(signature.dropLast())
         }
@@ -1335,7 +1335,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         while let match = resolving.next() {
             for cap in match.captures {
                 guard let name = cap.name, NSMaxRange(cap.range) <= ns.length else { continue }
-                let text = ns.substring(with: cap.range).trimmingCharacters(in: .whitespacesAndNewlines)
+                let text = ns.substring(with: cap.range).trimmed
                 guard !text.isEmpty, text.count <= 30 else { continue }
                 let absLoc = offset + cap.range.location
                 let key = "\(absLoc):\(cap.range.length)"

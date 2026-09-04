@@ -166,10 +166,10 @@ public extension CustomLanguageDefinition {
     /// or `nil` when it's fully valid. ``decode(from:)`` calls this;
     /// exposed so programmatically-built definitions can be checked too.
     var validationError: CustomLanguageDefinitionError? {
-        if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if name.trimmed.isEmpty {
             return .emptyName
         }
-        if extensions.allSatisfy({ $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+        if extensions.allSatisfy({ $0.trimmed.isEmpty }) {
             return .emptyExtensions
         }
         for (index, pattern) in (patterns ?? []).enumerated() where pattern.tokenKind == nil {

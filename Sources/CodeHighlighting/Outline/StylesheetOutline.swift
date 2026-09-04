@@ -309,7 +309,7 @@ public enum StylesheetOutline {
     /// The section name a comment body yields, or nil when the comment is not a
     /// banner (see the type doc for the rule).
     static func bannerName(_ body: String) -> String? {
-        let trimmed = body.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = body.trimmed
         guard !trimmed.hasPrefix("!") else { return nil }          // `/*! preserved */`
         // Decoration lives at the EDGES of every banner shape seen in the wild —
         // `===== Header =====`, the `-----` rows of a WordPress multi-line banner,

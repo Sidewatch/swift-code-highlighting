@@ -176,13 +176,13 @@ public final class EmbeddedMarkupHighlighter: CodeHighlighter {
     private static func frontmatter(in ns: NSString) -> (body: NSRange, end: Int)? {
         guard ns.length >= 3 else { return nil }
         let opening = ns.lineRange(for: NSRange(location: 0, length: 0))
-        guard ns.substring(with: opening).trimmingCharacters(in: .whitespacesAndNewlines) == "---" else { return nil }
+        guard ns.substring(with: opening).trimmed == "---" else { return nil }
 
         var loc = NSMaxRange(opening)
         while loc < ns.length {
             let line = ns.lineRange(for: NSRange(location: loc, length: 0))
             guard line.length > 0 else { break }   // no forward progress; bail rather than spin
-            if ns.substring(with: line).trimmingCharacters(in: .whitespacesAndNewlines) == "---" {
+            if ns.substring(with: line).trimmed == "---" {
                 let start = NSMaxRange(opening)
                 return (NSRange(location: start, length: line.location - start), NSMaxRange(line))
             }
