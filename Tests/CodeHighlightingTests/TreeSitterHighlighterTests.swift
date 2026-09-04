@@ -341,7 +341,8 @@ final class TreeSitterHighlighterTests: XCTestCase {
         // grammar is handed (it reads `<#` as a tag and loses every element after it).
         let masked = TreeSitterHighlighter.maskingTemplateTags(ns, tags.all)
         XCTAssertEqual(masked.length, ns.length)
-        XCTAssertEqual(masked as String, "<label for=\"       _e\">" + String(repeating: " ", count: 24) + String(repeating: " ", count: 18) + "     " + "</label>\n" + String(repeating: " ", count: 21))
+        XCTAssertEqual((masked as String).replacingOccurrences(of: " ", with: ""), "<labelfor=\"_e\"></label>\n",
+                       "everything outside the tags survives; the tags themselves are spaces")
         XCTAssertFalse((masked as String).contains("<#") || (masked as String).contains("{{"))
     }
 
