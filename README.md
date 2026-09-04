@@ -29,7 +29,7 @@ Syntax highlighting for macOS `NSTextStorage`, with two backends behind one `Cod
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Sidewatch/swift-code-highlighting.git", from: "1.0.0")
+    .package(url: "https://github.com/Sidewatch/swift-code-highlighting.git", from: "0.1.0")
 ]
 ```
 
