@@ -165,7 +165,7 @@ public final class SyntaxHighlighter: CodeHighlighter {
 
     /// The (pattern, kind) rule table for `lang`; languages without a dedicated
     /// table fall through to `familyDefs(for:)`.
-    private static func buildDefs(for lang: Language) -> [(String, TokenKind)] {
+    static func buildDefs(for lang: Language) -> [(String, TokenKind)] {
         switch lang {
         case .swift:
             return [
@@ -558,7 +558,7 @@ public final class SyntaxHighlighter: CodeHighlighter {
     /// Fallback highlighting for any language without a dedicated rule set above,
     /// chosen by its `CodeLanguage` family. Broad but serviceable — so that no
     /// recognized language ever renders as flat, uncolored text.
-    private static func familyDefs(for family: HighlightFamily) -> [(String, TokenKind)] {
+    static func familyDefs(for family: HighlightFamily) -> [(String, TokenKind)] {
         switch family {
         case .cLike:
             return [
