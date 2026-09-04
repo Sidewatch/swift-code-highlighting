@@ -51,198 +51,32 @@ public enum StylesheetOutline {
     private static let pragmaPrefixes = ["rtl:", "stylelint", "prettier", "eslint", "csslint", "postcss", "autoprefixer", "@"]
 
     /// The at-rules whose block contains rules (which then nest beneath them).
-    private static let nestingAtRules = ["@media", "@supports", "@layer", "@container", "@scope", "@document"]
+    static let nestingAtRules = ["@media", "@supports", "@layer", "@container", "@scope", "@document"]
 
     public static func symbols(in text: String, language: Language) -> [Symbol] {
-        let ns = text as NSString
-        let n = ns.length
-        var buf = [unichar](repeating: 0, count: n)
-        if n > 0 { ns.getCharacters(&buf, range: NSRange(location: 0, length: n)) }
-        let lineComments = language != .css
-
-        struct Banner { let name: String; let location: Int; let length: Int; let line: Int }
-        struct Rule {
-            let name: String; let location: Int; let length: Int; let line: Int
-            let kind: SymbolKind; var scopeEnd: Int?
-        }
-        var banners: [Banner] = []
-        var rules: [Rule] = []
-
-        var i = 0
-        var line = 1
-        var lineStart = 0
-        var depth = 0
-        /// Per open brace: the index in `rules` of the listed at-rule it opened, or
-        /// nil for a plain rule's block (whose contents are never listed).
-        var blockStack: [Int?] = []
-        /// Where the current prelude began (after the last `;` `{` `}`), and the
-        /// comment ranges inside it to cut out of its name.
-        var preludeStart = 0
-        var preludeComments: [NSRange] = []
-
-        func isWS(_ c: unichar) -> Bool { c == 0x20 || c == 0x09 || c == 0x0D || c == 0x0A }
-        func isBlank(_ from: Int, _ to: Int) -> Bool {
-            var k = from
-            while k < to { if !isWS(buf[k]) { return false }; k += 1 }
-            return true
-        }
-        func newlines(_ from: Int, _ to: Int) -> Int {
-            var count = 0, k = from
-            while k < to { if buf[k] == 0x0A { count += 1 }; k += 1 }
-            return count
-        }
-        func collapsed(_ s: String) -> String {
-            s.split(whereSeparator: { $0.isWhitespace || $0.isNewline }).joined(separator: " ")
-        }
-
-        while i < n {
-            let c = buf[i]
-            if c == 0x0A { line += 1; i += 1; lineStart = i; continue }
-
-            // Block comment — a section candidate when it starts its own top-level line.
-            if c == 0x2F, i + 1 < n, buf[i + 1] == 0x2A {
-                let start = i
-                let startLine = line
-                var j = i + 2
-                var lastNewline: Int? = nil
-                while j + 1 < n, !(buf[j] == 0x2A && buf[j + 1] == 0x2F) {
-                    if buf[j] == 0x0A { line += 1; lastNewline = j }
-                    j += 1
-                }
-                let end = j + 1 < n ? j + 2 : n
-                if depth == 0, isBlank(lineStart, start),
-                   let name = bannerName(ns.substring(with: NSRange(location: start + 2, length: max(0, j - start - 2)))) {
-                    banners.append(Banner(name: name, location: start, length: end - start, line: startLine))
-                }
-                preludeComments.append(NSRange(location: start, length: end - start))
-                if let lastNewline { lineStart = lastNewline + 1 }
-                i = end
-                continue
-            }
-            // `//` line comment (SCSS / Less) — not the `//` inside `url(http://…)`.
-            if lineComments, c == 0x2F, i + 1 < n, buf[i + 1] == 0x2F, !(i > 0 && buf[i - 1] == 0x3A) {
-                if depth == 0, isBlank(lineStart, i) {
-                    // A block of consecutive own-line `//` comments. SCSS banners are
-                    // `// ----` / `// Title` / `// ----`, and a lone `// Label` directly
-                    // above code is a label; prose paragraphs are neither.
-                    var rows: [(text: String, location: Int, line: Int)] = []
-                    var k = i
-                    while true {
-                        var e = k
-                        while e < n, buf[e] != 0x0A { e += 1 }
-                        rows.append((ns.substring(with: NSRange(location: k + 2, length: e - k - 2)), k, line))
-                        preludeComments.append(NSRange(location: k, length: e - k))
-                        i = e   // the newline (or EOF) is the main loop's
-                        guard e < n else { break }
-                        var p = e + 1
-                        while p < n, buf[p] == 0x20 || buf[p] == 0x09 || buf[p] == 0x0D { p += 1 }
-                        guard p + 1 < n, buf[p] == 0x2F, buf[p + 1] == 0x2F, !(buf[p - 1] == 0x3A) else { break }
-                        line += 1
-                        lineStart = e + 1
-                        k = p
-                    }
-                    var q = i
-                    while q < n, isWS(buf[q]) { q += 1 }
-                    let nextIsCode = q < n && buf[q] != 0x2F
-                    for b in Self.lineCommentBanners(rows, nextIsCode: nextIsCode) {
-                        banners.append(Banner(name: b.name, location: b.location, length: b.length, line: b.line))
-                    }
-                    continue
-                }
-                let start = i
-                while i < n, buf[i] != 0x0A { i += 1 }
-                preludeComments.append(NSRange(location: start, length: i - start))
-                continue
-            }
-            // Strings: nothing inside one opens, closes or ends anything.
-            if c == 0x22 || c == 0x27 {
-                var j = i + 1
-                while j < n, buf[j] != c {
-                    if buf[j] == 0x5C { j += 1 }                     // escaped char
-                    if j < n, buf[j] == 0x0A { line += 1; lineStart = j + 1 }
-                    j += 1
-                }
-                i = min(n, j + 1)
-                continue
-            }
-
-            switch c {
-            case 0x7B: // {
-                let raw = NSRange(location: preludeStart, length: i - preludeStart)
-                let name = collapsed(preludeText(raw, cutting: preludeComments, in: ns))
-                var listed: Int? = nil
-                if !name.isEmpty, depth == 0 || blockStack.last! != nil {
-                    var nameStart = preludeStart
-                    while nameStart < i, isWS(buf[nameStart]) || preludeComments.contains(where: { NSLocationInRange(nameStart, $0) }) { nameStart += 1 }
-                    let isAtRule = name.hasPrefix("@")
-                    let kind: SymbolKind = isAtRule
-                        ? (name.hasPrefix("@mixin") || name.hasPrefix("@function") ? .function : .module)
-                        : .selector
-                    rules.append(Rule(name: name, location: nameStart, length: max(1, i - nameStart),
-                                      line: line - newlines(nameStart, i), kind: kind, scopeEnd: nil))
-                    // Only the at-rules whose bodies hold RULES become scopes. A
-                    // `@keyframes` holds steps, `@font-face` descriptors and a
-                    // `@mixin` its own template — listing their insides is noise.
-                    if isAtRule, Self.nestingAtRules.contains(where: { name.hasPrefix($0) }) {
-                        listed = rules.count - 1
-                    }
-                }
-                blockStack.append(listed)
-                depth += 1
-                preludeStart = i + 1
-                preludeComments = []
-            case 0x7D: // }
-                if depth > 0 {
-                    depth -= 1
-                    if let idx = blockStack.popLast() ?? nil { rules[idx].scopeEnd = i + 1 }
-                }
-                preludeStart = i + 1
-                preludeComments = []
-            case 0x3B: // ;
-                // A top-level `$name: value;` (SCSS) or `@name: value;` (Less) is a
-                // variable — the whole content of a tokens/variables partial. Inside a
-                // block it is a local or a declaration and stays out.
-                if depth == 0 {
-                    let raw = NSRange(location: preludeStart, length: i - preludeStart)
-                    if let name = Self.variableName(in: collapsed(preludeText(raw, cutting: preludeComments, in: ns))) {
-                        var nameStart = preludeStart
-                        while nameStart < i, isWS(buf[nameStart]) || preludeComments.contains(where: { NSLocationInRange(nameStart, $0) }) { nameStart += 1 }
-                        rules.append(Rule(name: name, location: nameStart, length: (name as NSString).length,
-                                          line: line - newlines(nameStart, i), kind: .variable, scopeEnd: nil))
-                    }
-                }
-                preludeStart = i + 1
-                preludeComments = []
-            default:
-                break
-            }
-            i += 1
-        }
-
-        // A map with thousands of entries is not a map: past the limit keep the
-        // structure (sections, at-rules) and drop the selectors.
-        if rules.filter({ $0.kind == .selector }).count > selectorLimit {
-            rules.removeAll { $0.kind == .selector }
-        }
-
+        var scanner = StylesheetScanner(text as NSString, lineComments: language != .css)
+        scanner.scan()
+        var rules = scanner.rules
+        // A map with thousands of entries is not a map: past the limit keep the structure
+        // (sections, at-rules) and drop the selectors.
+        if rules.filter({ $0.kind == .selector }).count > selectorLimit { rules.removeAll { $0.kind == .selector } }
+        let banners = scanner.banners
         var out: [Symbol] = []
         out.reserveCapacity(banners.count + rules.count)
         for (k, b) in banners.enumerated() {
-            let end = k + 1 < banners.count ? banners[k + 1].location : n
-            out.append(Symbol(name: b.name, kind: .heading,
-                              range: NSRange(location: b.location, length: b.length), line: b.line,
+            let end = k + 1 < banners.count ? banners[k + 1].location : scanner.length
+            out.append(Symbol(name: b.name, kind: .heading, range: NSRange(location: b.location, length: b.length), line: b.line,
                               scopeRange: NSRange(location: b.location, length: max(b.length, end - b.location))))
         }
         for r in rules {
-            let scope = r.scopeEnd.map { NSRange(location: r.location, length: $0 - r.location) }
-            out.append(Symbol(name: r.name, kind: r.kind, range: NSRange(location: r.location, length: r.length),
-                              line: r.line, scopeRange: scope))
+            out.append(Symbol(name: r.name, kind: r.kind, range: NSRange(location: r.location, length: r.length), line: r.line,
+                              scopeRange: r.scopeEnd.map { NSRange(location: r.location, length: $0 - r.location) }))
         }
         return out.sorted { $0.range.location < $1.range.location }
     }
 
     /// The prelude's text with the comment ranges inside it removed.
-    private static func preludeText(_ raw: NSRange, cutting comments: [NSRange], in ns: NSString) -> String {
+    static func preludeText(_ raw: NSRange, cutting comments: [NSRange], in ns: NSString) -> String {
         guard !comments.isEmpty else { return ns.substring(with: raw) }
         var pieces: [String] = []
         var cursor = raw.location
