@@ -1,0 +1,145 @@
+# Haskell — Prelude functions, common classes and types, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+module
+import
+qualified
+as
+hiding
+where
+let
+in
+do
+case
+of
+if
+then
+else
+data
+type
+newtype
+class
+instance
+deriving
+infixl
+infixr
+infix
+forall
+default
+foreign
+mdo
+rec
+proc
+putStrLn	putStrLn :: String -> IO ()
+putStr	putStr :: String -> IO ()
+print	print :: Show a => a -> IO () — putStrLn . show
+getLine	getLine :: IO String
+getContents	getContents :: IO String — lazy stdin
+interact	interact :: (String -> String) -> IO ()
+readFile	readFile :: FilePath -> IO String
+writeFile	writeFile :: FilePath -> String -> IO ()
+show	show :: Show a => a -> String
+read	read :: Read a => String -> a — errors on bad input; readMaybe from Text.Read
+map	map :: (a -> b) -> [a] -> [b]
+filter	filter :: (a -> Bool) -> [a] -> [a]
+foldr	foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
+foldl	foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b — foldl' is strict
+foldl'	foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b — strict; Data.List / Data.Foldable
+zip	zip :: [a] -> [b] -> [(a, b)]
+zipWith	zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+unzip	unzip :: [(a, b)] -> ([a], [b])
+head	head :: [a] -> a — partial; errors on []
+tail	tail :: [a] -> [a] — partial
+last	last :: [a] -> a
+init	init :: [a] -> [a]
+null	null :: Foldable t => t a -> Bool
+length	length :: Foldable t => t a -> Int
+reverse	reverse :: [a] -> [a]
+take	take :: Int -> [a] -> [a]
+drop	drop :: Int -> [a] -> [a]
+splitAt	splitAt :: Int -> [a] -> ([a], [a])
+takeWhile	takeWhile :: (a -> Bool) -> [a] -> [a]
+dropWhile	dropWhile :: (a -> Bool) -> [a] -> [a]
+span	span :: (a -> Bool) -> [a] -> ([a], [a])
+elem	elem :: (Foldable t, Eq a) => a -> t a -> Bool
+lookup	lookup :: Eq a => a -> [(a, b)] -> Maybe b
+concat	concat :: Foldable t => t [a] -> [a]
+concatMap	concatMap :: Foldable t => (a -> [b]) -> t a -> [b]
+sum	sum :: (Foldable t, Num a) => t a -> a
+product	product :: (Foldable t, Num a) => t a -> a
+maximum	maximum :: (Foldable t, Ord a) => t a -> a
+minimum	minimum :: (Foldable t, Ord a) => t a -> a
+and	and :: Foldable t => t Bool -> Bool
+or	or :: Foldable t => t Bool -> Bool
+any	any :: Foldable t => (a -> Bool) -> t a -> Bool
+all	all :: Foldable t => (a -> Bool) -> t a -> Bool
+replicate	replicate :: Int -> a -> [a]
+iterate	iterate :: (a -> a) -> a -> [a] — infinite
+repeat	repeat :: a -> [a] — infinite
+cycle	cycle :: [a] -> [a]
+lines	lines :: String -> [String]
+unlines	unlines :: [String] -> String
+words	words :: String -> [String]
+unwords	unwords :: [String] -> String
+fst	fst :: (a, b) -> a
+snd	snd :: (a, b) -> b
+curry	curry :: ((a, b) -> c) -> a -> b -> c
+uncurry	uncurry :: (a -> b -> c) -> (a, b) -> c
+id	id :: a -> a
+const	const :: a -> b -> a
+flip	flip :: (a -> b -> c) -> b -> a -> c
+fmap	fmap :: Functor f => (a -> b) -> f a -> f b  ·  <$>
+pure	pure :: Applicative f => a -> f a
+return	return :: Monad m => a -> m a — same as pure
+>>=	>>= :: Monad m => m a -> (a -> m b) -> m b — bind
+<$>	<$> :: Functor f => (a -> b) -> f a -> f b — infix fmap
+<*>	<*> :: Applicative f => f (a -> b) -> f a -> f b
+mapM_	mapM_ :: (Foldable t, Monad m) => (a -> m b) -> t a -> m ()
+mapM	mapM :: (Traversable t, Monad m) => (a -> m b) -> t a -> m (t b)  (traverse)
+forM_	forM_ :: (Foldable t, Monad m) => t a -> (a -> m b) -> m ()
+sequence	sequence :: (Traversable t, Monad m) => t (m a) -> m (t a)
+when	when :: Applicative f => Bool -> f () -> f () — Control.Monad
+unless	unless :: Applicative f => Bool -> f () -> f ()
+void	void :: Functor f => f a -> f ()
+maybe	maybe :: b -> (a -> b) -> Maybe a -> b
+either	either :: (a -> c) -> (b -> c) -> Either a b -> c
+fromMaybe	fromMaybe :: a -> Maybe a -> a — Data.Maybe
+mapMaybe	mapMaybe :: (a -> Maybe b) -> [a] -> [b]
+catMaybes	catMaybes :: [Maybe a] -> [a]
+error	error :: HasCallStack => String -> a — throws
+undefined	undefined :: a — placeholder that throws
+seq	seq :: a -> b -> b — force a to WHNF
+$	f $ x — application with lowest precedence; avoids parentheses
+.	f . g — composition: \x -> f (g x)
+<>	<> :: Semigroup a => a -> a -> a — append; mempty from Monoid
+Maybe	data Maybe a = Nothing | Just a
+Just	Just :: a -> Maybe a
+Nothing	Nothing :: Maybe a
+Either	data Either a b = Left a | Right b — Left is conventionally the error
+Left	Left :: a -> Either a b
+Right	Right :: b -> Either a b
+IO	IO a — an action producing a; main :: IO ()
+String	type String = [Char] — prefer Text for real work
+Int	Int — fixed precision; Integer arbitrary
+Integer	Integer — arbitrary precision
+Double	Double
+Bool	data Bool = False | True
+Char	Char
+Ordering	data Ordering = LT | EQ | GT — from compare
+Show	class Show a — show :: a -> String; deriving (Show)
+Eq	class Eq a — (==), (/=)
+Ord	class Eq a => Ord a — compare, (<), max, min
+Num	class Num a — (+), (*), negate, abs, fromInteger
+Enum	class Enum a — succ, pred, [a..b]
+Bounded	class Bounded a — minBound, maxBound
+Functor	class Functor f — fmap
+Applicative	class Functor f => Applicative f — pure, (<*>)
+Monad	class Applicative m => Monad m — (>>=), return
+Foldable	class Foldable t — foldr, foldMap, toList, length, null, elem, sum
+Traversable	class (Functor t, Foldable t) => Traversable t — traverse, sequenceA
+Semigroup	class Semigroup a — (<>)
+Monoid	class Semigroup a => Monoid a — mempty, mconcat
+Map	Data.Map.Strict — fromList, lookup, insert, member, toList, findWithDefault, adjust, unionWith; import qualified
+Set	Data.Set — fromList, member, insert, union, toList
+Text	Data.Text — pack, unpack, strip, splitOn, replace; OverloadedStrings
+IORef	Data.IORef — newIORef, readIORef, writeIORef, modifyIORef'
+main	main :: IO () — the entry point

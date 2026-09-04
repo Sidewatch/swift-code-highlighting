@@ -1,0 +1,101 @@
+# SQL — statements, clauses, functions and types (ANSI with common PostgreSQL/MySQL/SQLite forms). Keywords are hoverable here because they ARE the language.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+SELECT	SELECT [DISTINCT] columns FROM table [JOIN …] [WHERE …] [GROUP BY …] [HAVING …] [ORDER BY …] [LIMIT n]
+FROM	FROM table [AS alias] [, table …]
+WHERE	WHERE condition — filters rows before grouping
+GROUP	GROUP BY col, … — one row per group; aggregates in SELECT
+HAVING	HAVING condition — filters groups after aggregation
+ORDER	ORDER BY col [ASC | DESC] [NULLS FIRST | LAST], …
+LIMIT	LIMIT n [OFFSET m] — PostgreSQL/MySQL/SQLite; SQL Server uses TOP / FETCH FIRST
+OFFSET	OFFSET m — skip m rows; with ORDER BY
+DISTINCT	SELECT DISTINCT col — unique rows  ·  DISTINCT ON (col) (PostgreSQL)
+JOIN	[INNER] JOIN t2 ON t1.id = t2.t1_id — rows matching both sides
+INNER	INNER JOIN — only matching rows
+LEFT	LEFT [OUTER] JOIN — all rows from the left, NULLs where the right has no match
+RIGHT	RIGHT [OUTER] JOIN
+FULL	FULL [OUTER] JOIN — all rows from both sides
+CROSS	CROSS JOIN — cartesian product
+ON	ON condition — join predicate
+USING	USING (col) — join on same-named columns
+AS	expr AS alias  ·  table AS t  ·  CAST(x AS type)
+INSERT	INSERT INTO table (cols) VALUES (…), (…)  ·  INSERT INTO table SELECT …  ·  RETURNING * (PostgreSQL)
+VALUES	VALUES (v1, v2), (v3, v4)
+UPDATE	UPDATE table SET col = value, … [FROM …] WHERE condition — no WHERE updates every row
+SET	SET col = value, … (UPDATE)  ·  SET variable = value
+DELETE	DELETE FROM table WHERE condition — no WHERE deletes every row
+CREATE	CREATE TABLE name (col type [constraints], …)  ·  CREATE [UNIQUE] INDEX  ·  CREATE VIEW … AS SELECT
+TABLE	CREATE TABLE [IF NOT EXISTS] name (…)  ·  ALTER TABLE  ·  DROP TABLE  ·  TRUNCATE TABLE
+ALTER	ALTER TABLE t ADD COLUMN c type  ·  DROP COLUMN c  ·  RENAME TO  ·  ADD CONSTRAINT
+DROP	DROP TABLE [IF EXISTS] name  ·  DROP INDEX  ·  DROP VIEW
+TRUNCATE	TRUNCATE TABLE name — remove all rows, fast, usually not logged per row
+INDEX	CREATE [UNIQUE] INDEX name ON table (col, …) [WHERE …]
+VIEW	CREATE [OR REPLACE] VIEW name AS SELECT …
+PRIMARY	PRIMARY KEY (col) — unique, not null; one per table
+FOREIGN	FOREIGN KEY (col) REFERENCES other (col) [ON DELETE CASCADE | SET NULL | RESTRICT]
+REFERENCES	REFERENCES table (col) — inline foreign key
+UNIQUE	UNIQUE (col, …) — constraint or index
+NOT	NOT condition  ·  NOT NULL  ·  NOT IN  ·  NOT EXISTS  ·  IS NOT NULL
+NULL	NULL — unknown; compare with IS NULL / IS NOT NULL, never = NULL
+DEFAULT	DEFAULT value — column default; DEFAULT now()
+CHECK	CHECK (condition) — row constraint
+CONSTRAINT	CONSTRAINT name PRIMARY KEY | FOREIGN KEY | UNIQUE | CHECK
+WITH	WITH cte AS (SELECT …) [, cte2 AS (…)] SELECT … — common table expression; WITH RECURSIVE
+UNION	query UNION [ALL] query — ALL keeps duplicates
+INTERSECT	query INTERSECT query
+EXCEPT	query EXCEPT query  (MINUS in Oracle)
+CASE	CASE WHEN cond THEN v [WHEN …] [ELSE v] END  ·  CASE expr WHEN val THEN …
+WHEN	WHEN condition THEN result
+THEN	THEN result
+ELSE	ELSE result
+END	END — closes CASE
+IN	col IN (v1, v2, …)  ·  col IN (SELECT …)
+EXISTS	EXISTS (SELECT 1 FROM … WHERE …) — true when the subquery returns rows
+BETWEEN	col BETWEEN low AND high — inclusive
+LIKE	col LIKE 'pat%' — % any run, _ one char; ILIKE case-insensitive (PostgreSQL)
+IS	col IS NULL  ·  IS NOT NULL  ·  IS [NOT] DISTINCT FROM  ·  IS TRUE
+AND	cond AND cond
+OR	cond OR cond
+COUNT	COUNT(*)  ·  COUNT(col) — non-null  ·  COUNT(DISTINCT col)
+SUM	SUM(col)
+AVG	AVG(col)
+MIN	MIN(col)
+MAX	MAX(col)
+COALESCE	COALESCE(v1, v2, …) — first non-null
+NULLIF	NULLIF(a, b) — NULL when a = b
+CAST	CAST(expr AS type)  ·  expr::type (PostgreSQL)
+CONCAT	CONCAT(s1, s2, …)  ·  s1 || s2
+SUBSTRING	SUBSTRING(s FROM start FOR len)  ·  SUBSTR(s, start, len)
+UPPER	UPPER(s)
+LOWER	LOWER(s)
+TRIM	TRIM([BOTH | LEADING | TRAILING] [chars FROM] s)
+LENGTH	LENGTH(s)  ·  CHAR_LENGTH(s)  ·  LEN(s) (SQL Server)
+REPLACE	REPLACE(s, from, to)
+ROUND	ROUND(x [, decimals])
+ABS	ABS(x)
+NOW	NOW()  ·  CURRENT_TIMESTAMP  ·  CURRENT_DATE
+DATE	DATE type  ·  DATE(expr)  ·  DATE_TRUNC('day', ts) (PostgreSQL)  ·  DATE_ADD (MySQL)
+EXTRACT	EXTRACT(YEAR | MONTH | DAY | HOUR FROM ts)
+INTERVAL	INTERVAL '1 day'  ·  now() - INTERVAL '7 days'
+OVER	agg() OVER ([PARTITION BY …] [ORDER BY …] [ROWS BETWEEN …]) — window function
+PARTITION	PARTITION BY col — window groups without collapsing rows
+ROW_NUMBER	ROW_NUMBER() OVER (PARTITION BY … ORDER BY …)
+RANK	RANK() OVER (…) — gaps after ties; DENSE_RANK has none
+LAG	LAG(col [, offset [, default]]) OVER (ORDER BY …) — previous row
+LEAD	LEAD(col [, offset [, default]]) OVER (ORDER BY …) — next row
+BEGIN	BEGIN [TRANSACTION]  ·  START TRANSACTION
+COMMIT	COMMIT — make the transaction durable
+ROLLBACK	ROLLBACK [TO SAVEPOINT name]
+TRANSACTION	BEGIN TRANSACTION … COMMIT | ROLLBACK
+EXPLAIN	EXPLAIN [ANALYZE] query — the plan (ANALYZE runs it)
+INTEGER	INTEGER / INT — 32-bit; BIGINT 64-bit; SMALLINT 16-bit
+BIGINT	BIGINT — 64-bit integer
+SERIAL	SERIAL — auto-increment int (PostgreSQL); prefer GENERATED ALWAYS AS IDENTITY
+VARCHAR	VARCHAR(n) — variable-length text up to n; TEXT for unbounded
+TEXT	TEXT — unbounded string
+BOOLEAN	BOOLEAN — TRUE / FALSE / NULL
+NUMERIC	NUMERIC(precision, scale) — exact decimal (DECIMAL)
+TIMESTAMP	TIMESTAMP [WITH TIME ZONE] — TIMESTAMPTZ in PostgreSQL
+UUID	UUID — gen_random_uuid() (PostgreSQL)
+JSONB	JSONB — binary JSON (PostgreSQL); ->, ->>, @>, jsonb_build_object
+RETURNING	INSERT | UPDATE | DELETE … RETURNING col, … — PostgreSQL, SQLite 3.35+
+CONFLICT	INSERT … ON CONFLICT (col) DO UPDATE SET … | DO NOTHING — upsert (PostgreSQL/SQLite)

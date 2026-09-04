@@ -1,0 +1,139 @@
+# R — base functions, data frames, apply family, tidyverse essentials.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+if
+else
+for
+while
+repeat
+break
+next
+function
+return
+in
+TRUE
+FALSE
+NULL
+NA
+NaN
+Inf
+library
+require
+print	print(x, ...) — explicit print; auto-printed at top level
+cat	cat(..., sep = " ", fill = FALSE) — concatenate and print, no quotes
+paste	paste(..., sep = " ", collapse = NULL)  ·  paste0(...) — no separator
+sprintf	sprintf(fmt, ...) — %s %d %.2f
+message	message(...) — to stderr; suppressMessages()
+warning	warning(...)
+stop	stop(...) — raise an error
+c	c(...) — combine into a vector
+length	length(x)
+seq	seq(from, to, by = , length.out = )  ·  seq_len(n)  ·  seq_along(x)
+rep	rep(x, times = 1, each = 1)
+rev	rev(x)
+sort	sort(x, decreasing = FALSE)
+order	order(..., decreasing = FALSE) — indices; df[order(df$x), ]
+unique	unique(x)
+which	which(x) — indices of TRUE  ·  which.max(x)  ·  which.min(x)
+sum	sum(..., na.rm = FALSE)
+mean	mean(x, na.rm = FALSE)
+median	median(x, na.rm = FALSE)
+sd	sd(x, na.rm = FALSE)
+var	var(x)
+min	min(..., na.rm = FALSE)
+max	max(..., na.rm = FALSE)
+range	range(x)
+round	round(x, digits = 0)
+abs	abs(x)
+sqrt	sqrt(x)
+exp	exp(x)
+log	log(x, base = exp(1))
+cumsum	cumsum(x)
+table	table(...) — counts
+nchar	nchar(x)
+substr	substr(x, start, stop)
+toupper	toupper(x)
+tolower	tolower(x)
+trimws	trimws(x, which = "both")
+strsplit	strsplit(x, split) — list
+gsub	gsub(pattern, replacement, x, fixed = FALSE) — all matches; sub() first
+grepl	grepl(pattern, x) — logical  ·  grep(pattern, x, value = FALSE)
+regmatches	regmatches(x, regexpr(pattern, x))
+as.numeric	as.numeric(x)  ·  as.integer  ·  as.character  ·  as.logical  ·  as.factor  ·  as.Date
+is.na	is.na(x) — also anyNA(x), na.omit(x)
+is.null	is.null(x)
+ifelse	ifelse(test, yes, no) — vectorised
+identical	identical(x, y)
+all.equal	all.equal(x, y) — with tolerance
+list	list(...) — named or not; x$name, x[["name"]], x[[1]]
+vector	vector(mode = "list", length = 0)
+matrix	matrix(data, nrow, ncol, byrow = FALSE)
+array	array(data, dim)
+factor	factor(x, levels = , labels = ) — categorical; levels(), as.integer()
+data.frame	data.frame(..., stringsAsFactors = FALSE) — df$col, df[rows, cols], nrow, ncol, names, str, summary
+nrow	nrow(x)
+ncol	ncol(x)
+dim	dim(x)
+names	names(x)  ·  names(x) <- c(...)
+colnames	colnames(x)
+rownames	rownames(x)
+head	head(x, n = 6)
+tail	tail(x, n = 6)
+str	str(object) — compact structure
+summary	summary(object)
+subset	subset(df, condition, select = )
+merge	merge(x, y, by = , all = FALSE) — join
+rbind	rbind(...) — by rows
+cbind	cbind(...) — by columns
+apply	apply(X, MARGIN, FUN, ...) — 1 rows, 2 columns
+lapply	lapply(X, FUN, ...) — list
+sapply	sapply(X, FUN, ...) — simplified
+vapply	vapply(X, FUN, FUN.VALUE, ...) — type-safe sapply
+mapply	mapply(FUN, ..., MoreArgs = NULL)
+Map	Map(f, ...)
+Reduce	Reduce(f, x, accumulate = FALSE)
+Filter	Filter(f, x)
+do.call	do.call(what, args)
+function	function(x, y = 1, ...) { }  ·  \(x) x + 1 (4.1+)
+tryCatch	tryCatch(expr, error = function(e) …, warning = …, finally = …)
+stopifnot	stopifnot(...) — assertions
+invisible	invisible(x) — return without printing
+read.csv	read.csv(file, header = TRUE, stringsAsFactors = FALSE)
+write.csv	write.csv(x, file, row.names = TRUE)
+readLines	readLines(con, n = -1)
+writeLines	writeLines(text, con = stdout())
+readRDS	readRDS(file)  ·  saveRDS(object, file)
+file.path	file.path(...) — platform separator
+file.exists	file.exists(...)
+list.files	list.files(path, pattern = NULL, recursive = FALSE)
+Sys.time	Sys.time() — POSIXct now
+Sys.getenv	Sys.getenv(x)
+Sys.setenv	Sys.setenv(NAME = "value")
+setwd	setwd(dir)  ·  getwd()
+set.seed	set.seed(seed)
+rnorm	rnorm(n, mean = 0, sd = 1)
+runif	runif(n, min = 0, max = 1)
+sample	sample(x, size, replace = FALSE)
+plot	plot(x, y, type = "p", main = , xlab = , ylab = , col = )
+hist	hist(x, breaks = )
+lines	lines(x, y)
+legend	legend("topright", legend = , col = )
+lm	lm(y ~ x + z, data = df) — summary(), coef(), predict(), residuals()
+glm	glm(formula, family = binomial, data = )
+t.test	t.test(x, y = NULL, alternative = "two.sided")
+cor	cor(x, y, method = "pearson")
+library	library(package) — attach; requireNamespace() to test
+install.packages	install.packages("pkg")
+dplyr	library(dplyr) — filter, select, mutate, arrange, summarise, group_by, left_join, %>% / |>
+filter	dplyr::filter(.data, ...) — rows by condition  ·  base Filter(f, x)
+select	dplyr::select(.data, ...) — columns
+mutate	dplyr::mutate(.data, new = expr)
+arrange	dplyr::arrange(.data, col, desc(col))
+summarise	dplyr::summarise(.data, name = fn(col))
+group_by	dplyr::group_by(.data, ...) — then summarise / mutate
+left_join	dplyr::left_join(x, y, by = "key")
+ggplot	ggplot(data, aes(x, y)) + geom_point() + geom_line() + labs() + theme_minimal()
+aes	aes(x, y, colour = , fill = , group = )
+tibble	tibble(...) — modern data frame; as_tibble(df)
+readr	readr::read_csv(file) — fast, tibble, no factors
+%>%	x %>% f(y) — magrittr pipe: f(x, y); base |> since 4.1
+|>	x |> f(y) — native pipe (R 4.1+)

@@ -237,6 +237,19 @@ final class CompletionTests: XCTestCase {
             ("c", LanguageBuiltins.completions(for: .c), ["printf", "malloc", "strlen", "size_t", "qsort"]),
             ("cpp", LanguageBuiltins.completions(for: .cpp), ["printf", "vector", "unique_ptr", "cout", "ranges"]),
             ("bash", LanguageBuiltins.completions(for: .bash), ["echo", "read", "grep", "set", "BASH_SOURCE"]),
+            ("dart", LanguageBuiltins.completions(for: .dart), ["print", "Future", "setState", "where", "jsonDecode"]),
+            ("lua", LanguageBuiltins.completions(for: .lua), ["print", "pairs", "setmetatable", "gsub", "pcall"]),
+            ("sql", LanguageBuiltins.completions(for: .sql), ["SELECT", "JOIN", "COALESCE", "OVER", "JSONB"]),
+            ("scala", LanguageBuiltins.completions(for: .scala), ["println", "Option", "foldLeft", "Future", "mkString"]),
+            ("elixir", LanguageBuiltins.completions(for: .elixir), ["puts", "Enum", "GenServer", "put", "|>"]),
+            ("perl", LanguageBuiltins.completions(for: .perl), ["print", "chomp", "open", "@_", "Data::Dumper"]),
+            ("objectivec", LanguageBuiltins.completions(for: .objectivec), ["printf", "NSLog", "NSString", "dispatch_async", "NSMakeRange"]),
+            ("css", LanguageBuiltins.completions(for: .css), ["display", "grid-template-columns", "@media", "var", ":has"]),
+            ("html", LanguageBuiltins.completions(for: .html), ["div", "input", "aria-label", "loading", "dialog"]),
+            ("zig", LanguageBuiltins.completions(for: .zig), ["@import", "ArrayList", "Allocator", "print", "usize"]),
+            ("haskell", LanguageBuiltins.completions(for: .haskell), ["putStrLn", "foldr", "Maybe", "fmap", "Monad"]),
+            ("r", LanguageBuiltins.completions(for: .r), ["data.frame", "lapply", "ggplot", "mutate", "%>%"]),
+            ("powershell", LanguageBuiltins.completions(for: .powershell), ["Write-Host", "Get-ChildItem", "Where-Object", "$PSScriptRoot", "-match"]),
         ]
         for (language, items, names) in samples {
             for name in names {

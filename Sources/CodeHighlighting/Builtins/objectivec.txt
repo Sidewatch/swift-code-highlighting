@@ -1,0 +1,113 @@
+# Objective-C additions on top of c.txt (loaded after it): Foundation classes, runtime, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+@interface
+@implementation
+@end
+@property
+@synthesize
+@dynamic
+@protocol
+@optional
+@required
+@class
+@selector
+@encode
+@try
+@catch
+@finally
+@throw
+@synchronized
+@autoreleasepool
+@import
+id
+self
+super
+nil
+Nil
+YES
+NO
+instancetype
+nonatomic
+atomic
+strong
+weak
+copy
+assign
+readonly
+readwrite
+unsafe_unretained
+__weak
+__strong
+__block
+IBOutlet
+IBAction
+nullable
+nonnull
+NSLog	void NSLog(NSString *format, ...) — %@ objects, %d %ld %f %s; adds timestamp and newline
+NSString	@interface NSString — @"literal", stringWithFormat:, length, isEqualToString:, substringFromIndex:, componentsSeparatedByString:, UTF8String
+NSMutableString	@interface NSMutableString : NSString — appendString:, appendFormat:, replaceOccurrencesOfString:withString:options:range:
+stringWithFormat	+ (instancetype)stringWithFormat:(NSString *)format, ...
+isEqualToString	- (BOOL)isEqualToString:(NSString *)aString
+length	@property (readonly) NSUInteger length
+componentsSeparatedByString	- (NSArray<NSString *> *)componentsSeparatedByString:(NSString *)separator
+NSArray	@interface NSArray<ObjectType> — @[a, b]; count, objectAtIndex:, arr[i], firstObject, lastObject, containsObject:, indexOfObject:
+NSMutableArray	@interface NSMutableArray — addObject:, insertObject:atIndex:, removeObject:, removeObjectAtIndex:, removeAllObjects
+NSDictionary	@interface NSDictionary<KeyType, ObjectType> — @{k: v}; objectForKey:, dict[key], allKeys, allValues, count
+NSMutableDictionary	@interface NSMutableDictionary — setObject:forKey:, dict[key] = v, removeObjectForKey:
+NSSet	@interface NSSet — containsObject:, count, allObjects; NSMutableSet addObject:
+NSNumber	@interface NSNumber — @(42), @YES; integerValue, doubleValue, boolValue
+NSValue	@interface NSValue — boxes structs: valueWithRect:, CGPointValue
+NSData	@interface NSData — dataWithContentsOfFile:, length, bytes, writeToFile:atomically:
+NSDate	@interface NSDate — [NSDate date], timeIntervalSince1970, dateByAddingTimeInterval:
+NSURL	@interface NSURL — URLWithString:, fileURLWithPath:, path, absoluteString
+NSError	@interface NSError — errorWithDomain:code:userInfo:; domain, code, localizedDescription; NSError **error out-params
+NSException	@interface NSException — raise:format:, name, reason; @try/@catch
+NSObject	@interface NSObject — root class; init, dealloc, description, isKindOfClass:, respondsToSelector:, performSelector:
+NSNotificationCenter	[NSNotificationCenter defaultCenter] — addObserver:selector:name:object:, postNotificationName:object:, removeObserver:
+NSUserDefaults	[NSUserDefaults standardUserDefaults] — setObject:forKey:, objectForKey:, boolForKey:, synchronize
+NSFileManager	[NSFileManager defaultManager] — fileExistsAtPath:, contentsOfDirectoryAtPath:error:, removeItemAtPath:error:
+NSBundle	[NSBundle mainBundle] — pathForResource:ofType:, infoDictionary, bundleIdentifier
+NSTimer	+ scheduledTimerWithTimeInterval:repeats:block:  ·  target:selector:userInfo:repeats:; invalidate
+NSThread	[NSThread mainThread], isMainThread, detachNewThreadWithBlock:, sleepForTimeInterval:
+NSOperationQueue	[NSOperationQueue mainQueue], addOperationWithBlock:, maxConcurrentOperationCount
+dispatch_async	dispatch_async(dispatch_queue_t queue, dispatch_block_t block) — dispatch_get_main_queue(), dispatch_get_global_queue(QOS, 0)
+dispatch_sync	dispatch_sync(queue, block) — deadlocks if called on the same serial queue
+dispatch_after	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, ns), queue, block)
+dispatch_once	dispatch_once(&onceToken, block) — static dispatch_once_t onceToken
+dispatch_queue_create	dispatch_queue_create(const char *label, dispatch_queue_attr_t attr) — DISPATCH_QUEUE_SERIAL / CONCURRENT
+alloc	+ (instancetype)alloc — pair with init: [[Cls alloc] init]
+init	- (instancetype)init — self = [super init]; if (self) { … } return self;
+new	+ (instancetype)new — alloc + init
+dealloc	- (void)dealloc — ARC: no [super dealloc]; remove observers here
+description	- (NSString *)description — what %@ and NSLog print
+copy	- (id)copy — NSCopying; copyWithZone:
+isKindOfClass	- (BOOL)isKindOfClass:(Class)aClass
+respondsToSelector	- (BOOL)respondsToSelector:(SEL)aSelector
+performSelector	- (id)performSelector:(SEL)aSelector withObject:(id)object
+conformsToProtocol	- (BOOL)conformsToProtocol:(Protocol *)aProtocol
+class	+ (Class)class  ·  [self class]  ·  NSStringFromClass()
+NSStringFromClass	NSString *NSStringFromClass(Class aClass)
+NSStringFromSelector	NSString *NSStringFromSelector(SEL aSelector)
+NSSelectorFromString	SEL NSSelectorFromString(NSString *aSelectorName)
+objc_msgSend	id objc_msgSend(id self, SEL op, ...) — what every [receiver message] compiles to
+NSInteger	typedef long NSInteger — NSUInteger unsigned; %ld / %lu
+CGFloat	typedef double CGFloat — %f
+BOOL	BOOL — YES / NO
+NSRange	struct NSRange { NSUInteger location, length; } — NSMakeRange(loc, len), NSNotFound
+NSMakeRange	NSRange NSMakeRange(NSUInteger loc, NSUInteger len)
+NSNotFound	NSNotFound — NSIntegerMax; 'not found' sentinel
+CGRect	struct CGRect { CGPoint origin; CGSize size; } — CGRectMake(x, y, w, h), CGRectZero, NSRect on macOS
+CGRectMake	CGRect CGRectMake(CGFloat x, CGFloat y, CGFloat width, CGFloat height)
+CGPoint	struct CGPoint { CGFloat x, y; } — CGPointMake
+CGSize	struct CGSize { CGFloat width, height; } — CGSizeMake
+NSAssert	NSAssert(condition, desc, ...) — debug builds; NSParameterAssert(cond)
+NS_ASSUME_NONNULL_BEGIN	NS_ASSUME_NONNULL_BEGIN … NS_ASSUME_NONNULL_END — pointers nonnull unless marked nullable
+NS_ENUM	typedef NS_ENUM(NSInteger, Name) { NameA, NameB }; — NS_OPTIONS for bitmasks
+__bridge	__bridge — cast between ObjC and CF without ownership change; __bridge_transfer, __bridge_retained
+weakSelf	__weak typeof(self) weakSelf = self; — break block retain cycles; __strong typeof(self) strongSelf = weakSelf inside
+NSApplication	[NSApplication sharedApplication] — NSApp; run, terminate:, mainWindow, delegate
+UIApplication	[UIApplication sharedApplication] — delegate, keyWindow, openURL:
+NSView	@interface NSView — frame, bounds, addSubview:, drawRect:, setNeedsDisplay:, layer, autoresizingMask
+UIView	@interface UIView — frame, bounds, addSubview:, backgroundColor, layoutSubviews, setNeedsLayout
+NSViewController	@interface NSViewController — viewDidLoad, view, loadView, representedObject
+UIViewController	@interface UIViewController — viewDidLoad, viewWillAppear:, view, present…, navigationController

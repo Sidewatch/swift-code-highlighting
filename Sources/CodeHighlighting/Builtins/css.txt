@@ -1,0 +1,106 @@
+# CSS — properties (hover the property name), values, at-rules, functions, pseudo-classes.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+display	display: block | inline | inline-block | flex | inline-flex | grid | inline-grid | none | contents
+position	position: static | relative | absolute | fixed | sticky — with top/right/bottom/left and z-index
+flex	flex: <grow> <shrink> <basis> — flex: 1 = 1 1 0%; flex: auto = 1 1 auto
+flex-direction	flex-direction: row | row-reverse | column | column-reverse
+flex-wrap	flex-wrap: nowrap | wrap | wrap-reverse
+justify-content	justify-content: flex-start | center | flex-end | space-between | space-around | space-evenly — main axis
+align-items	align-items: stretch | flex-start | center | flex-end | baseline — cross axis
+align-self	align-self: auto | stretch | flex-start | center | flex-end
+align-content	align-content: … — multi-line cross axis
+gap	gap: <row-gap> <column-gap> — flex and grid
+order	order: <integer> — flex/grid item order
+grid-template-columns	grid-template-columns: repeat(3, 1fr) | 200px auto | minmax(200px, 1fr) | [name] 1fr
+grid-template-rows	grid-template-rows: auto 1fr auto
+grid-template-areas	grid-template-areas: "header header" "sidebar main"
+grid-column	grid-column: 1 / 3 | span 2 | <start> / <end>
+grid-row	grid-row: 1 / -1 | span 2
+grid-area	grid-area: <name> | row-start / col-start / row-end / col-end
+width	width: auto | <length> | <percentage> | min-content | max-content | fit-content | 100vw
+height	height: auto | <length> | <percentage> | 100vh | 100dvh
+min-width	min-width: <length> | 0 — flex items default to auto (content size)
+max-width	max-width: <length> | none
+min-height	min-height: <length>
+max-height	max-height: <length> | none
+margin	margin: <top> <right> <bottom> <left> | <v> <h> | auto — collapses vertically between blocks
+padding	padding: <top> <right> <bottom> <left> | <v> <h>
+border	border: <width> <style> <color> — 1px solid #ccc; border-top/right/bottom/left
+border-radius	border-radius: <length> | 50% | <tl> <tr> <br> <bl>
+box-sizing	box-sizing: content-box | border-box — border-box counts padding and border in width
+box-shadow	box-shadow: <x> <y> <blur> <spread> <color> [, …] | inset …
+outline	outline: <width> <style> <color> — does not affect layout; outline-offset
+overflow	overflow: visible | hidden | clip | scroll | auto — overflow-x / overflow-y
+color	color: <color> — text; #hex, rgb(), hsl(), oklch(), currentColor, named
+background	background: <color> <image> <position> / <size> <repeat> <attachment>
+background-color	background-color: <color> | transparent
+background-image	background-image: url(…) | linear-gradient(…) | radial-gradient(…)
+background-size	background-size: cover | contain | <length> <length>
+background-position	background-position: center | top left | 50% 50%
+background-repeat	background-repeat: repeat | no-repeat | repeat-x | repeat-y
+font	font: <style> <weight> <size>/<line-height> <family> — shorthand
+font-family	font-family: <family>, …, sans-serif | serif | monospace | system-ui
+font-size	font-size: <length> | 1rem | clamp(1rem, 2vw, 2rem) | smaller | larger
+font-weight	font-weight: normal | bold | 100–900
+font-style	font-style: normal | italic | oblique
+line-height	line-height: normal | <number> | <length> — unitless number preferred
+letter-spacing	letter-spacing: normal | <length>
+text-align	text-align: left | right | center | justify | start | end
+text-decoration	text-decoration: none | underline | line-through | <line> <style> <color>
+text-transform	text-transform: none | uppercase | lowercase | capitalize
+text-overflow	text-overflow: clip | ellipsis — needs overflow: hidden and white-space: nowrap
+white-space	white-space: normal | nowrap | pre | pre-wrap | pre-line
+word-break	word-break: normal | break-all | keep-all
+overflow-wrap	overflow-wrap: normal | break-word | anywhere
+opacity	opacity: 0–1
+visibility	visibility: visible | hidden | collapse — hidden keeps layout
+z-index	z-index: auto | <integer> — positioned elements; stacking contexts
+cursor	cursor: pointer | default | text | move | not-allowed | grab | url(…)
+pointer-events	pointer-events: auto | none
+user-select	user-select: auto | none | text | all
+transform	transform: translate(x, y) | scale(n) | rotate(deg) | translateX() | matrix() | none
+transform-origin	transform-origin: center | <x> <y>
+transition	transition: <property> <duration> <timing-function> <delay> — all 0.2s ease
+animation	animation: <name> <duration> <timing> <delay> <iteration-count> <direction> <fill-mode>
+will-change	will-change: transform | opacity — hint, use sparingly
+content	content: "text" | attr(name) | counter(name) | none — ::before / ::after
+list-style	list-style: none | disc | decimal | <type> <position> <image>
+object-fit	object-fit: fill | contain | cover | none | scale-down — img/video
+aspect-ratio	aspect-ratio: 16 / 9 | auto
+filter	filter: blur(px) | brightness(n) | contrast(n) | grayscale(n) | drop-shadow(…)
+backdrop-filter	backdrop-filter: blur(10px)
+inset	inset: <top> <right> <bottom> <left> — shorthand for top/right/bottom/left
+container	container: <name> / <type> — container-type: inline-size for @container queries
+scroll-behavior	scroll-behavior: auto | smooth
+scroll-snap-type	scroll-snap-type: x | y | both mandatory | proximity
+@media	@media (min-width: 768px) and (prefers-color-scheme: dark) { … }
+@container	@container name (min-width: 400px) { … }
+@keyframes	@keyframes name { from { … } 50% { … } to { … } }
+@import	@import url("file.css") layer(name) supports(…) screen;
+@font-face	@font-face { font-family: Name; src: url(…) format("woff2"); font-display: swap; }
+@supports	@supports (display: grid) { … }  ·  @supports not (…)
+@layer	@layer base, components, utilities; @layer base { … }
+var	var(--name, fallback) — custom property; --name: value on :root
+calc	calc(100% - 2rem) — mixed units
+clamp	clamp(min, preferred, max)
+min	min(a, b, …)
+max	max(a, b, …)
+rgb	rgb(r g b / alpha) | rgb(r, g, b)
+hsl	hsl(h s% l% / alpha)
+oklch	oklch(L C H / alpha) — perceptual; wide gamut
+url	url("path")
+repeat	repeat(count | auto-fill | auto-fit, track)
+minmax	minmax(min, max) — grid track
+linear-gradient	linear-gradient(to right | <angle>, color stop, …)
+translate	translate(x, y)  ·  translate: x y (property)
+:hover	:hover — pointer over; pair with :focus-visible
+:focus	:focus  ·  :focus-visible — keyboard focus only  ·  :focus-within
+:active	:active — being pressed
+:nth-child	:nth-child(2n + 1 | odd | even | 3 | -n + 3)  ·  :nth-of-type()
+:not	:not(selector, …)
+:is	:is(a, b) — matches any; :where() same with zero specificity
+:has	:has(> img) — parent selector
+:root	:root — the html element; custom properties live here
+::before	::before — generated content before children; needs content:
+::after	::after — generated content after children
+!important	!important — overrides cascade order; last resort

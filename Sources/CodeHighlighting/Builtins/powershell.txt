@@ -1,0 +1,122 @@
+# PowerShell — cmdlets (Verb-Noun), operators, automatic variables, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+function
+param
+begin
+process
+end
+if
+elseif
+else
+switch
+foreach
+for
+while
+do
+until
+break
+continue
+return
+throw
+try
+catch
+finally
+trap
+class
+enum
+using
+filter
+workflow
+parallel
+sequence
+inlinescript
+dynamicparam
+hidden
+static
+Write-Host	Write-Host [-Object] <obj> [-ForegroundColor <color>] [-NoNewline] — to the console, not the pipeline
+Write-Output	Write-Output <obj> — to the pipeline (implicit for bare expressions)
+Write-Error	Write-Error <message> — non-terminating error
+Write-Verbose	Write-Verbose <message> — shown with -Verbose
+Write-Warning	Write-Warning <message>
+Get-ChildItem	Get-ChildItem [-Path] <path> [-Recurse] [-Filter <pat>] [-File] [-Directory] — ls / dir / gci
+Get-Item	Get-Item <path>
+Get-Content	Get-Content <path> [-Raw] [-Tail n] — cat / gc; lines by default
+Set-Content	Set-Content <path> -Value <text>
+Add-Content	Add-Content <path> -Value <text> — append
+Out-File	Out-File -FilePath <path> [-Append] [-Encoding utf8]
+Test-Path	Test-Path <path> [-PathType Leaf | Container] -> bool
+New-Item	New-Item -Path <path> -ItemType File | Directory [-Force]
+Remove-Item	Remove-Item <path> [-Recurse] [-Force] — rm / del
+Copy-Item	Copy-Item <src> <dst> [-Recurse]
+Move-Item	Move-Item <src> <dst>
+Rename-Item	Rename-Item <path> -NewName <name>
+Join-Path	Join-Path <parent> <child>
+Split-Path	Split-Path <path> [-Leaf | -Parent | -Extension]
+Resolve-Path	Resolve-Path <path>
+Set-Location	Set-Location <path> — cd
+Get-Location	Get-Location — pwd
+Get-Process	Get-Process [-Name <name>] — ps
+Stop-Process	Stop-Process -Id <pid> | -Name <name> [-Force]
+Start-Process	Start-Process <file> [-ArgumentList …] [-Wait] [-NoNewWindow]
+Get-Service	Get-Service [-Name <name>]
+Get-Command	Get-Command <name> — which; -Module
+Get-Help	Get-Help <cmdlet> [-Examples] [-Full] [-Online]
+Get-Member	Get-Member — properties and methods of pipeline objects; gm
+Get-Date	Get-Date [-Format 'yyyy-MM-dd'] — DateTime
+Select-Object	Select-Object [-Property] a, b [-First n] [-Last n] [-Unique] [-ExpandProperty p] — select
+Where-Object	Where-Object { $_.Name -like 'a*' }  ·  Where-Object Name -eq 'x' — where / ?
+ForEach-Object	ForEach-Object { $_ }  ·  -Parallel — foreach / %
+Sort-Object	Sort-Object [-Property] p [-Descending] [-Unique]
+Group-Object	Group-Object -Property p — Name, Count, Group
+Measure-Object	Measure-Object [-Sum] [-Average] [-Maximum] [-Line] [-Word]
+Format-Table	Format-Table [-Property] … [-AutoSize] — ft; for display only, last in the pipeline
+Format-List	Format-List [-Property] * — fl
+Out-String	Out-String — objects to text
+Out-Null	Out-Null — discard output
+Tee-Object	Tee-Object -FilePath <path> | -Variable name
+Compare-Object	Compare-Object -ReferenceObject a -DifferenceObject b
+ConvertTo-Json	ConvertTo-Json [-Depth n] [-Compress]
+ConvertFrom-Json	ConvertFrom-Json [-AsHashtable] — PSCustomObject
+Import-Csv	Import-Csv <path> [-Delimiter ',']
+Export-Csv	Export-Csv <path> -NoTypeInformation
+Invoke-RestMethod	Invoke-RestMethod -Uri <url> [-Method Get | Post] [-Body …] [-Headers @{}] — parsed JSON; irm
+Invoke-WebRequest	Invoke-WebRequest -Uri <url> [-OutFile <path>] — iwr; StatusCode, Content
+Invoke-Expression	Invoke-Expression <string> — runs text as code; avoid with untrusted input; iex
+Invoke-Command	Invoke-Command -ScriptBlock { } [-ComputerName …] [-ArgumentList …]
+Start-Job	Start-Job -ScriptBlock { } — Receive-Job, Wait-Job
+Start-Sleep	Start-Sleep -Seconds n | -Milliseconds n
+Get-Random	Get-Random [-Minimum a] [-Maximum b]  ·  Get-Random -InputObject list
+New-Object	New-Object -TypeName <type> [-ArgumentList …]  ·  [Type]::new()
+Read-Host	Read-Host -Prompt 'text' [-AsSecureString]
+Set-Variable	Set-Variable -Name n -Value v [-Scope Global]
+Get-Variable	Get-Variable [-Name n]
+Set-StrictMode	Set-StrictMode -Version Latest — undefined variables are errors
+Import-Module	Import-Module <name> [-Force]
+Install-Module	Install-Module <name> [-Scope CurrentUser]
+Export-ModuleMember	Export-ModuleMember -Function a, b
+Get-Content -Raw	Get-Content <path> -Raw — one string
+$_	$_  ·  $PSItem — current pipeline object
+$args	$args — unnamed arguments
+$PSScriptRoot	$PSScriptRoot — the script's directory
+$PSVersionTable	$PSVersionTable — PSVersion, OS
+$env	$env:PATH  ·  $env:HOME — environment variables
+$null	$null — nothing; $x -eq $null (put $null first: $null -eq $x)
+$true	$true  ·  $false
+$LASTEXITCODE	$LASTEXITCODE — exit code of the last native command
+$?	$? — did the last command succeed
+$ErrorActionPreference	$ErrorActionPreference = 'Stop' | 'Continue' | 'SilentlyContinue'
+$Error	$Error — recent errors; $Error[0]
+-eq	-eq -ne -gt -ge -lt -le — comparison; -ieq case-insensitive (default), -ceq case-sensitive
+-like	-like 'a*' — wildcard; -notlike
+-match	-match 'regex' — sets $Matches; -notmatch; -replace 'pat', 'rep'
+-contains	<collection> -contains <item>  ·  <item> -in <collection>
+-and	-and -or -not / !  -xor
+-join	-join — 'a','b' -join ', '  ·  -split 'regex'
+-is	$x -is [int]  ·  -as [int] — type test / convert
+[string]	[string] [int] [double] [bool] [array] [hashtable] [datetime] [pscustomobject] — casts and types
+@{}	@{ key = value } — hashtable; [ordered]@{}
+@()	@(…) — array; ,$x one-element
+[PSCustomObject]	[PSCustomObject]@{ Name = 'x'; Size = 1 }
+param	param([string]$Name, [int]$Count = 1, [switch]$Force)
+[CmdletBinding()]	[CmdletBinding()] — advanced function: -Verbose, -ErrorAction, $PSCmdlet
+[Parameter	[Parameter(Mandatory, ValueFromPipeline)] — parameter attribute

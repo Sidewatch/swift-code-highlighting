@@ -1,0 +1,150 @@
+# Dart — core library, common collection and string methods, Flutter-adjacent async.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+import
+library
+part
+class
+abstract
+interface
+mixin
+enum
+extends
+implements
+with
+extension
+typedef
+var
+final
+const
+late
+static
+void
+dynamic
+new
+this
+super
+return
+if
+else
+for
+in
+while
+do
+switch
+case
+default
+break
+continue
+try
+on
+catch
+finally
+throw
+rethrow
+async
+await
+yield
+sync
+is
+as
+null
+true
+false
+required
+covariant
+sealed
+base
+print	print(Object? object) — stdout with newline
+String	class String — length, substring(start, [end]), split(pattern), contains, replaceAll, trim, toUpperCase; '$x ${expr}'
+int	class int — arbitrary precision on the VM, 64-bit on web; parse(s), toString(), isEven
+double	class double — parse(s), toStringAsFixed(n), round(), floor()
+num	class num — supertype of int and double
+bool	class bool
+List	class List<E> — [1, 2], List.generate(n, f), List.filled(n, v); add, remove, length, [], map, where
+Map	class Map<K, V> — {k: v}; [], containsKey, putIfAbsent, entries, keys, values, remove
+Set	class Set<E> — {1, 2}; add, contains, remove, union, intersection
+Iterable	class Iterable<E> — lazy; map, where, expand, toList(), first, length
+Future	class Future<T> — async result; then, catchError, whenComplete; Future.delayed, Future.wait
+Stream	class Stream<T> — listen, map, where, first, await for; StreamController
+Duration	class Duration(days, hours, minutes, seconds, milliseconds, microseconds)
+DateTime	class DateTime — DateTime.now(), parse(s), add(Duration), difference(other), toIso8601String()
+Object	class Object — root; toString(), hashCode, ==, runtimeType
+Null	class Null — the type of null
+Never	type Never — no values; a function that always throws
+Function	class Function — callable; typedef Callback = void Function(int)
+Exception	class Exception — throw Exception('msg'); FormatException, StateError, ArgumentError are Errors/Exceptions
+Error	class Error — programmer errors; ArgumentError, StateError, RangeError, UnimplementedError
+length	length: int
+isEmpty	isEmpty: bool
+isNotEmpty	isNotEmpty: bool
+add	add(E value) — List / Set
+addAll	addAll(Iterable<E> iterable)
+insert	insert(int index, E element)
+remove	remove(Object? value) -> bool  ·  Map: remove(key) -> V?
+removeAt	removeAt(int index) -> E
+removeWhere	removeWhere(bool test(E element))
+contains	contains(Object? element) -> bool
+indexOf	indexOf(E element, [int start = 0]) -> int
+map	map<T>(T toElement(E e)) -> Iterable<T> — lazy; .toList()
+where	where(bool test(E element)) -> Iterable<E> — lazy filter
+expand	expand<T>(Iterable<T> toElements(E element)) -> Iterable<T> — flatMap
+forEach	forEach(void action(E element))
+fold	fold<T>(T initialValue, T combine(T previous, E element)) -> T
+reduce	reduce(E combine(E value, E element)) -> E — throws on empty
+any	any(bool test(E element)) -> bool
+every	every(bool test(E element)) -> bool
+firstWhere	firstWhere(bool test(E element), {E orElse()?}) -> E
+first	first: E — throws on empty
+last	last: E
+take	take(int count) -> Iterable<E>
+skip	skip(int count) -> Iterable<E>
+toList	toList({bool growable = true}) -> List<E>
+toSet	toSet() -> Set<E>
+join	join([String separator = '']) -> String
+sort	sort([int compare(E a, E b)?]) — in place
+reversed	reversed: Iterable<E>
+sublist	sublist(int start, [int? end]) -> List<E>
+entries	entries: Iterable<MapEntry<K, V>> — .key, .value
+keys	keys: Iterable<K>
+values	values: Iterable<V>
+containsKey	containsKey(Object? key) -> bool
+putIfAbsent	putIfAbsent(K key, V ifAbsent()) -> V
+split	split(Pattern pattern) -> List<String>
+substring	substring(int start, [int? end]) -> String
+trim	trim() -> String
+toUpperCase	toUpperCase() -> String
+toLowerCase	toLowerCase() -> String
+replaceAll	replaceAll(Pattern from, String replace) -> String
+startsWith	startsWith(Pattern pattern, [int index = 0]) -> bool
+endsWith	endsWith(String other) -> bool
+padLeft	padLeft(int width, [String padding = ' ']) -> String
+toString	toString() -> String
+parse	int.parse(String source)  ·  double.parse  ·  DateTime.parse; tryParse returns null
+tryParse	int.tryParse(String source) -> int?
+toStringAsFixed	toStringAsFixed(int fractionDigits) -> String
+then	then<R>(FutureOr<R> onValue(T value), {Function? onError}) -> Future<R>
+catchError	catchError(Function onError, {bool test(Object error)?}) -> Future<T>
+delayed	Future.delayed(Duration duration, [FutureOr<T> computation()?]) -> Future<T>
+wait	Future.wait<T>(Iterable<Future<T>> futures) -> Future<List<T>>
+listen	listen(void onData(T event)?, {Function? onError, void onDone()?, bool? cancelOnError}) -> StreamSubscription<T>
+StreamController	class StreamController<T> — add(event), close(), stream; broadcast()
+Completer	class Completer<T> — complete(value), completeError(e), future
+identical	identical(Object? a, Object? b) -> bool — same instance
+assert	assert(condition, [message]) — debug builds only
+runtimeType	runtimeType: Type
+hashCode	hashCode: int — override with ==
+jsonEncode	jsonEncode(Object? object) -> String — dart:convert
+jsonDecode	jsonDecode(String source) -> dynamic — dart:convert
+Random	class Random([int? seed]) — nextInt(max), nextDouble(), nextBool(); dart:math
+max	max<T extends num>(T a, T b) -> T — dart:math
+min	min<T extends num>(T a, T b) -> T
+File	class File(String path) — readAsString(), writeAsString(s), exists(), readAsLines(); dart:io
+Directory	class Directory(String path) — list(), create(), exists()
+stdout	stdout: Stdout — write(s), writeln(s); dart:io
+stdin	stdin: Stdin — readLineSync()
+StatelessWidget	abstract class StatelessWidget — build(BuildContext context) -> Widget
+StatefulWidget	abstract class StatefulWidget — createState(); State<T> with setState(() {})
+setState	setState(VoidCallback fn) — schedule a rebuild with the new state
+BuildContext	class BuildContext — Theme.of(context), Navigator.of(context), MediaQuery.of(context)
+Widget	abstract class Widget — the UI tree; const constructors where possible
+runApp	runApp(Widget app) — Flutter entry point

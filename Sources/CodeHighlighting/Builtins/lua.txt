@@ -1,0 +1,95 @@
+# Lua 5.4 — globals, string/table/math/io/os libraries, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+and
+break
+do
+else
+elseif
+end
+false
+for
+function
+goto
+if
+in
+local
+nil
+not
+or
+repeat
+return
+then
+true
+until
+while
+print	print(...) — tostring each, tab-separated, newline
+type	type(v) -> "nil" | "number" | "string" | "boolean" | "table" | "function" | "thread" | "userdata"
+tostring	tostring(v) -> string — honours __tostring
+tonumber	tonumber(v [, base]) -> number | nil
+pairs	pairs(t) -> iterator over all key/value pairs (any order)
+ipairs	ipairs(t) -> iterator over 1..n until the first nil
+next	next(t [, key]) -> key, value
+select	select(n, ...) -> arguments from n on  ·  select('#', ...) -> count
+unpack	table.unpack(list [, i [, j]]) -> values  (5.1: unpack)
+rawget	rawget(t, k) — skips __index
+rawset	rawset(t, k, v) — skips __newindex
+rawequal	rawequal(a, b) -> boolean
+rawlen	rawlen(v) -> integer
+setmetatable	setmetatable(t, mt) -> t — __index, __newindex, __call, __tostring, __add, __eq, __len
+getmetatable	getmetatable(v) -> table | nil
+pcall	pcall(f, ...) -> ok, result_or_error
+xpcall	xpcall(f, msgh, ...) -> ok, ... — msgh gets the error (debug.traceback)
+error	error(message [, level]) — level 2 blames the caller
+assert	assert(v [, message]) -> v — errors when v is false/nil
+require	require(modname) -> module — cached in package.loaded
+dofile	dofile([filename]) — runs a chunk
+load	load(chunk [, chunkname [, mode [, env]]]) -> function | nil, err
+collectgarbage	collectgarbage([opt [, arg]]) — "collect", "count" (KB), "step", "stop"
+coroutine	coroutine — create(f), resume(co, ...), yield(...), status(co), wrap(f), isyieldable()
+string	string — len, sub, upper, lower, format, find, match, gmatch, gsub, rep, byte, char; s:method() works
+len	string.len(s)  ·  #s
+sub	string.sub(s, i [, j]) — 1-based, negative from the end
+upper	string.upper(s)
+lower	string.lower(s)
+format	string.format(fmt, ...) — %d %s %q %5.2f %x
+find	string.find(s, pattern [, init [, plain]]) -> start, end, captures
+match	string.match(s, pattern [, init]) -> captures
+gmatch	string.gmatch(s, pattern) -> iterator over matches
+gsub	string.gsub(s, pattern, repl [, n]) -> result, count — repl is string, table or function
+rep	string.rep(s, n [, sep])
+byte	string.byte(s [, i [, j]]) -> codes
+char	string.char(...) -> string from codes
+table	table — insert, remove, concat, sort, unpack, pack
+insert	table.insert(t, [pos,] value)
+remove	table.remove(t [, pos]) -> value — default last
+concat	table.concat(t [, sep [, i [, j]]]) -> string
+sort	table.sort(t [, comp]) — in place, not stable
+pack	table.pack(...) -> table with .n
+math	math — floor, ceil, abs, max, min, sqrt, huge, pi, random, randomseed, tointeger, type, fmod
+floor	math.floor(x)
+ceil	math.ceil(x)
+abs	math.abs(x)
+max	math.max(x, ...)
+min	math.min(x, ...)
+sqrt	math.sqrt(x)
+random	math.random([m [, n]]) — float in [0,1), or integer in [1,m] / [m,n]
+randomseed	math.randomseed([x])
+huge	math.huge — infinity
+pi	math.pi
+tointeger	math.tointeger(x) -> integer | fail
+io	io — write, read, lines, open, stdout, stderr, stdin
+write	io.write(...) — no newline, no separators  ·  file:write(...)
+read	io.read([fmt]) — "l" line, "n" number, "a" all  ·  file:read(fmt)
+lines	io.lines([filename, ...]) -> iterator  ·  file:lines()
+open	io.open(filename [, mode]) -> file | nil, err — "r" "w" "a" "rb"
+close	file:close()  ·  io.close([file])
+os	os — time, clock, date, getenv, exit, remove, rename, tmpname
+time	os.time([table]) -> seconds since epoch
+clock	os.clock() -> CPU seconds
+date	os.date([format [, time]]) — "*t" for a table, "%Y-%m-%d"
+getenv	os.getenv(varname) -> string | nil
+exit	os.exit([code [, close]])
+_G	_G — the global environment table
+_ENV	_ENV — the current environment (5.2+)
+self	self — implicit first parameter of obj:method()
+...	... — varargs; {...} packs, select('#', ...) counts

@@ -1,0 +1,126 @@
+# Elixir — Kernel, Enum, Map, String, processes, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+def
+defp
+defmodule
+defmacro
+defstruct
+defprotocol
+defimpl
+do
+end
+if
+else
+unless
+case
+cond
+with
+fn
+when
+and
+or
+not
+in
+receive
+after
+raise
+rescue
+try
+catch
+throw
+import
+alias
+require
+use
+quote
+unquote
+true
+false
+nil
+IO	module IO — puts, inspect, write, gets, read
+puts	IO.puts(device \\ :stdio, item) :: :ok
+inspect	IO.inspect(item, opts \\ []) :: item — label: "x"; returns item, pipe-friendly
+gets	IO.gets(prompt) :: String.t() | :eof
+Enum	module Enum — map, filter, reduce, each, into, sort, group_by, zip, take, count; eager
+Stream	module Stream — lazy Enum; Stream.map, filter, iterate, unfold; Enum.to_list to run
+map	Enum.map(enumerable, fun) :: list
+filter	Enum.filter(enumerable, fun) :: list
+reject	Enum.reject(enumerable, fun) :: list
+reduce	Enum.reduce(enumerable, acc, fun) :: acc  ·  reduce(enumerable, fun)
+each	Enum.each(enumerable, fun) :: :ok
+into	Enum.into(enumerable, collectable) — into a map, string, MapSet
+sort	Enum.sort(enumerable)  ·  sort(enumerable, :desc)  ·  sort_by(e, fun)
+group_by	Enum.group_by(enumerable, key_fun) :: map
+zip	Enum.zip(a, b) :: [{x, y}]
+take	Enum.take(enumerable, amount)
+count	Enum.count(enumerable) :: integer  ·  count(enumerable, fun)
+find	Enum.find(enumerable, default \\ nil, fun)
+any?	Enum.any?(enumerable, fun \\ &(&1)) :: boolean
+all?	Enum.all?(enumerable, fun \\ &(&1)) :: boolean
+member?	Enum.member?(enumerable, element) :: boolean  ·  x in list
+join	Enum.join(enumerable, joiner \\ "") :: String.t()
+flat_map	Enum.flat_map(enumerable, fun) :: list
+with_index	Enum.with_index(enumerable, offset \\ 0) :: [{x, i}]
+uniq	Enum.uniq(enumerable) :: list
+sum	Enum.sum(enumerable)
+max	Enum.max(enumerable)
+min	Enum.min(enumerable)
+Map	module Map — get, fetch, put, update, delete, keys, values, merge, has_key?, new; %{key: value}
+get	Map.get(map, key, default \\ nil)  ·  Keyword.get
+fetch	Map.fetch(map, key) :: {:ok, value} | :error  ·  fetch!
+put	Map.put(map, key, value) :: map
+update	Map.update(map, key, default, fun)  ·  update!(map, key, fun)
+delete	Map.delete(map, key) :: map
+merge	Map.merge(map1, map2) :: map
+has_key?	Map.has_key?(map, key) :: boolean
+keys	Map.keys(map) :: [key]
+values	Map.values(map) :: [value]
+List	module List — first, last, flatten, delete, wrap, zip, foldl; [head | tail]
+first	List.first(list, default \\ nil)
+flatten	List.flatten(list) :: list
+String	module String — length, split, trim, upcase, downcase, replace, contains?, starts_with?, to_integer, slice
+length	String.length(string) :: integer — graphemes; byte_size/1 for bytes
+split	String.split(string, pattern \\ whitespace, opts) :: [String.t()]
+trim	String.trim(string) :: String.t()
+upcase	String.upcase(string)
+downcase	String.downcase(string)
+replace	String.replace(subject, pattern, replacement, opts \\ [])
+contains?	String.contains?(string, contents) :: boolean
+starts_with?	String.starts_with?(string, prefix) :: boolean
+to_integer	String.to_integer(string) :: integer
+to_atom	String.to_atom(string) — never on untrusted input; to_existing_atom
+slice	String.slice(string, range | start, length)
+Integer	module Integer — parse(s) :: {int, rest} | :error, to_string, digits, mod, floor_div
+Float	module Float — round(f, precision), parse, ceil, floor
+Atom	module Atom — to_string(atom)
+Tuple	module Tuple — elem(tuple, i), put_elem, tuple_size; {:ok, value}
+Keyword	module Keyword — keyword lists [a: 1]; get, put, fetch, merge
+MapSet	module MapSet — new, put, member?, union, difference
+Range	first..last//step — Range; Enum works on it
+Kernel	module Kernel — auto-imported: length, hd, tl, elem, is_*, raise, spawn, send, apply, inspect, |>
+length	length(list) :: integer — O(n)  ·  String.length
+hd	hd(list) — head; raises on []
+tl	tl(list) — tail
+elem	elem(tuple, index)
+is_nil	is_nil(term) :: boolean — also is_atom, is_binary, is_list, is_map, is_integer
+apply	apply(module, function, args)
+raise	raise "message"  ·  raise ArgumentError, message: "…"
+spawn	spawn(fun) :: pid  ·  spawn_link  ·  Task.async
+send	send(dest, message) :: message  ·  receive do … end
+self	self() :: pid
+Process	module Process — alive?, sleep(ms), monitor, exit, send_after, flag
+sleep	Process.sleep(timeout)
+GenServer	behaviour GenServer — start_link, call, cast; callbacks init/1, handle_call/3, handle_cast/2, handle_info/2
+Task	module Task — async(fun), await(task, timeout), start_link, Task.Supervisor
+Agent	module Agent — start_link(fn -> state end), get, update, get_and_update
+Supervisor	behaviour Supervisor — start_link(children, strategy: :one_for_one)
+Application	behaviour Application — start/2; Application.get_env(app, key)
+Enum.to_list	Enum.to_list(enumerable) :: list — runs a Stream
+File	module File — read(path) :: {:ok, bin} | {:error, r}, read!, write, exists?, ls, mkdir_p, stream!
+Path	module Path — join, expand, basename, dirname, extname, wildcard
+System	module System — get_env, cmd, halt, argv, monotonic_time
+Regex	module Regex — ~r/pat/i; run, match?, replace, scan, split
+Jason	module Jason — encode!(term), decode!(string) (hex package)
+Logger	module Logger — info, debug, warning, error; require Logger
+Enum.at	Enum.at(enumerable, index, default \\ nil)
+|>	x |> f(y) — pipe: f(x, y)

@@ -1,0 +1,136 @@
+# Perl 5 — builtins, common modules, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+my
+our
+local
+sub
+return
+if
+elsif
+else
+unless
+while
+until
+for
+foreach
+do
+last
+next
+redo
+package
+use
+no
+require
+BEGIN
+END
+and
+or
+not
+xor
+eq
+ne
+lt
+gt
+le
+ge
+cmp
+x
+ref
+bless
+wantarray
+__PACKAGE__
+__FILE__
+__LINE__
+__END__
+__DATA__
+print	print [FILEHANDLE] LIST — no newline; say adds one (use feature 'say')
+say	say LIST — print with newline (use v5.10+)
+printf	printf [FILEHANDLE] FORMAT, LIST
+sprintf	sprintf FORMAT, LIST
+open	open(my $fh, '<', $path) or die "…: $!" — '>' write, '>>' append, '<:encoding(UTF-8)'
+close	close FILEHANDLE
+die	die LIST — throws; message with newline suppresses "at … line"
+warn	warn LIST — to STDERR
+chomp	chomp(VARIABLE) — remove trailing newline; returns count
+chop	chop(VARIABLE) — remove last char
+length	length EXPR — characters
+substr	substr EXPR, OFFSET, LENGTH, REPLACEMENT — lvalue too
+index	index STR, SUBSTR, POSITION — -1 when absent
+rindex	rindex STR, SUBSTR, POSITION
+uc	uc EXPR
+lc	lc EXPR
+ucfirst	ucfirst EXPR
+lcfirst	lcfirst EXPR
+split	split /PATTERN/, EXPR, LIMIT — returns a list
+join	join EXPR, LIST
+reverse	reverse LIST  ·  scalar reverse STRING
+sort	sort { $a <=> $b } LIST  ·  sort { $a cmp $b }  ·  sort LIST
+map	map { BLOCK } LIST  ·  map EXPR, LIST
+grep	grep { BLOCK } LIST — filter
+push	push @ARRAY, LIST — returns new length
+pop	pop @ARRAY
+shift	shift @ARRAY — from the front; shift alone is @_ in a sub, @ARGV at top level
+unshift	unshift @ARRAY, LIST
+splice	splice @ARRAY, OFFSET, LENGTH, LIST
+scalar	scalar EXPR — force scalar context; scalar @array is the count
+keys	keys %HASH — list of keys (also on hashrefs: keys %$ref)
+values	values %HASH
+each	each %HASH — (key, value) pairs; resets with keys
+exists	exists $hash{key}  ·  exists $array[i]
+delete	delete $hash{key} — returns the value
+defined	defined EXPR
+undef	undef EXPR  ·  undef — the undefined value
+wantarray	wantarray — true in list context, false scalar, undef void
+ref	ref EXPR — 'ARRAY', 'HASH', 'CODE', 'SCALAR', class name, or ''
+bless	bless REF, CLASSNAME — make an object
+local	local $var = value — dynamic scope; local $_
+chr	chr NUMBER
+ord	ord EXPR
+abs	abs VALUE
+int	int EXPR — truncate
+sqrt	sqrt EXPR
+rand	rand EXPR — [0, EXPR)
+srand	srand EXPR
+time	time — epoch seconds
+localtime	localtime EXPR — list (sec, min, hour, mday, mon, year, wday, yday, isdst) or a string in scalar context
+sleep	sleep EXPR
+exit	exit EXPR
+system	system LIST — run a command, returns exit status; backticks capture output
+exec	exec LIST — replace the process
+eval	eval { BLOCK } — trap exceptions in $@  ·  eval STRING
+wait	wait  ·  waitpid PID, FLAGS
+fork	fork — returns child pid, 0 in the child, undef on failure
+sprintf	sprintf FORMAT, LIST — %s %d %.2f %05d %x
+lc	lc EXPR
+qw	qw(word list) — quoted words
+q	q(single quoted)  ·  qq(double quoted)  ·  qr/regex/  ·  qx(command)
+s	s/PATTERN/REPLACEMENT/gimsxr — substitution; /r returns the result
+m	m/PATTERN/gimsx — match; $1, $&, @-, named (?<name>…) in %+
+tr	tr/SEARCH/REPLACE/cdsr — transliterate; counts in scalar context
+chdir	chdir EXPR
+mkdir	mkdir FILENAME, MODE
+unlink	unlink LIST — delete files
+opendir	opendir(my $dh, $dir)  ·  readdir $dh  ·  closedir
+readline	readline FILEHANDLE  ·  <$fh> — a line, or all lines in list context
+binmode	binmode FILEHANDLE, ':encoding(UTF-8)'
+STDIN	STDIN — <STDIN> reads a line
+STDOUT	STDOUT
+STDERR	STDERR
+@ARGV	@ARGV — command-line arguments
+%ENV	%ENV — environment; $ENV{HOME}
+$_	$_ — the default variable for map/grep/for/regex/print
+@_	@_ — subroutine arguments; my ($x, $y) = @_
+$@	$@ — the last eval error
+$!	$! — last system error (errno) as string/number
+$0	$0 — program name
+$/	$/ — input record separator; local $/ slurps
+strict	use strict; — declare variables, no symbolic refs
+warnings	use warnings; — runtime warnings
+Data::Dumper	use Data::Dumper; print Dumper($ref);
+List::Util	use List::Util qw(sum max min first any all uniq reduce);
+Scalar::Util	use Scalar::Util qw(blessed reftype looks_like_number weaken);
+File::Basename	use File::Basename qw(basename dirname fileparse);
+File::Spec	File::Spec->catfile(@parts)  ·  rel2abs
+Getopt::Long	GetOptions('name=s' => \$name, 'verbose' => \$v) or die
+JSON::PP	use JSON::PP; encode_json($ref); decode_json($text)
+Moose	use Moose; has 'name' => (is => 'rw', isa => 'Str'); — or Moo, or built-in class (5.38 feature 'class')

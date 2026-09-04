@@ -1,0 +1,144 @@
+# Zig — builtins (@…), std namespaces, types, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+const
+var
+fn
+pub
+return
+if
+else
+while
+for
+switch
+break
+continue
+defer
+errdefer
+try
+catch
+orelse
+unreachable
+struct
+enum
+union
+opaque
+error
+anyerror
+comptime
+inline
+noinline
+export
+extern
+packed
+align
+volatile
+allowzero
+threadlocal
+linksection
+callconv
+async
+await
+suspend
+resume
+nosuspend
+and
+or
+test
+undefined
+null
+true
+false
+usingnamespace
+@import	@import("std") — std, builtin, root, or a file path
+@This	@This() — the innermost struct/enum/union type
+@as	@as(T, value) — coerce
+@intCast	@intCast(value) — to the inferred int type; safety-checked
+@floatFromInt	@floatFromInt(value)
+@intFromFloat	@intFromFloat(value)
+@intFromEnum	@intFromEnum(value)
+@enumFromInt	@enumFromInt(value)
+@ptrCast	@ptrCast(value) — pointer type change
+@alignCast	@alignCast(value)
+@bitCast	@bitCast(value) — same size, reinterpret bits
+@truncate	@truncate(value) — drop high bits
+@sizeOf	@sizeOf(T) — bytes
+@alignOf	@alignOf(T)
+@typeInfo	@typeInfo(T) — std.builtin.Type
+@TypeOf	@TypeOf(expr, …) — the type of an expression
+@typeName	@typeName(T) — [:0]const u8
+@hasField	@hasField(T, name)
+@hasDecl	@hasDecl(T, name)
+@field	@field(value, name) — field or decl by comptime name
+@compileError	@compileError(msg)
+@compileLog	@compileLog(args…)
+@panic	@panic(msg) — noreturn
+@memcpy	@memcpy(dest, source) — non-overlapping
+@memset	@memset(dest, elem)
+@min	@min(a, b, …)
+@max	@max(a, b, …)
+@mod	@mod(a, b) — non-negative modulus; @rem truncates
+@divTrunc	@divTrunc(a, b)  ·  @divFloor  ·  @divExact
+@embedFile	@embedFile(path) — comptime file contents
+@errorName	@errorName(err) — [:0]const u8
+@tagName	@tagName(value) — enum/union tag name
+@Vector	@Vector(len, T) — SIMD vector
+@splat	@splat(scalar) — vector of one value
+@reduce	@reduce(op, vector)
+@atomicLoad	@atomicLoad(T, ptr, ordering)  ·  @atomicStore  ·  @atomicRmw  ·  @cmpxchgStrong
+@setEvalBranchQuota	@setEvalBranchQuota(n) — raise the comptime loop limit
+std	std — mem, fmt, io, fs, heap, ArrayList, HashMap, debug, testing, math, process, Thread, json
+debug	std.debug — print(fmt, args), assert(cond), panic, dumpStackTrace
+print	std.debug.print("{s} {d} {any}\n", .{ s, n, x }) — stderr; std.io.getStdOut().writer().print for stdout
+assert	std.debug.assert(ok: bool) — unreachable when false
+mem	std.mem — eql, copy, indexOf, split, tokenize, trim, zeroes, Allocator, startsWith, endsWith
+eql	std.mem.eql(comptime T: type, a: []const T, b: []const T) bool
+indexOf	std.mem.indexOf(comptime T: type, haystack: []const T, needle: []const T) ?usize
+tokenizeAny	std.mem.tokenizeAny(comptime T, buffer, delimiters) — iterator, skips empties; splitScalar keeps them
+trim	std.mem.trim(comptime T, slice, values_to_strip) []const T
+Allocator	std.mem.Allocator — alloc(T, n), free(slice), create(T), destroy(ptr), dupe(T, slice)
+alloc	allocator.alloc(T, n) ![]T — defer allocator.free(slice)
+free	allocator.free(slice)
+create	allocator.create(T) !*T — defer destroy
+heap	std.heap — page_allocator, GeneralPurposeAllocator(.{}), ArenaAllocator, FixedBufferAllocator, c_allocator
+GeneralPurposeAllocator	std.heap.GeneralPurposeAllocator(.{}){} — gpa.allocator(); defer _ = gpa.deinit(); detects leaks
+ArenaAllocator	std.heap.ArenaAllocator.init(child) — free everything at once with deinit()
+ArrayList	std.ArrayList(T) — init(allocator), deinit, append(x), items, pop, appendSlice, toOwnedSlice
+append	list.append(item) !void
+items	list.items — the []T slice
+HashMap	std.HashMap / std.AutoHashMap(K, V) / std.StringHashMap(V) — put, get, getOrPut, remove, iterator, count
+AutoHashMap	std.AutoHashMap(K, V).init(allocator)
+StringHashMap	std.StringHashMap(V).init(allocator) — keys are []const u8
+put	map.put(key, value) !void
+get	map.get(key) ?V
+fmt	std.fmt — format, bufPrint, allocPrint, parseInt, parseFloat, comptimePrint; {s} {d} {x} {any} {?} {!}
+bufPrint	std.fmt.bufPrint(buf: []u8, comptime fmt, args) ![]u8
+allocPrint	std.fmt.allocPrint(allocator, comptime fmt, args) ![]u8
+parseInt	std.fmt.parseInt(comptime T: type, buf: []const u8, base: u8) !T
+io	std.io — getStdOut(), getStdIn(), getStdErr(), Writer, Reader, bufferedWriter, fixedBufferStream
+getStdOut	std.io.getStdOut().writer() — .print(fmt, args)
+writer	writer() — print, writeAll, writeByte
+fs	std.fs — cwd(), openFile, createFile, readFileAlloc, File, Dir, path
+cwd	std.fs.cwd() Dir — openFile(path, .{}), readFileAlloc, createFile
+openFile	dir.openFile(sub_path, .{}) !File — defer file.close()
+readFileAlloc	dir.readFileAlloc(allocator, path, max_bytes) ![]u8
+process	std.process — args, argsAlloc, exit, getEnvVarOwned
+exit	std.process.exit(code: u8) noreturn
+testing	std.testing — expect(ok), expectEqual(expected, actual), expectError, expectEqualStrings, allocator
+expect	std.testing.expect(ok: bool) !void
+expectEqual	std.testing.expectEqual(expected, actual) !void
+math	std.math — maxInt(T), minInt(T), sqrt, pow, abs, clamp, floor, ceil, inf, nan
+maxInt	std.math.maxInt(comptime T: type)
+Thread	std.Thread — spawn(.{}, f, args), join, Mutex, sleep(ns)
+json	std.json — parseFromSlice(T, allocator, slice, .{}), stringify, Value
+u8	u8 — byte; []const u8 is a string slice; u16 u32 u64 usize, i8… isize; arbitrary widths u3, i7
+usize	usize — pointer-sized unsigned; indexes and lengths
+isize	isize
+f32	f32  ·  f64  ·  f16  ·  f128
+bool	bool
+void	void — no value
+noreturn	noreturn — never returns
+type	type — the type of types (comptime)
+anytype	anytype — parameter type inferred at the call site (duck-typed)
+anyopaque	anyopaque — like void* in C
+c_int	c_int — C ABI int; c_uint, c_long, c_char
+cImport	@cImport(@cInclude("stdio.h")) — C headers as a namespace

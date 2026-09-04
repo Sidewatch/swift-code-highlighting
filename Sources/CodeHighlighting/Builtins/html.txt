@@ -1,0 +1,103 @@
+# HTML — elements (hover the tag name) and global/common attributes.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+html	<html lang="en"> — root; lang matters for screen readers and hyphenation
+head	<head> — metadata: <title>, <meta>, <link>, <script>, <style>
+body	<body> — the document content
+title	<title> — tab/bookmark title; one per document
+meta	<meta charset="utf-8">  ·  <meta name="viewport" content="width=device-width, initial-scale=1">  ·  name/property + content
+link	<link rel="stylesheet" href="…">  ·  rel="icon" | "preload" | "canonical"
+script	<script src="…" defer | async | type="module"> — defer runs after parse in order
+style	<style> — inline CSS
+div	<div> — generic block container; prefer a semantic element when one fits
+span	<span> — generic inline container
+p	<p> — paragraph
+a	<a href="…" target="_blank" rel="noopener"> — link; download, hreflang
+img	<img src="…" alt="…" width height loading="lazy" decoding="async" srcset sizes> — alt is required
+picture	<picture> <source srcset media type> <img> </picture>
+video	<video src controls autoplay muted loop playsinline poster>
+audio	<audio src controls>
+source	<source src | srcset type media> — inside picture/video/audio
+h1	<h1> — one per page; h2–h6 for the outline, do not skip levels
+h2	<h2>
+h3	<h3>
+ul	<ul> — unordered list of <li>
+ol	<ol start reversed type> — ordered list
+li	<li value> — list item
+dl	<dl> — description list of <dt> / <dd>
+table	<table> — <thead> <tbody> <tfoot> <tr> <th scope> <td>; <caption> first
+tr	<tr> — table row
+th	<th scope="col" | "row" colspan rowspan> — header cell
+td	<td colspan rowspan> — data cell
+form	<form action method="get" | "post" enctype="multipart/form-data" novalidate autocomplete>
+input	<input type="text" | email | password | number | checkbox | radio | file | date | hidden | submit … name value placeholder required disabled readonly pattern min max step autocomplete>
+button	<button type="button" | "submit" | "reset" disabled> — default is submit inside a form
+label	<label for="id"> — or wrap the control; clickable and read by screen readers
+select	<select name multiple size> <option value selected>…</select>
+option	<option value selected disabled>
+textarea	<textarea name rows cols placeholder required>
+fieldset	<fieldset> <legend>Title</legend> … — groups controls
+datalist	<datalist id> <option value> — suggestions for <input list="id">
+header	<header> — introductory content of a page or section
+footer	<footer>
+nav	<nav aria-label="…"> — major navigation
+main	<main> — the primary content; one per page
+section	<section> — thematic grouping, usually with a heading
+article	<article> — self-contained composition
+aside	<aside> — tangential content, sidebar
+figure	<figure> <img> <figcaption>…</figcaption> </figure>
+details	<details open> <summary>Title</summary> … — native disclosure
+dialog	<dialog open> — showModal() / close(); ::backdrop
+template	<template> — inert content cloned by script
+slot	<slot name> — shadow DOM insertion point
+canvas	<canvas width height> — getContext('2d' | 'webgl')
+svg	<svg viewBox="0 0 24 24" width height xmlns="http://www.w3.org/2000/svg"> — path, circle, rect, use
+iframe	<iframe src title sandbox allow loading="lazy"> — title is required for accessibility
+br	<br> — line break; not for spacing
+hr	<hr> — thematic break
+strong	<strong> — strong importance (bold)
+em	<em> — stress emphasis (italic)
+b	<b> — bold without importance
+i	<i> — alternate voice, icon fonts
+code	<code> — inline code; wrap in <pre> for blocks
+pre	<pre> — preformatted; keeps whitespace
+blockquote	<blockquote cite> — quoted block
+small	<small> — side comments, fine print
+time	<time datetime="2026-09-04">
+abbr	<abbr title="expansion">
+kbd	<kbd> — keyboard input
+mark	<mark> — highlighted for reference
+id	id="unique" — one per document; #id in CSS, fragment links
+class	class="a b" — space-separated; .class in CSS
+style	style="prop: value" — inline CSS; prefer classes
+title	title="tooltip" — not read reliably by assistive tech
+hidden	hidden — display: none until removed; hidden="until-found"
+tabindex	tabindex="0" focusable in order | "-1" programmatic only; avoid positive values
+role	role="button" | "dialog" | "navigation" … — ARIA; prefer the native element
+aria-label	aria-label="…" — accessible name when there is no visible text
+aria-labelledby	aria-labelledby="id" — name from another element
+aria-hidden	aria-hidden="true" — remove from the accessibility tree
+aria-expanded	aria-expanded="true" | "false" — disclosure state
+data-	data-name="value" — custom data; element.dataset.name
+lang	lang="en" | "en-GB" — language of the content
+dir	dir="ltr" | "rtl" | "auto"
+contenteditable	contenteditable="true" | "plaintext-only"
+draggable	draggable="true"
+href	href="url" — a, link, area, base
+src	src="url" — img, script, iframe, video, audio
+alt	alt="description" — empty alt="" for decorative images
+type	type="…" — input kind, button behaviour, script/link MIME
+name	name="field" — form field key
+value	value="…" — control's initial value
+placeholder	placeholder="hint" — not a label
+required	required — must be filled to submit
+disabled	disabled — not focusable, not submitted
+checked	checked — initial state of checkbox/radio
+selected	selected — initial option
+autofocus	autofocus — focus on load; one per page
+loading	loading="lazy" | "eager" — img, iframe
+target	target="_blank" | "_self" — add rel="noopener"
+rel	rel="noopener" | "nofollow" | "stylesheet" | "icon" | "preload"
+defer	defer — run the script after parsing, in order
+async	async — run as soon as loaded, any order
+crossorigin	crossorigin="anonymous" | "use-credentials"
+onclick	onclick="…" — inline handler; prefer addEventListener

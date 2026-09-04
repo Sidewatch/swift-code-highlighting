@@ -1,0 +1,121 @@
+# Scala 3 — collections, Option/Either/Try, keywords.
+# identifier<TAB>signature — bare lines (keywords) complete as names only and never hover.
+val
+var
+def
+class
+object
+trait
+enum
+case
+extends
+with
+new
+this
+super
+import
+package
+given
+using
+extension
+type
+match
+if
+then
+else
+for
+yield
+while
+do
+return
+throw
+try
+catch
+finally
+implicit
+lazy
+override
+final
+abstract
+sealed
+private
+protected
+null
+true
+false
+end
+println	println(x: Any): Unit
+print	print(x: Any): Unit
+List	List[A] — immutable linked list; List(1, 2, 3), Nil, ::, head, tail, map, filter
+Seq	Seq[A] — ordered collection trait; default is List
+Vector	Vector[A] — immutable indexed, effectively constant-time ops
+Array	Array[A] — mutable JVM array; Array(1, 2), arr(0)
+Map	Map[K, V] — immutable; Map("a" -> 1), get(k): Option[V], apply(k), +, -, updated, getOrElse
+Set	Set[A] — immutable; contains, +, -, union, intersect
+Option	Option[A] — Some(a) | None; map, flatMap, getOrElse, fold, isDefined, toRight
+Some	Some(value: A): Option[A]
+None	None: Option[Nothing]
+Either	Either[L, R] — Left(error) | Right(value); right-biased map/flatMap; fold(l => …, r => …)
+Left	Left(value: L): Either[L, Nothing]
+Right	Right(value: R): Either[Nothing, R]
+Try	Try(expr) — Success(v) | Failure(e); map, recover, toOption, toEither, getOrElse
+Future	Future[T] — Future { … }; map, flatMap, recover, onComplete; needs an ExecutionContext; Await.result
+Unit	Unit — the () value; like void
+Nothing	Nothing — bottom type; throw returns it
+Any	Any — top type; AnyVal, AnyRef
+String	String — s"interp $x ${expr}", f"$n%.2f", raw"…"; length, substring, split, trim, toInt
+Int	Int — 32-bit; Long, Short, Byte, Double, Float, Char, Boolean
+Tuple	(a, b) — Tuple2; _1, _2; pattern match val (x, y) = pair
+map	map[B](f: A => B): C[B]
+flatMap	flatMap[B](f: A => IterableOnce[B]): C[B]
+filter	filter(p: A => Boolean): C[A]
+collect	collect[B](pf: PartialFunction[A, B]): C[B] — filter + map with cases
+foreach	foreach(f: A => U): Unit
+foldLeft	foldLeft[B](z: B)(op: (B, A) => B): B
+reduce	reduce(op: (A, A) => A): A — throws on empty
+find	find(p: A => Boolean): Option[A]
+exists	exists(p: A => Boolean): Boolean
+forall	forall(p: A => Boolean): Boolean
+headOption	headOption: Option[A]
+head	head: A — throws on empty
+tail	tail: C[A]
+last	last: A
+groupBy	groupBy[K](f: A => K): Map[K, C[A]]
+sortBy	sortBy[B](f: A => B)(using Ordering[B]): C[A]
+sorted	sorted(using Ordering[A]): C[A]
+zip	zip[B](that: IterableOnce[B]): C[(A, B)]
+zipWithIndex	zipWithIndex: C[(A, Int)]
+mkString	mkString(sep: String): String  ·  mkString(start, sep, end)
+toList	toList: List[A]
+toSeq	toSeq: Seq[A]
+toMap	toMap[K, V](using A <:< (K, V)): Map[K, V]
+toSet	toSet: Set[A]
+toVector	toVector: Vector[A]
+getOrElse	getOrElse[B >: A](default: => B): B
+isEmpty	isEmpty: Boolean
+nonEmpty	nonEmpty: Boolean
+size	size: Int
+length	length: Int
+contains	contains(elem: A): Boolean
+take	take(n: Int): C[A]
+drop	drop(n: Int): C[A]
+distinct	distinct: C[A]
+sum	sum(using Numeric[A]): A
+max	max(using Ordering[A]): A
+min	min(using Ordering[A]): A
+apply	apply(args) — obj(args) calls it; companion apply builds instances
+unapply	unapply(x: T): Option[…] — extractor for pattern matching
+copy	copy(field = value) — case class with changed fields
+toString	toString: String
+require	require(requirement: Boolean, message: => Any): Unit — IllegalArgumentException
+assert	assert(assertion: Boolean, message: => Any): Unit
+Ordering	trait Ordering[T] — compare(x, y); Ordering.by(f), .reverse
+Iterator	Iterator[A] — lazy, single pass; next(), hasNext
+LazyList	LazyList[A] — memoised lazy sequence (was Stream)
+Range	1 to 10  ·  1 until 10  ·  0 to 100 by 5
+StringBuilder	StringBuilder — append, result()/toString
+ArrayBuffer	scala.collection.mutable.ArrayBuffer[A] — +=, append, remove
+mutable	scala.collection.mutable — ArrayBuffer, ListBuffer, Map, Set, HashMap, Queue, Stack
+Await	Await.result(future, timeout)  ·  Await.ready — blocks
+ExecutionContext	ExecutionContext — given ExecutionContext = ExecutionContext.global
+main	@main def run(args: String*): Unit = … — Scala 3 entry point
