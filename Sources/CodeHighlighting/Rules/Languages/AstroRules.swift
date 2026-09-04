@@ -14,10 +14,10 @@ extension RuleTables {
         ("</?[a-z][\\w-]*", .keyword),
         ("/>|>", .keyword),
         keywords([
-                "import", "export", "from", "const", "let", "var", "function", "return", "if", "else",
-                "for", "while", "await", "async", "new", "class", "interface", "type", "typeof", "extends",
-                "of", "in",
-            ]),
+            "import", "export", "from", "const", "let", "var", "function", "return", "if", "else",
+            "for", "while", "await", "async", "new", "class", "interface", "type", "typeof", "extends",
+            "of", "in",
+        ]),
         decimal,
         ("\\b[a-zA-Z_:][\\w:-]*=", .function),
     ]

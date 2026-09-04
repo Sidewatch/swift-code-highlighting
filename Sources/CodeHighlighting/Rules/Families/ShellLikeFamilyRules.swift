@@ -7,10 +7,10 @@ extension RuleTables {
         doubleQuoted,
         singleQuotedPlain,
         keywords([
-                "if", "then", "else", "elif", "fi", "for", "while", "do", "done", "case",
-                "esac", "in", "function", "return", "exit", "local", "export", "set", "unset", "source",
-                "alias", "echo",
-            ]),
+            "if", "then", "else", "elif", "fi", "for", "while", "do", "done", "case",
+            "esac", "in", "function", "return", "exit", "local", "export", "set", "unset", "source",
+            "alias", "echo",
+        ]),
         ("\\$\\{?[A-Za-z_]\\w*\\}?", .type),
         ("\\b\\d+\\b", .number),
     ]
