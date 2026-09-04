@@ -1,12 +1,5 @@
 import Foundation
 
-/// A node in the outline tree: a symbol plus its nested children.
-public final class OutlineNode {
-    public let symbol: Symbol
-    public var children: [OutlineNode] = []
-    public init(_ symbol: Symbol) { self.symbol = symbol }
-}
-
 /// Folds a flat, document-ordered `Symbol` list into a tree by *containment*: a symbol
 /// whose name range falls inside another's `scopeRange` becomes its child — methods
 /// under their type, subheadings under their heading. Symbols with no scope are leaves.
