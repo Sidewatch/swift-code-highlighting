@@ -228,3 +228,9 @@
 (qualified_name prefix: "\\" @namespace.prefix)
 (relative_name prefix: (namespace_name) @namespace.prefix)
 (relative_name prefix: "\\" @namespace.prefix)
+
+; Attributes — #[AllowDynamicProperties], #[Deprecated("x")], #[\Ns\Attr]. Same
+; colour as Swift's @MainActor (the attribute role) — no pattern existed before,
+; so they drew as plain text (David asked, 4 Sep 2026).
+(attribute [(name) (qualified_name) (relative_name)] @attribute)
+(attribute_group "#[" @punctuation.bracket "]" @punctuation.bracket)
