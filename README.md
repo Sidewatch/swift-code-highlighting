@@ -20,8 +20,8 @@ Syntax highlighting for macOS `NSTextStorage`, with two backends behind one `Cod
 
 ## Requirements
 
-- macOS 13+
-- Swift 5.9+
+- macOS 14+
+- Swift 6.0+ (Swift 6 language mode)
 
 ## Installation
 
