@@ -10,7 +10,7 @@ Syntax highlighting for macOS `NSTextStorage`, with two backends behind one `Cod
 
 - `Support/` — QuerySourceScanner (tree-sitter query forms), UTF16LineScanner (document lines as UTF-16 offsets)
 - `Builtins/` — bundled resources: 
-- `Completion/` — the engine: completion: CompletionProvider, LanguageBuiltins
+- `Completion/` — the engine: completion: CompletionProvider, LanguageBuiltins, LanguageBuiltins+CardKind
 - `Core/` — the engine: CustomLanguageDefinition, CustomLanguageStore, EmbeddedMarkupHighlighter, HighlightTheme, SyntaxHighlighter
 - `Enums/` — enums with no behaviour beyond their cases and labels: TokenKind
 - `Errors/` — every Error type, one per file: CustomLanguageDefinitionError
