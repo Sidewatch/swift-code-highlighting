@@ -201,6 +201,12 @@ Rule precedence mirrors the built-in tables: `patterns` apply first (later array
 
 Two failure modes, by design: a pattern whose **regex** doesn't compile is *skipped* (one bad rule can't take down the definition), while an unknown **kind** string *fails the decode* with a message naming the pattern index and listing the valid kinds — the JSON is hand-authored, so typos fail loudly.
 
+## For agents
+
+Read `CONTRIBUTING.md` first: the folder layout and the PR rules. `swift test` is the whole
+check, and a new test must fail before the change it covers. `CLAUDE.md` / `AGENTS.md` carry a
+module map.
+
 ## License
 
 MIT

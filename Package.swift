@@ -3,10 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "CodeHighlighting",
-    platforms: [
-        // Uses AppKit (NSColor / NSTextStorage), so macOS-only.
-        .macOS(.v13)
-    ],
+    platforms: [.macOS(.v14)],
     products: [
         .library(name: "CodeHighlighting", targets: ["CodeHighlighting"]),
     ],
@@ -78,7 +75,7 @@ let package = Package(
                 // Per-language built-in identifier lists for the completion tier.
                 .copy("CodeHighlighting/Builtins"),
             ],
-            swiftSettings: [.unsafeFlags(["-strict-concurrency=complete"])]
+            swiftSettings: [.swiftLanguageMode(.v6)]
         ),
         .testTarget(
             name: "CodeHighlightingTests",
