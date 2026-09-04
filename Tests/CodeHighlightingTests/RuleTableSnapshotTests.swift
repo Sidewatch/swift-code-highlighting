@@ -13,10 +13,10 @@ final class RuleTableSnapshotTests: XCTestCase {
     private func snapshot() -> [String: [[String]]] {
         var out: [String: [[String]]] = [:]
         for lang in Language.allCases {
-            out["lang:\(lang.rawValue)"] = SyntaxHighlighter.buildDefs(for: lang).map { [$0.0, "\($0.1)"] }
+            out["lang:\(lang.rawValue)"] = RuleTables.table(for: lang).map { [$0.0, "\($0.1)"] }
         }
         for family in HighlightFamily.allCases {
-            out["family:\(family)"] = SyntaxHighlighter.familyDefs(for: family).map { [$0.0, "\($0.1)"] }
+            out["family:\(family)"] = RuleTables.table(for: family).map { [$0.0, "\($0.1)"] }
         }
         return out
     }
