@@ -1124,79 +1124,19 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// verbatim, never pruned — unknown syntax can only be kept, not dropped.
     /// If pruning would leave nothing, the original source is returned.
     static func prunedQuerySource(_ src: String) -> String {
-        let s = Array(src.unicodeScalars)
-        let n = s.count
-        var out = String.UnicodeScalarView()
+        var scanner = QuerySourceScanner(src)
+        var out = ""
         var kept = 0
-        func isWS(_ c: Unicode.Scalar) -> Bool { c == " " || c == "\n" || c == "\t" || c == "\r" }
-
-        /// Consumes one balanced form starting at `i` (paren/bracket group or
-        /// quoted string), honoring nested strings/comments; returns the index
-        /// one past its end.
-        func consumeForm(_ i: Int) -> Int {
-            var i = i
-            if s[i] == "\"" {
-                i += 1
-                while i < n {
-                    if s[i] == "\\" { i += 2; continue }
-                    if s[i] == "\"" { return i + 1 }
-                    i += 1
-                }
-                return i
-            }
-            var depth = 0
-            while i < n {
-                switch s[i] {
-                case "\"":
-                    i += 1
-                    while i < n, s[i] != "\"" { i += s[i] == "\\" ? 2 : 1 }
-                case "(", "[": depth += 1
-                case ")", "]":
-                    depth -= 1
-                    if depth == 0 { return i + 1 }
-                case ";":
-                    while i < n, s[i] != "\n" { i += 1 }
-                default: break
-                }
-                i += 1
-            }
-            return i
-        }
-
-        var i = 0
-        while i < n {
-            let c = s[i]
-            if isWS(c) {
-                out.append(c); i += 1
-            } else if c == ";" {                               // top-level comment line
-                while i < n, s[i] != "\n" { out.append(s[i]); i += 1 }
-            } else if c == "(" || c == "[" || c == "\"" {      // one pattern
-                let start = i
-                i = consumeForm(i)
-                // Trailing quantifiers and capture chains belong to this pattern.
-                while i < n {
-                    var k = i
-                    while k < n, isWS(s[k]) { k += 1 }
-                    if k < n, s[k] == "?" || s[k] == "*" || s[k] == "+" {
-                        i = k + 1
-                    } else if k < n, s[k] == "@" {
-                        k += 1
-                        while k < n, !isWS(s[k]), s[k] != "(", s[k] != ")",
-                              s[k] != "[", s[k] != "]", s[k] != ";" { k += 1 }
-                        i = k
-                    } else { break }
-                }
-                let chunk = String(String.UnicodeScalarView(s[start..<i]))
-                if patternCanPaint(chunk) {
-                    out.append(contentsOf: chunk.unicodeScalars)
-                    kept += 1
-                }
-                out.append("\n")
-            } else {                                           // unknown bare token: keep verbatim
-                while i < n, !isWS(s[i]) { out.append(s[i]); i += 1 }
+        while let token = scanner.next() {
+            switch token {
+            case .whitespace(let c): out.unicodeScalars.append(c)
+            case .comment(let text), .bare(let text): out += text
+            case .pattern(let chunk):
+                if patternCanPaint(chunk) { out += chunk; kept += 1 }
+                out += "\n"
             }
         }
-        return kept > 0 ? String(out) : src
+        return kept > 0 ? out : src
     }
 
     /// Whether any `@capture` in one pattern's text maps to a colored role —

@@ -75,63 +75,49 @@ public enum CodeIndenter {
         var brackets: [Bracket] = []
         var protectedLines = Set<Int>()
         let lineOf = LineIndex(ns: ns)
-
         var stack = [root]
         while let node = stack.popLast() {
-            let type = node.nodeType ?? ""
             let range = node.range
             guard range.location >= 0, NSMaxRange(range) <= ns.length else { continue }
-
-            // A multi-line string or comment carries its own indentation as CONTENT. Re-indenting
-            // its interior would edit the value of a string literal or the shape of a doc block,
-            // which is a content change wearing a whitespace disguise. The node's FIRST line is
-            // still fair game — that one is positioned by the code around it.
-            //
-            // A JSX container gets the same treatment for a different reason: its nesting is TAG
-            // nesting, and tags are not bracket tokens, so descending found only the stray braces
-            // of embedded `{expr}` children and flattened every child line to the enclosing
-            // BRACKET depth — destroying indentation that was already right. Freezing the
-            // interior is safe (skipping the whole node counts none of its brackets, so depth
-            // stays balanced for what follows) and idempotent. Exact names, never a `jsx_`
-            // prefix: `jsx_expression` and friends exist only inside a container the walk
-            // already refused to enter, and must never match on their own. `jsx_fragment` is
-            // kept for grammar versions that emit it — this one parses `<>…</>` as a
-            // `jsx_element` with unnamed tags.
-            let lowered = type.lowercased()
-            let isJSXContainer = type == "jsx_element" || type == "jsx_self_closing_element"
-                || type == "jsx_fragment"
-            if lowered.contains("string") || lowered.contains("comment") || lowered.contains("heredoc")
-                || isJSXContainer {
+            if hasFrozenInterior(node.nodeType ?? "") {
+                // Its interior is CONTENT (a string's value, a doc block's shape, a JSX tree's
+                // tag nesting); only its first line is positioned by the code around it. Not
+                // descended: a string with an escape splits into `string_content` fragments whose
+                // stray opening brace would count as a bracket and leave depth permanently +1.
                 let first = lineOf.line(at: range.location)
                 let last = lineOf.line(at: max(range.location, NSMaxRange(range) - 1))
                 if last > first { for l in (first + 1)...last { protectedLines.insert(l) } }
-                // Do not descend. A string is not a leaf once it contains an escape: tree-sitter
-                // splits it into `string_content` and `escape_sequence` children, and "{\"a\"…"
-                // yields a ONE-CHARACTER `string_content` holding just `{`. Recursing counted
-                // that as an opening brace while its `}` stayed inside a longer content run, so
-                // depth was permanently +1 and every line after the string indented a level too
-                // deep. Stopping at the string node is what actually makes its interior text.
                 continue
             }
-
-            let childCount = node.childCount
-            if childCount == 0 {
-                // Brackets are ANONYMOUS tokens. Requiring that here is a second guard against
-                // the same class of mistake: any named one-character node — a `string_content`,
-                // an operator fragment — can no longer be mistaken for structure.
-                if range.length == 1, !node.isNamed {
-                    switch ns.substring(with: range) {
-                    case "{", "[", "(": brackets.append(Bracket(offset: range.location, isOpen: true))
-                    case "}", "]", ")": brackets.append(Bracket(offset: range.location, isOpen: false))
-                    default: break
-                    }
-                }
+            if node.childCount == 0 {
+                if let bracket = bracket(of: node, in: ns) { brackets.append(bracket) }
             } else {
-                for i in 0..<childCount { if let c = node.child(at: i) { stack.append(c) } }
+                for i in 0..<node.childCount { if let c = node.child(at: i) { stack.append(c) } }
             }
         }
         brackets.sort { $0.offset < $1.offset }
         return (brackets, protectedLines)
+    }
+
+    /// Strings, comments and heredocs carry their own indentation as content; a JSX container's
+    /// nesting is TAG nesting, and tags are not bracket tokens. Exact JSX names, never a `jsx_`
+    /// prefix: `jsx_expression` exists only inside a container the walk already refused to enter.
+    private static func hasFrozenInterior(_ type: String) -> Bool {
+        let lowered = type.lowercased()
+        return lowered.contains("string") || lowered.contains("comment") || lowered.contains("heredoc")
+            || type == "jsx_element" || type == "jsx_self_closing_element" || type == "jsx_fragment"
+    }
+
+    /// A leaf that is an ANONYMOUS one-character bracket token — never a named one-character
+    /// node like a `string_content` or an operator fragment.
+    private static func bracket(of node: Node, in ns: NSString) -> Bracket? {
+        let range = node.range
+        guard range.length == 1, !node.isNamed else { return nil }
+        switch ns.substring(with: range) {
+        case "{", "[", "(": return Bracket(offset: range.location, isOpen: true)
+        case "}", "]", ")": return Bracket(offset: range.location, isOpen: false)
+        default: return nil
+        }
     }
 
     // MARK: - Rewriting

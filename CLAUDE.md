@@ -8,6 +8,7 @@ Syntax highlighting for macOS `NSTextStorage`, with two backends behind one `Cod
 
 ## Module map
 
+- `Support/` — QuerySourceScanner (tree-sitter query forms), UTF16LineScanner (document lines as UTF-16 offsets)
 - `Builtins/` — bundled resources: 
 - `Completion/` — the engine: completion: CompletionProvider, LanguageBuiltins
 - `Core/` — the engine: CustomLanguageDefinition, CustomLanguageStore, EmbeddedMarkupHighlighter, HighlightTheme, SyntaxHighlighter
