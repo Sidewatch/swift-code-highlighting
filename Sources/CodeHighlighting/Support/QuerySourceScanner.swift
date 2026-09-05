@@ -1,3 +1,15 @@
+//
+//  QuerySourceScanner.swift
+//  CodeHighlighting
+//
+//  A shallow, safe reader of tree-sitter query source: one top-level form at a time — `(...)`,
+//  `[...]` or `"literal"` with its trailing quantifiers and `@capture` chains — `;` comments
+//  kept, anything unrecognised copied verbatim (unknown syntax can only be kept, never
+//  dropped).
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// A shallow, safe reader of tree-sitter query source: one top-level form at a time —

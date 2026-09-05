@@ -1,3 +1,14 @@
+//
+//  LanguageBuiltins.swift
+//  CodeHighlighting
+//
+//  A language's built-in identifiers (standard functions, methods, globals) as completion
+//  candidates — the tier that lets `array_`→`array_map` work in PHP, `map`/`filter`/`then`
+//  across JS objects, `len`/`enumerate` in Python, etc., without a language server.
+//
+//  Created by David Sherlock on 7/19/26.
+//
+
 import Foundation
 import CodeLanguage
 

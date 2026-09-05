@@ -1,3 +1,12 @@
+//
+//  JavaRules.swift
+//  CodeHighlighting
+//
+//  The regex rule table for Java.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// The regex rule table for Java. Order matters: earlier rules win overlaps.

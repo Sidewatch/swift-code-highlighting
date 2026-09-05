@@ -1,3 +1,12 @@
+//
+//  SymbolIndex.swift
+//  CodeHighlighting
+//
+//  A definition found in a source file (function, class, method, …).
+//
+//  Created by David Sherlock on 7/9/26.
+//
+
 import Foundation
 import CodeLanguage
 

@@ -1,3 +1,13 @@
+//
+//  SymbolVisibility.swift
+//  CodeHighlighting
+//
+//  The languages whose project-wide definitions a file written in `host` may resolve to — or
+//  nil when `host` has no symbol vocabulary of its own and must resolve NOTHING across files.
+//
+//  Created by David Sherlock on 9/2/26.
+//
+
 import Foundation
 import CodeLanguage
 

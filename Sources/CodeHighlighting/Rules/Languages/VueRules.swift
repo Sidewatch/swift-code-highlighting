@@ -1,3 +1,12 @@
+//
+//  VueRules.swift
+//  CodeHighlighting
+//
+//  The regex rule table for Vue / Svelte.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// The regex rule table for Vue / Svelte. Order matters: earlier rules win overlaps.

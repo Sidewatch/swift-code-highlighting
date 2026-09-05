@@ -1,3 +1,14 @@
+//
+//  CustomLanguageStore.swift
+//  CodeHighlighting
+//
+//  A folder of user-authored ``CustomLanguageDefinition`` JSON files, loaded once and re-
+//  fingerprinted on demand, answering "does a custom language claim this file?" by exact
+//  filename first, then extension.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// A folder of user-authored ``CustomLanguageDefinition`` JSON files, loaded once and

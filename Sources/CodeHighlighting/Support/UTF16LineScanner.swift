@@ -1,3 +1,15 @@
+//
+//  UTF16LineScanner.swift
+//  CodeHighlighting
+//
+//  The lines of a document as UTF-16 offsets, from ONE contiguous copy of the characters:
+//  `components(separatedBy:)` materialised every line as a String (~50k allocations at a 2 MB
+//  document) just to find the few lines an outline wants, and the offsets fall out of a walk
+//  natively — they are the same UTF-16 units `Symbol.range` wants.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// The lines of a document as UTF-16 offsets, from ONE contiguous copy of the characters:

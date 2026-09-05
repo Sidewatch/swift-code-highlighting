@@ -1,3 +1,12 @@
+//
+//  CodeIndenterTests.swift
+//  CodeHighlightingTests
+//
+//  Covers ``CodeIndenter``.
+//
+//  Created by David Sherlock on 8/6/26.
+//
+
 import XCTest
 import CodeLanguage
 @testable import CodeHighlighting

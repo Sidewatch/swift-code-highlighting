@@ -1,3 +1,15 @@
+//
+//  StylesheetOutline.swift
+//  CodeHighlighting
+//
+//  Outlines a stylesheet the way its author structured it: the `/* Section */` banner comments
+//  become headings and the rules under each nest beneath them, so a WordPress `common.css`
+//  reads as "Widgets › Nav Menus › Responsive Component" instead of six thousand lines of
+//  rules.
+//
+//  Created by David Sherlock on 9/2/26.
+//
+
 import Foundation
 import CodeLanguage
 

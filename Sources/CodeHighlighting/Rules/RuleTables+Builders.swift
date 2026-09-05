@@ -1,3 +1,12 @@
+//
+//  RuleTables+Builders.swift
+//  CodeHighlighting
+//
+//  The rules every table is built from.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// The rules every table is built from. A table is an array of (pattern, kind): the named

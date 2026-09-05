@@ -1,3 +1,13 @@
+//
+//  TreeSitterHighlighter.swift
+//  CodeHighlighting
+//
+//  Tree-sitter–backed highlighter: parses the buffer into a syntax tree and applies colors from
+//  the grammar's `highlights.scm` query.
+//
+//  Created by David Sherlock on 7/9/26.
+//
+
 import AppKit
 import CodeLanguage
 import SwiftTreeSitter

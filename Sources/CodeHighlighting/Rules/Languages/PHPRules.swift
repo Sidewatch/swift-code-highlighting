@@ -1,3 +1,12 @@
+//
+//  PHPRules.swift
+//  CodeHighlighting
+//
+//  The regex rule table for PHP.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// The regex rule table for PHP. Order matters: earlier rules win overlaps.

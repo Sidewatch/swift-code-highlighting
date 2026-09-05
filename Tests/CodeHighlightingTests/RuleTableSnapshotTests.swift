@@ -1,3 +1,14 @@
+//
+//  RuleTableSnapshotTests.swift
+//  CodeHighlightingTests
+//
+//  Every regex rule table, frozen: the tables are about to be restructured into one file per
+//  language built from shared rule builders, and this pins that the (pattern, kind) pairs come
+//  out byte-identical.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import XCTest
 import CodeLanguage
 @testable import CodeHighlighting

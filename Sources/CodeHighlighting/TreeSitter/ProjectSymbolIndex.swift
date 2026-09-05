@@ -1,3 +1,13 @@
+//
+//  ProjectSymbolIndex.swift
+//  CodeHighlighting
+//
+//  Parses every source file in the project and maps symbol names to their definitions, for
+//  cross-file Go-to-Definition and hover-doc.
+//
+//  Created by David Sherlock on 7/9/26.
+//
+
 import Foundation
 import CodeLanguage
 

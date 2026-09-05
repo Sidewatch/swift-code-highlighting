@@ -1,3 +1,14 @@
+//
+//  LanguageBuiltins+CardKind.swift
+//  CodeHighlighting
+//
+//  What a built-in's hover card should call it, read off its signature: `module …` for modules,
+//  `var …` for properties, `Name — …` for a type or namespace described rather than called,
+//  `name: Type` for a value; anything else with a `(` is a call.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 extension LanguageBuiltins {

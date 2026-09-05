@@ -1,3 +1,13 @@
+//
+//  CompletionProvider.swift
+//  CodeHighlighting
+//
+//  Candidate source for the editor's completion popup — both the as-you-type one (debounced)
+//  and the manual `complete(_:)` (Esc / F5).
+//
+//  Created by David Sherlock on 7/19/26.
+//
+
 import Foundation
 import CodeLanguage
 

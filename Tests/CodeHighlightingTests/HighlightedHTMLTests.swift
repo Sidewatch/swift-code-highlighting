@@ -1,3 +1,13 @@
+//
+//  HighlightedHTMLTests.swift
+//  CodeHighlightingTests
+//
+//  Covers ``TreeSitterHighlighter/highlightedHTML(_:language:)``, which turns a fenced code
+//  block into span-wrapped HTML for the Markdown preview.
+//
+//  Created by David Sherlock on 8/6/26.
+//
+
 import XCTest
 import AppKit
 import CodeLanguage

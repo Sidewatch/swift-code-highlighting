@@ -1,3 +1,13 @@
+//
+//  RuleTables.swift
+//  CodeHighlighting
+//
+//  The regex (pattern, kind) tables behind `SyntaxHighlighter` for languages that have no tree-
+//  sitter grammar.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 import CodeLanguage
 

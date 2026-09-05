@@ -1,3 +1,13 @@
+//
+//  MarkdownOutline.swift
+//  CodeHighlighting
+//
+//  Extracts a Markdown document's ATX headings (`#`…`######`) as outline `Symbol`s — Markdown
+//  has no tree-sitter symbol query, so the structure outline falls back to this.
+//
+//  Created by David Sherlock on 7/19/26.
+//
+
 import Foundation
 
 /// Extracts a Markdown document's ATX headings (`#`…`######`) as outline `Symbol`s —

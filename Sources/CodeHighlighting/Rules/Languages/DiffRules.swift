@@ -1,3 +1,12 @@
+//
+//  DiffRules.swift
+//  CodeHighlighting
+//
+//  The regex rule table for Diff.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// The regex rule table for Diff. Order matters: earlier rules win overlaps.

@@ -1,3 +1,12 @@
+//
+//  SQLRules.swift
+//  CodeHighlighting
+//
+//  The regex rule table for SQL.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// The regex rule table for SQL. Order matters: earlier rules win overlaps.

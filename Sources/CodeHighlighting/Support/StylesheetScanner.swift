@@ -1,3 +1,13 @@
+//
+//  StylesheetScanner.swift
+//  CodeHighlighting
+//
+//  One pass over a stylesheet's UTF-16 units collecting section banners (comments that read as
+//  headings) and rules (selectors, at-rules, top-level variables) with their block extents.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// One pass over a stylesheet's UTF-16 units collecting section banners (comments that read

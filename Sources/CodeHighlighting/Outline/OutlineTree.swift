@@ -1,3 +1,14 @@
+//
+//  OutlineTree.swift
+//  CodeHighlighting
+//
+//  Folds a flat, document-ordered `Symbol` list into a tree by *containment*: a symbol whose
+//  name range falls inside another's `scopeRange` becomes its child — methods under their type,
+//  subheadings under their heading.
+//
+//  Created by David Sherlock on 7/19/26.
+//
+
 import Foundation
 
 /// Folds a flat, document-ordered `Symbol` list into a tree by *containment*: a symbol

@@ -1,3 +1,12 @@
+//
+//  CustomLanguageDefinitionError.swift
+//  CodeHighlighting
+//
+//  What went wrong decoding or validating a hand-authored ``CustomLanguageDefinition``.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// What went wrong decoding or validating a hand-authored

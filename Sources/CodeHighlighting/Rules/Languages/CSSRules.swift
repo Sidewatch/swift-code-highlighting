@@ -1,3 +1,12 @@
+//
+//  CSSRules.swift
+//  CodeHighlighting
+//
+//  The regex rule table for CSS.
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import Foundation
 
 /// The regex rule table for CSS. Order matters: earlier rules win overlaps.

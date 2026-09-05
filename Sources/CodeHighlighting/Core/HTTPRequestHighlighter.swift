@@ -1,3 +1,12 @@
+//
+//  HTTPRequestHighlighter.swift
+//  CodeHighlighting
+//
+//  Highlighter for an HTTP-client request document (the VS Code / JetBrains `.http` format).
+//
+//  Created by David Sherlock on 9/5/26.
+//
+
 import AppKit
 import CodeLanguage
 
