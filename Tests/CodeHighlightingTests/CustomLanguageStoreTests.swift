@@ -2,7 +2,7 @@
 //  CustomLanguageStoreTests.swift
 //  CodeHighlightingTests
 //
-//  CustomLanguageStoreTests.
+//  Tests for Custom Language Store.
 //
 //  Created by David Sherlock on 9/5/26.
 //
