@@ -2,6 +2,10 @@
 //  DefLocation.swift
 //  CodeHighlighting
 //
+//  A definition found somewhere in the project.
+//
+//  Created by David Sherlock on 9/5/26.
+//
 
 import Foundation
 import CodeLanguage

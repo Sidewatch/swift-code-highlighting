@@ -2,6 +2,12 @@
 //  CustomPattern.swift
 //  CodeHighlighting
 //
+//  One raw-regex rule inside a ``CustomLanguageDefinition`` — the escape hatch for anything the
+//  structured fields can't express (section markers, header directives, register names, exotic
+//  literals, …).
+//
+//  Created by David Sherlock on 9/5/26.
+//
 
 import Foundation
 

@@ -2,6 +2,11 @@
 //  SymbolOwners.swift
 //  CodeHighlighting
 //
+//  Ownership: which type a method/property belongs to, derived purely from the symbol list's
+//  scope ranges (no parse, no language table).
+//
+//  Created by David Sherlock on 9/5/26.
+//
 
 import Foundation
 

@@ -2,6 +2,11 @@
 //  UTF16NewlineScanner.swift
 //  CodeHighlighting
 //
+//  Forward-only newline scanner over an NSString: converts ascending UTF-16 indices to
+//  tree-sitter `Point`s (row = newline count, column = bytes since the last newline, i.e.
+//
+//  Created by David Sherlock on 9/5/26.
+//
 
 import AppKit
 import CodeLanguage

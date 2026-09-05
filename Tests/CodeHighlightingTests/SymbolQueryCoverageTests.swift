@@ -2,17 +2,18 @@
 //  SymbolQueryCoverageTests.swift
 //  CodeHighlightingTests
 //
-//  The symbol queries added for grammars that were vendored without one: Bash,
-//  Kotlin, Dart, Scala, SQL. Each test pins the names, kinds and lines a small
-//  real-shaped file yields, and the nesting the shared tree builder derives —
-//  a query that compiles but matches nothing would otherwise pass silently
-//  (`symbols(in:)` returns [] for a query that fails to compile).
+//  Per-language coverage of the symbol queries: each vendored grammar yields the functions,
+//  types and methods its fixture declares.
+//
+//  Created by David Sherlock on 9/2/26.
 //
 
 import XCTest
 import CodeLanguage
 @testable import CodeHighlighting
 
+/// Per-language coverage of the symbol queries: each vendored grammar yields the functions,
+/// types and methods its fixture declares.
 final class SymbolQueryCoverageTests: XCTestCase {
 
     private func names(_ syms: [Symbol]) -> [String] { syms.map(\.name) }

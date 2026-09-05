@@ -2,6 +2,11 @@
 //  SymbolQueries.swift
 //  CodeHighlighting
 //
+//  Hand-written definition queries per language (tree-sitter grammars we vendor don't ship
+//  `tags.scm`).
+//
+//  Created by David Sherlock on 7/9/26.
+//
 
 import Foundation
 import CodeLanguage

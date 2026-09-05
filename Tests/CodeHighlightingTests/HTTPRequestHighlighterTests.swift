@@ -2,15 +2,18 @@
 //  HTTPRequestHighlighterTests.swift
 //  CodeHighlightingTests
 //
-//  The `.http` request document: separators as comments, the method as a keyword, the URL
-//  and header values as strings, header names as properties, the JSON body painted by the
-//  JSON highlighter.
+//  Tests for `HTTPRequestHighlighter`: method, URL, headers, body and comments each get their
+//  token kind, read back through a marker palette.
+//
+//  Created by David Sherlock on 9/5/26.
 //
 
 import XCTest
 import AppKit
 @testable import CodeHighlighting
 
+/// Tests for `HTTPRequestHighlighter`: method, URL, headers, body and comments each get their
+/// token kind, read back through a marker palette.
 @MainActor
 final class HTTPRequestHighlighterTests: XCTestCase {
 

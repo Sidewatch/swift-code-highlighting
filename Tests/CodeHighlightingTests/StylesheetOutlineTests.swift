@@ -2,14 +2,17 @@
 //  StylesheetOutlineTests.swift
 //  CodeHighlightingTests
 //
-//  The stylesheet outline: `/* Section */` banners as headings, rules nested
-//  under them, at-rules as scopes, strings/comments inert. Pure text in, so it
-//  runs headless with no grammar.
+//  Tests for `StylesheetOutline`: banner comments become sections with their rules nested, and
+//  at-rules and selectors keep their ranges.
+//
+//  Created by David Sherlock on 9/2/26.
 //
 
 import XCTest
 @testable import CodeHighlighting
 
+/// Tests for `StylesheetOutline`: banner comments become sections with their rules nested, and
+/// at-rules and selectors keep their ranges.
 final class StylesheetOutlineTests: XCTestCase {
 
     /// The example that asked for this: three WordPress-style banners, each

@@ -1,21 +1,10 @@
 //
 //  TreeSitterHighlighterTests.swift
-//  Tests for the tree-sitter path of SwiftCodeHighlighting.
+//  CodeHighlightingTests
 //
-//  These run HEADLESS: the grammar language pointers load fine under
-//  `swift test`, but the highlights.scm resource bundles (Bundle.main) do not —
-//  so instead of the bundled queries these tests compile their own small
-//  queries (via the internal `tsLanguage(for:)` + `applyQuery` seams) and
-//  exercise the internal math directly:
+//  Covers every TokenKind so capture→color mapping can be asserted exactly.
 //
-//   1. the UTF-16×2 byte-offset rule (tree-sitter byte offset = UTF-16 index
-//      × 2, NOT `utf8.count`) — proven with CJK / emoji / combining characters,
-//      each of which breaks a different wrong implementation:
-//        - CJK      (UTF-8: 3 bytes, UTF-16LE: 2 bytes) → catches utf8.count
-//        - emoji    (UTF-16 length 2 → 4 bytes)         → catches a missing ×2
-//        - combining marks                              → catch grapheme-based math
-//   2. capture precedence — later query patternIndex wins,
-//   3. range clamping at document/clip edges.
+//  Created by David Sherlock on 7/16/26.
 //
 
 import XCTest
@@ -49,6 +38,8 @@ private struct AllKindMockColors: TokenColorProviding {
 // `@MainActor`: these exercise the highlighting entry points, which are main-actor
 // isolated because they write attributes into a live text storage. XCTest already runs
 // test methods on the main thread, so this states the existing reality.
+/// Tests for `TreeSitterHighlighter` over the vendored grammars, including a Unicode prefix
+/// that shifts UTF-16 offsets.
 @MainActor
 final class TreeSitterHighlighterTests: XCTestCase {
 

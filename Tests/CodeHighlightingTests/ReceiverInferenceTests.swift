@@ -1,15 +1,18 @@
 //
 //  ReceiverInferenceTests.swift
-//  Tests for SwiftCodeHighlighting
+//  CodeHighlightingTests
 //
-//  The receiver-typing tier is pure string/array logic (no tree-sitter), so
-//  unlike the grammar queries it CAN be exercised under XCTest. Every case was
-//  mutation-verified: run with the function under test disabled and it fails.
+//  Tests for `ReceiverInference.receiver(before:in:)` across `->`, `::`, `.` and the cases with
+//  no receiver.
+//
+//  Created by David Sherlock on 8/26/26.
 //
 
 import XCTest
 @testable import CodeHighlighting
 
+/// Tests for `ReceiverInference.receiver(before:in:)` across `->`, `::`, `.` and the cases with
+/// no receiver.
 final class ReceiverInferenceTests: XCTestCase {
 
     // MARK: - receiver(before:in:)

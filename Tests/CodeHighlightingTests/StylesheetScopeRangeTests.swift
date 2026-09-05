@@ -2,13 +2,15 @@
 //  StylesheetScopeRangeTests.swift
 //  CodeHighlightingTests
 //
-//  The exact extent of an at-rule's scope: it must run through its closing brace,
-//  so a caret ON the brace still reads as inside the block.
+//  Pins `StylesheetOutline` scope ranges: an at-rule's scope runs through its closing brace.
+//
+//  Created by David Sherlock on 9/5/26.
 //
 
 import XCTest
 @testable import CodeHighlighting
 
+/// Pins `StylesheetOutline` scope ranges: an at-rule's scope runs through its closing brace.
 final class StylesheetScopeRangeTests: XCTestCase {
 
     func testAtRuleScopeRunsThroughItsClosingBrace() {

@@ -1,11 +1,11 @@
 //
 //  HighlightSession.swift
-//  SwiftCodeHighlighting
+//  CodeHighlighting
 //
-//  A stateful, incremental companion to TreeSitterHighlighter: it caches the
-//  parsed syntax tree between highlight passes so scrolling a huge file only
-//  runs the query, never a re-parse, and edits re-parse incrementally via
-//  tree-sitter's `tree.edit(InputEdit)` + `parser.parse(tree:string:)`.
+//  A stateful tree-sitter highlighting session that parses a document **once** and keeps the
+//  syntax tree alive across highlight passes.
+//
+//  Created by David Sherlock on 7/16/26.
 //
 
 import AppKit

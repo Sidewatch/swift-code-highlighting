@@ -2,6 +2,11 @@
 //  CommentKeywords.swift
 //  CodeHighlighting
 //
+//  TODO-family markers surfaced inside comments (both highlight tiers tint them with the
+//  keyword color — the agent's leftovers pop while scrolling).
+//
+//  Created by David Sherlock on 9/5/26.
+//
 
 import AppKit
 

@@ -1,12 +1,18 @@
 //
 //  OutlineTests.swift
-//  Tests for OutlineTree (flat Symbol list → containment tree) and MarkdownOutline
-//  (ATX heading extraction with fenced-code skipping + level nesting). Pure, headless.
+//  CodeHighlightingTests
+//
+//  Tests for `OutlineTree.build`: flat symbols become roots, scoped symbols nest, and order
+//  follows location.
+//
+//  Created by David Sherlock on 7/19/26.
 //
 
 import XCTest
 @testable import CodeHighlighting
 
+/// Tests for `OutlineTree.build`: flat symbols become roots, scoped symbols nest, and order
+/// follows location.
 final class OutlineTests: XCTestCase {
 
     // MARK: - Helpers

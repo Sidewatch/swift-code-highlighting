@@ -30,6 +30,8 @@ private struct SFCColors: TokenColorProviding {
 // `@MainActor`: these exercise the highlighting entry points, which are main-actor
 // isolated because they write attributes into a live text storage. XCTest already runs
 // test methods on the main thread, so this states the existing reality.
+/// Tests for `EmbeddedMarkupHighlighter`: which single-file-component languages it supports and
+/// the regions it carves out of them.
 @MainActor
 final class EmbeddedMarkupTests: XCTestCase {
 

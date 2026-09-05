@@ -2,6 +2,8 @@
 //  CodeHighlightingTests.swift
 //  Tests for SwiftCodeHighlighting
 //
+//  Distinct color per role so tests can assert which role a range received.
+//
 //  Created by David Sherlock on 7/9/26.
 //
 
@@ -24,6 +26,8 @@ private struct MockColors: TokenColorProviding {
 // `@MainActor`: these exercise the highlighting entry points, which are main-actor
 // isolated because they write attributes into a live text storage. XCTest already runs
 // test methods on the main thread, so this states the existing reality.
+/// Tests for `SyntaxHighlighter` with the built-in regex rules: the colour each token kind
+/// receives per language.
 @MainActor
 final class CodeHighlightingTests: XCTestCase {
 

@@ -2,6 +2,10 @@
 //  DefaultTokenColors.swift
 //  CodeHighlighting
 //
+//  A neutral fallback color provider, so highlighting is sensible before a theme is installed.
+//
+//  Created by David Sherlock on 9/5/26.
+//
 
 import AppKit
 

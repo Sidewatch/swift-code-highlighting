@@ -1,24 +1,11 @@
 //
 //  HighlightSessionTests.swift
-//  Tests for the incremental HighlightSession.
+//  CodeHighlightingTests
 //
-//  Like TreeSitterHighlighterTests these run HEADLESS: the grammar language
-//  pointers link fine under `swift test` but the highlights.scm resource
-//  bundles (Bundle.main) may not resolve — so the sessions here are built via
-//  the internal seams (`tsLanguage(for:)` + `HighlightSession(grammar:)`) with
-//  small hand-compiled queries. What they pin down:
+//  Mirrors the mock in TreeSitterHighlighterTests: one distinct color per kind so capture→color
+//  assertions are exact.
 //
-//   1. the session parses ONCE and then highlights repeatedly from the cached
-//      tree (asserted via the fullParseCount / incrementalParseCount seams) —
-//      the whole point of the class vs. the stateless highlighter,
-//   2. noteEdit's InputEdit math: an insertion BEFORE existing tokens must
-//      shift every capture range (the classic incremental-parsing bug is
-//      colors landing at the PRE-edit offsets),
-//   3. the UTF-16×2 byte rule through edits containing CJK + emoji (where
-//      utf8-based or un-doubled byte math diverges),
-//   4. invalidate() recovering from a tree that was desynced deliberately
-//      (text swapped under the session without a noteEdit),
-//   5. inconsistent noteEdit calls dropping the tree instead of corrupting it.
+//  Created by David Sherlock on 7/16/26.
 //
 
 import XCTest
@@ -51,6 +38,8 @@ private struct SessionMockColors: TokenColorProviding {
 // `@MainActor`: these exercise the highlighting entry points, which are main-actor
 // isolated because they write attributes into a live text storage. XCTest already runs
 // test methods on the main thread, so this states the existing reality.
+/// Tests for `HighlightSession`: incremental re-parse after edits and query-only passes on
+/// scroll, read through mock colours.
 @MainActor
 final class HighlightSessionTests: XCTestCase {
 

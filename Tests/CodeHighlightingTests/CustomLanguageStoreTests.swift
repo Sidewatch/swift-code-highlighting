@@ -2,7 +2,8 @@
 //  CustomLanguageStoreTests.swift
 //  CodeHighlightingTests
 //
-//  Tests for Custom Language Store.
+//  Tests for `CustomLanguageStore`: definitions load from a folder, filename claims beat
+//  extension claims, and the first file wins a collision.
 //
 //  Created by David Sherlock on 9/5/26.
 //
@@ -10,6 +11,8 @@
 import XCTest
 @testable import CodeHighlighting
 
+/// Tests for `CustomLanguageStore`: definitions load from a folder, filename claims beat
+/// extension claims, and the first file wins a collision.
 final class CustomLanguageStoreTests: XCTestCase {
     private var folder: URL!
     override func setUpWithError() throws {

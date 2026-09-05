@@ -2,12 +2,17 @@
 //  BuiltinCardKindTests.swift
 //  CodeHighlightingTests
 //
-//  What a built-in's hover card calls it, read off the signature line alone.
+//  Tests for `LanguageBuiltins.cardKind`: the declaration opener in a signature decides the
+//  symbol kind.
+//
+//  Created by David Sherlock on 9/5/26.
 //
 
 import XCTest
 @testable import CodeHighlighting
 
+/// Tests for `LanguageBuiltins.cardKind`: the declaration opener in a signature decides the
+/// symbol kind.
 final class BuiltinCardKindTests: XCTestCase {
 
     private func kind(_ word: String, _ signature: String) -> SymbolKind {

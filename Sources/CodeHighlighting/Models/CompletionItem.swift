@@ -2,6 +2,11 @@
 //  CompletionItem.swift
 //  CodeHighlighting
 //
+//  One row of the completion popup: what gets inserted, plus the little that makes the row
+//  readable at a glance.
+//
+//  Created by David Sherlock on 9/5/26.
+//
 
 import Foundation
 import CodeLanguage

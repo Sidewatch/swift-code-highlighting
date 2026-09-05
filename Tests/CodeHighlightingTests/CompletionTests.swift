@@ -1,13 +1,18 @@
 //
 //  CompletionTests.swift
-//  Tests for CompletionProvider's pure ranking/scanning core: rank() tier order,
-//  dedup, prefix rules, cap; bufferWords() charset, length bounds, and sorting.
-//  Headless — no editor, no tree-sitter parse.
+//  CodeHighlightingTests
+//
+//  Headless tests for `CompletionProvider.rank`: case-insensitive prefix matching and ordering
+//  across file, project and buffer sources.
+//
+//  Created by David Sherlock on 7/19/26.
 //
 
 import XCTest
 @testable import CodeHighlighting
 
+/// Headless tests for `CompletionProvider.rank`: case-insensitive prefix matching and ordering
+/// across file, project and buffer sources.
 final class CompletionTests: XCTestCase {
 
     private func item(_ text: String, kind: SymbolKind? = .function, detail: String? = nil) -> CompletionItem {

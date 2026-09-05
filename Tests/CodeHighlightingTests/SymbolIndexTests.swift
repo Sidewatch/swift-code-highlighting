@@ -1,8 +1,10 @@
 //
 //  SymbolIndexTests.swift
-//  Tests for SymbolKind mapping, TreeSitterHighlighter.symbols(in:), and the
-//  ProjectSymbolIndex build/update lifecycle. These run headless: the symbol
-//  queries are inline strings (SymbolQueries), not bundle resources.
+//  CodeHighlightingTests
+//
+//  Tests for `SymbolKind(capture:)` and the symbol index queries.
+//
+//  Created by David Sherlock on 7/16/26.
 //
 
 import XCTest
@@ -12,6 +14,7 @@ import CodeLanguage
 // `@MainActor`: these exercise the highlighting entry points, which are main-actor
 // isolated because they write attributes into a live text storage. XCTest already runs
 // test methods on the main thread, so this states the existing reality.
+/// Tests for `SymbolKind(capture:)` and the symbol index queries.
 @MainActor
 final class SymbolIndexTests: XCTestCase {
 
