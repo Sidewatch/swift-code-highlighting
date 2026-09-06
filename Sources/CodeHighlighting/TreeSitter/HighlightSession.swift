@@ -40,8 +40,8 @@ import SwiftTreeSitter
 ///   resolving query cursor is main-actor-isolated), and `text` must be the
 ///   exact current contents of `storage`. Only `.foregroundColor` is touched.
 /// `@unchecked Sendable` is a checked claim, not a waiver: every field the warm-up queue
-/// touches (`tree`, `lastText`, `generation`, `fullParseCount`) is documented as guarded by
-/// `stateLock` and is only read or written while holding it. The two `let` fields are
+/// touches (`tree`, `lastText`, `mirror`, `generation`, `fullParseCount`) is documented as
+/// guarded by `stateLock` and is only read or written while holding it. The two `let` fields are
 /// immutable, and `parser` is main-thread-only by construction — the warm-up parses on its
 /// own private `Parser`, which is the whole reason that field carries the note it does.
 public final class HighlightSession: @unchecked Sendable {
@@ -68,6 +68,45 @@ public final class HighlightSession: @unchecked Sendable {
     /// next ``noteEdit(range:replacementLength:newText:)`` byte/Point math.
     /// Guarded by ``stateLock``.
     private var lastText: String?
+
+    /// A contiguous UTF-16 mirror of the text ``tree`` was parsed from, kept in step
+    /// with it by ``noteEdit(range:replacementLength:newText:)`` and read by the parser
+    /// through ``parse(_:tree:mirror:)``. SwiftTreeSitter's own string reader does, per
+    /// chunk tree-sitter asks for, an index conversion, a substring, a transcode and two
+    /// allocations against the storage's rope — and after an edit the JS and Python
+    /// grammars ask for one chunk per reused top-level node: ~50,000 on a 200,000-line
+    /// file, 125 ms per keystroke and linear in the file (16 ms at 24k lines; Swift and
+    /// PHP reuse in bigger pieces, 15 ms) — measured 6 Sep 2026 with
+    /// `--probe-highlight-huge --profile`. Two bytes per unit, 15 MB beside a 265–360 MB
+    /// tree; a keystroke shifts the tail with one memmove. Guarded by ``stateLock``; the
+    /// warm-up builds its own and installs it with the tree.
+    private var mirror: [UInt16] = []
+
+    /// Units per read handed to tree-sitter; the lexer asks again when it runs off the end.
+    private static let readChunkUnits = 4096
+
+    /// `text` as a contiguous UTF-16 buffer — one `getCharacters` block read.
+    private static func mirror(of text: String) -> [UInt16] {
+        let ns = text as NSString
+        var out = [UInt16](repeating: 0, count: ns.length)
+        if ns.length > 0 { ns.getCharacters(&out, range: NSRange(location: 0, length: ns.length)) }
+        return out
+    }
+
+    /// Parses from scratch (`tree` nil) or re-parses `tree` incrementally, reading `mirror`
+    /// directly: every read hands tree-sitter a no-copy view of the next chunk, which
+    /// SwiftTreeSitter copies into its own buffer before the lexer touches it.
+    private static func parse(_ parser: Parser, tree: MutableTree?, mirror: [UInt16]) -> MutableTree? {
+        mirror.withUnsafeBufferPointer { buf -> MutableTree? in
+            parser.parse(tree: tree) { byteOffset, _ in
+                let unit = byteOffset / 2
+                guard let base = buf.baseAddress, unit < buf.count else { return nil }
+                let n = min(readChunkUnits, buf.count - unit)
+                return Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: UnsafeRawPointer(base + unit)),
+                            count: n * 2, deallocator: .none)
+            }
+        }
+    }
 
     /// Guards `tree`/`lastText`/`generation` between the main thread (highlight,
     /// noteEdit, invalidate — all main-only) and the warm-up queue. The warm-up
@@ -151,12 +190,14 @@ public final class HighlightSession: @unchecked Sendable {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             let p = Parser()
             try? p.setLanguage(tsLanguage)
-            let parsed = p.parse(text)
+            let mirror = Self.mirror(of: text)
+            let parsed = Self.parse(p, tree: nil, mirror: mirror)
             if let self, let parsed {
                 self.stateLock.lock()
                 if self.generation == gen, self.tree == nil {
                     self.tree = parsed
                     self.lastText = text
+                    self.mirror = mirror
                     self.fullParseCount += 1
                 }
                 self.stateLock.unlock()
@@ -173,15 +214,21 @@ public final class HighlightSession: @unchecked Sendable {
     private func currentTree(matching text: String) -> MutableTree? {
         stateLock.lock(); defer { stateLock.unlock() }
         guard let tree, let last = lastText else { return nil }
-        // NOT `lastText == text`. Both strings come from the text storage, NSString-backed,
-        // and Swift's `==` on bridged strings walks every UTF-16 unit through the bridge
-        // with Unicode canonical equivalence on top: ~10 ms for a 358 KB PHP file, five
-        // lookups per sticky-scroll pass, 36% of every scroll step (measured with the
-        // scroll probe's profiler on wp-includes/formatting.php). NSString compares the
-        // backing stores in bulk, and a parse cache WANTS code-unit identity — the tree
-        // was built from exactly those units, canonical equivalence be damned.
+        // O(1), deliberately. This used to prove the cached tree still matched `text` with a
+        // content compare — first Swift `==` (Unicode canonical equivalence over every unit),
+        // then `NSString.isEqual(to:)` — and both walk the WHOLE document per call: the NSString
+        // form still cost ~45 ms on a 7.5 MB file, five calls per sticky-scroll pass, 78% of
+        // every scroll step with a session (measured 6 Sep 2026, `--probe-highlight-huge
+        // --profile` and `--probe-scroll` on huge-200k.swift; ~1 ms per call at 900 KB, so it
+        // scaled with the file and was the reason highlighting "never scrolled as smoothly as
+        // plain text"). Equality is the `noteEdit` contract's job — every character edit of
+        // the storage reconciles the tree, and a desynced edit drops it — not something to
+        // re-prove on each lookup. What remains is the check that is cheap and still catches
+        // a host handing in the wrong document: object identity (NSTextStorage vends one
+        // backing string for its lifetime, so this is the common case) or, failing that,
+        // equal length.
         let a = last as NSString, b = text as NSString
-        guard a.length == b.length, a.isEqual(to: text) else { return nil }
+        guard a === b || a.length == b.length else { return nil }
         return tree
     }
 
@@ -261,9 +308,11 @@ public final class HighlightSession: @unchecked Sendable {
         let newNS = newText as NSString
         guard range.location >= 0, range.length >= 0, replacementLength >= 0,
               NSMaxRange(range) <= oldNS.length,
-              newNS.length == oldNS.length - range.length + replacementLength else {
+              newNS.length == oldNS.length - range.length + replacementLength,
+              mirror.count == oldNS.length else {
             self.tree = nil       // desynced with the cached text: full reparse
             self.lastText = nil   // on the next highlight
+            self.mirror = []
             return
         }
 
@@ -285,13 +334,20 @@ public final class HighlightSession: @unchecked Sendable {
                             oldEndPoint: oldEndPoint,
                             newEndPoint: newEndPoint))
 
-        if let newTree = parser.parse(tree: tree, string: newText) {
+        // Mirror the edit, then re-parse from the mirror (see ``mirror``).
+        var inserted = [UInt16](repeating: 0, count: replacementLength)
+        if replacementLength > 0 {
+            newNS.getCharacters(&inserted, range: NSRange(location: range.location, length: replacementLength))
+        }
+        mirror.replaceSubrange(range.location..<NSMaxRange(range), with: inserted)
+        if let newTree = Self.parse(parser, tree: tree, mirror: mirror) {
             self.tree = newTree
             lastText = newText
             incrementalParseCount += 1
         } else {
             self.tree = nil
             self.lastText = nil
+            self.mirror = []
         }
     }
 
@@ -327,8 +383,10 @@ public final class HighlightSession: @unchecked Sendable {
     public func highlight(in storage: NSTextStorage, text: String, clip: NSRange) -> Bool {
         stateLock.lock()
         if tree == nil {
-            tree = parser.parse(text)
+            let fresh = Self.mirror(of: text)
+            tree = Self.parse(parser, tree: nil, mirror: fresh)
             lastText = text
+            mirror = fresh
             if tree != nil { fullParseCount += 1 }
         }
         let tree = self.tree
@@ -358,6 +416,7 @@ public final class HighlightSession: @unchecked Sendable {
         generation += 1   // discard any in-flight warm-up parse on arrival
         tree = nil
         lastText = nil
+        mirror = []
         stateLock.unlock()
     }
 }
