@@ -234,3 +234,37 @@
 ; so they drew as plain text (David asked, 4 Sep 2026).
 (attribute [(name) (qualified_name) (relative_name)] @attribute)
 (attribute_group "#[" @punctuation.bracket "]" @punctuation.bracket)
+
+; Group use — `use Ns\Sub\{A, B};` (PHP 7 braced imports). Here the prefix is a
+; BARE (namespace_name) child of the declaration plus the "\" before the brace,
+; not a qualified_name prefix field, so none of the four patterns above reached
+; it: the prefix drew type-colored and the separators drew as plain text while
+; the identical path in an unbraced `use` receded (David, 17 Sep 2026).
+(namespace_use_declaration
+  (namespace_name) @namespace.prefix
+  "\\" @namespace.prefix
+  body: (namespace_use_group))
+
+; …and the braced clauses take their colour from the declaration's `function`/
+; `const` keyword, which sits on the DECLARATION in this form (the unbraced
+; patterns near the top read it off each clause), so `use function Ns\{ a, b };`
+; painted its imports type-colored instead of function-colored.
+(namespace_use_declaration
+  type: "function"
+  body: (namespace_use_group
+    (namespace_use_clause
+      [
+        (name) @function
+        (qualified_name (name) @function)
+        alias: (name) @function
+      ])))
+
+(namespace_use_declaration
+  type: "const"
+  body: (namespace_use_group
+    (namespace_use_clause
+      [
+        (name) @constant
+        (qualified_name (name) @constant)
+        alias: (name) @constant
+      ])))

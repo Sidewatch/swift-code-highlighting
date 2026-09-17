@@ -1188,6 +1188,17 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         // Checked before the first-component split: bare "namespace" stays a type-colored
         // module name, while the PREFIX of a qualified name recedes (PhpStorm-style).
         if capture == "namespace.prefix" { return "muted" }
+        // `@plain` is ours: "this token is deliberately the plain foreground". Painting
+        // is additive — nothing can un-paint an earlier hit — so overruling a grammar
+        // that classified a token wrongly needs a color, not the absence of one (Kotlin
+        // calls every import alias a `type_identifier`, whatever it renames).
+        // NOT wired to nvim's `@none`, which the Dart/Dockerfile/Kotlin/Scala queries
+        // put on string interpolations (`"$name"`, `${…}`): those patterns are colorless,
+        // so `prunedQuerySource` drops them and interpolations stay string-colored. Giving
+        // `@none` this role would flip all four languages at once — and because those
+        // patterns sit AFTER the property/identifier ones, it would flatten `${a.size}`
+        // to plain rather than highlight it as code. Decide that one deliberately.
+        if capture == "plain" { return "plain" }
         switch capture.split(separator: ".").first.map(String.init) ?? capture {
         case "keyword", "conditional", "repeat", "include", "exception",
              "storageclass", "label", "tag":            return "keyword"
@@ -1218,6 +1229,9 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         // Receded, not recolored: the theme's own foreground at reduced alpha keeps
         // the dimming correct on every palette, light or dark, with no new token role.
         case "muted":              return HighlightTheme.colors.foreground.withAlphaComponent(0.55)
+        // The theme's own foreground: an explicit "this token is plain" paint, the
+        // only way to overrule a grammar that classified a token wrongly.
+        case "plain":              return HighlightTheme.colors.foreground
         default:                   return nil
         }
     }
@@ -1286,7 +1300,12 @@ public final class TreeSitterHighlighter: CodeHighlighter {
             for cap in match.captures {
                 guard let name = cap.name, NSMaxRange(cap.range) <= ns.length else { continue }
                 let text = ns.substring(with: cap.range).trimmed
-                guard !text.isEmpty, text.count <= 30 else { continue }
+                // Skip captures that span lines — a block/whole-file capture would drown the
+                // dump — but KEEP long single-line tokens (printing truncates them anyway).
+                // The old `count <= 30` made a 31-character token look exactly like a missing
+                // capture: `import 'package:flutter/material.dart'` read as an unpainted string
+                // that is in fact painted (17 Sep 2026).
+                guard !text.isEmpty, !text.contains("\n"), text.count <= 400 else { continue }
                 let absLoc = offset + cap.range.location
                 let key = "\(absLoc):\(cap.range.length)"
                 if let ex = winners[key], ex.pattern >= cap.patternIndex { continue }

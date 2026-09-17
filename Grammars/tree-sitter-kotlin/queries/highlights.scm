@@ -381,3 +381,11 @@
 ; Appended last on purpose — the highlighter lets the highest pattern index win.
 [ "is" "in" "as" "as?" ] @keyword.operator
 [ "by" "companion" "operator" "infix" "internal" "external" "tailrec" "inline" "crossinline" "noinline" "reified" "vararg" "lateinit" "const" "open" "abstract" "override" "data" "sealed" "annotation" "enum" "suspend" "actual" "expect" "inner" "value" "private" "protected" "public" "final" "typealias" "init" "get" "set" "constructor" ] @keyword
+
+; An import alias is a `type_identifier` to this grammar whatever it renames, so
+; `import kotlin.math.max as maximum` painted `maximum` type-colored while the call
+; two lines down is a function — and it was the only colored token on any Kotlin
+; import line. Plain unless it is capitalised, where it really is a renamed type.
+; (17 Sep 2026.)
+(import_alias (type_identifier) @plain)
+((import_alias (type_identifier) @type) (#match? @type "^[A-Z]"))

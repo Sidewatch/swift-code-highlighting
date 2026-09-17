@@ -140,3 +140,11 @@
 ; Appended last on purpose — the highlighter lets the highest pattern index win.
 [ "and" "in" "is" "not" "or" "is not" "not in" ] @keyword.operator
 ((identifier) @variable.builtin (#match? @variable.builtin "^(self|cls)$"))
+
+; Same as Go: `obj.method()` is a call. The pattern in the "Function calls"
+; section is outranked by the later `(attribute attribute: (identifier) @property)`,
+; so `os.path.join(...)` painted `join` property-colored. Repeated last rather
+; than moved, so plain attribute reads (and the uppercase constant/constructor
+; heuristics above) keep their current colors. (17 Sep 2026.)
+(call
+  function: (attribute attribute: (identifier) @function.method))

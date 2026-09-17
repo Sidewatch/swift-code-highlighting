@@ -159,3 +159,11 @@
 "*" @operator
 "&" @operator
 "'" @operator
+
+; `self` is a path segment in `use std::io::{self, Write}` and in `self::thing`,
+; not the receiver variable. The three patterns that say so sit ABOVE the generic
+; `(self) @variable.builtin`, which wins by being later, so a use-list `self`
+; painted as a variable. Repeated last. (17 Sep 2026.)
+(use_list (self) @keyword)
+(scoped_use_list (self) @keyword)
+(scoped_identifier (self) @keyword)

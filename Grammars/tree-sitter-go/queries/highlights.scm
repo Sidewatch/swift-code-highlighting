@@ -125,3 +125,18 @@
 ; Sidewatch additions (4 Sep 2026): tokens the grammar defines but the upstream query left plain.
 ; Appended last on purpose — the highlighter lets the highest pattern index win.
 [ "go" "defer" "select" "chan" "range" "fallthrough" "goto" "map" "interface" "struct" "const" "var" "type" "func" "package" "import" "return" "break" "continue" "if" "else" "for" "switch" "case" "default" ] @keyword
+
+; A qualified call is a call, not a field read — `fmt.Println(x)`, `os.Getenv(k)`.
+; The pattern at the top of this file says so, but `(field_identifier) @property`
+; in the Identifiers section is LATER and later wins here, so every `pkg.Func()`
+; in every Go file painted property-colored and that pattern was dead. Repeat it
+; last instead of moving the catch-all, which would also recolor `obj.Field`
+; reads. (17 Sep 2026, found checking whether PHP's group-use bug had siblings.)
+(call_expression
+  function: (selector_expression
+    field: (field_identifier) @function.method))
+
+; Same victim, same cause: a method's own declaration name is a field_identifier,
+; so `func (b Box) Method() int` drew its name property-colored too.
+(method_declaration
+  name: (field_identifier) @function.method)

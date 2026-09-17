@@ -258,3 +258,18 @@
 ;; Scala CLI using directives
 (using_directive_key) @parameter
 (using_directive_value) @string
+
+; Import/export paths. Upstream fields only the FIRST segment as `path:`, so
+; `import scala.collection.mutable.ListBuffer` painted `scala`, left
+; `collection.mutable` plain and coloured `ListBuffer` from the generic uppercase
+; rule — a half-painted line. Recede the whole path, dots and wildcard included,
+; the way PHP's namespace prefixes recede, and let a capitalised segment (the type
+; actually being imported) keep its colour. (17 Sep 2026.)
+(import_declaration (identifier) @namespace.prefix)
+(import_declaration "." @namespace.prefix)
+(import_declaration (namespace_wildcard) @namespace.prefix)
+(export_declaration (identifier) @namespace.prefix)
+(export_declaration "." @namespace.prefix)
+(export_declaration (namespace_wildcard) @namespace.prefix)
+((import_declaration (identifier) @type) (#match? @type "^[A-Z]"))
+((export_declaration (identifier) @type) (#match? @type "^[A-Z]"))
