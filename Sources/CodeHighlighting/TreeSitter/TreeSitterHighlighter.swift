@@ -1069,7 +1069,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// within the HTML-owned `ranges`. All `<# #>` fragments parse as ONE JavaScript document
     /// (combined ranges), so `<# if ( x ) { #> … <# } #>` is a valid program across fragments;
     /// each `{{ }}` interpolation parses alone, as the expression it is.
-    nonisolated(unsafe) private static let templateTagRegex = try! NSRegularExpression(
+    private static let templateTagRegex = try! NSRegularExpression(
         pattern: #"<#([\s\S]*?)#>|\{\{\{?([\s\S]*?)\}\}\}?"#)
 
     /// (`<# #>` fragments, `{{ }}` fragments, whole tags including delimiters), each ascending
