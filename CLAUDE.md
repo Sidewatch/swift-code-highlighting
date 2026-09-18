@@ -8,15 +8,18 @@ Syntax highlighting for macOS `NSTextStorage`, with two backends behind one `Cod
 
 ## Module map
 
-- `Support/` — QuerySourceScanner (tree-sitter query forms), UTF16LineScanner (document lines as UTF-16 offsets)
-- `Builtins/` — bundled resources: 
+- `Builtins/` — bundled resources: one `<language>.txt` per language, `identifier⇥signature` per line
 - `Completion/` — the engine: completion: CompletionProvider, LanguageBuiltins, LanguageBuiltins+CardKind
-- `Core/` — the engine: CustomLanguageDefinition, CustomLanguageStore, EmbeddedMarkupHighlighter, HighlightTheme, HTTPRequestHighlighter, SyntaxHighlighter
-- `Enums/` — enums with no behaviour beyond their cases and labels: TokenKind
+- `Core/` — the engine: CommentKeywords, CustomLanguageDefinition, CustomLanguageStore, EmbeddedMarkupHighlighter, HighlightTheme, HTTPRequestHighlighter, SyntaxHighlighter
+- `Enums/` — enums with no behaviour beyond their cases and labels: SymbolKind, TokenKind
 - `Errors/` — every Error type, one per file: CustomLanguageDefinitionError
-- `Outline/` — the engine: outline: MarkdownOutline, OutlineTree, StylesheetOutline
+- `Extensions/` — one extension per idiom: StringProtocol+Trimmed
+- `Models/` — value types — the shape of a thing, nothing else: CompletionItem, CustomPattern, DefaultTokenColors, DefLocation, UTF16NewlineScanner
+- `Outline/` — the engine: outline: MarkdownOutline, OutlineNode, OutlineTree, StylesheetOutline
 - `Protocols/` — protocols the module exposes: CodeHighlighter, TokenColorProviding
-- `TreeSitter/` — the engine: treesitter: CodeIndenter, HighlightSession, ProjectSymbolIndex, ReceiverInference, SymbolIndex, SymbolVisibility, TreeSitterHighlighter
+- `Rules/` — the regex tables behind `SyntaxHighlighter`: RuleTables, RuleTables+Builders, one file per language under `Languages/`, one per family under `Families/`
+- `Support/` — QuerySourceScanner (tree-sitter query forms), StylesheetScanner (one pass over a stylesheet), UTF16LineScanner (document lines as UTF-16 offsets)
+- `TreeSitter/` — the engine: treesitter: CodeIndenter, HighlightSession, ProjectSymbolIndex, ReceiverInference, SymbolIndex, SymbolOwners, SymbolQueries, SymbolVisibility, TreeSitterHighlighter
 
 ## Rules
 

@@ -657,11 +657,17 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         guard let node = root.descendant(in: UInt32(byteOffset)..<UInt32(byteOffset)) else { return [] }
         let keywords = ["function", "method", "class", "struct", "enum", "interface",
                         "namespace", "module", "impl", "trait", "constructor", "object"]
+        // A CALL is not a scope. Java's `method_invocation` and Lua's `function_call` contain
+        // the words above AND carry a `name` field (the callee), so a caret inside a multi-line
+        // call's arguments read the called method as an enclosing definition: the breadcrumb
+        // bar grew a crumb for it and sticky scroll pinned the call's line (18 Sep 2026).
+        let calls = ["call", "invocation"]
         var path: [(name: String, start: Int)] = []
         var cur: Node? = node
         while let n = cur {
             let type = n.nodeType ?? ""
             if keywords.contains(where: { type.contains($0) }),
+               !calls.contains(where: { type.contains($0) }),
                let nameNode = n.child(byFieldName: "name"),
                NSMaxRange(nameNode.range) <= ns.length {
                 path.insert((ns.substring(with: nameNode.range), n.range.location), at: 0)
@@ -772,6 +778,9 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     public static func colorFromHex(_ hex: String) -> NSColor? {
         var s = Substring(hex)
         if s.hasPrefix("#") { s = s.dropFirst() }
+        // Every character must be a hex digit: `UInt64(_:radix:)` accepts a leading sign, so
+        // `#+12345` used to decode as a colour.
+        guard !s.isEmpty, s.allSatisfy({ $0.isASCII && $0.isHexDigit }) else { return nil }
         if s.count == 3 { s = Substring(s.map { "\($0)\($0)" }.joined()) }
         guard s.count == 6 || s.count == 8, let v = UInt64(s, radix: 16) else { return nil }
         let r, g, b: CGFloat

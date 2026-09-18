@@ -151,6 +151,31 @@ final class TreeSitterHighlighterTests: XCTestCase {
             selection: NSRange(location: len + 10, length: 1), text: text, language: .python))
     }
 
+    /// `UInt64(_:radix:)` accepts a leading sign, so `#+12345` decoded as a colour. Every
+    /// character after the `#` must be a hex digit.
+    func testColorFromHexRejectsASignedPayload() {
+        XCTAssertNil(TreeSitterHighlighter.colorFromHex("#+12345"))
+        XCTAssertNil(TreeSitterHighlighter.colorFromHex("#-12345"))
+        XCTAssertNil(TreeSitterHighlighter.colorFromHex("#GGGGGG"))
+        XCTAssertNotNil(TreeSitterHighlighter.colorFromHex("#abc"))
+        XCTAssertNotNil(TreeSitterHighlighter.colorFromHex("ABCDEF80"))
+    }
+
+    /// A call is not a scope. Java's `method_invocation` and Lua's `function_call` contain the
+    /// definition keywords the walk looks for AND carry a `name` field, so a caret inside a
+    /// multi-line call's arguments read the CALLED method as an enclosing definition — the
+    /// breadcrumb bar grew a crumb for it and sticky scroll pinned the call's line.
+    func testBreadcrumbsDoNotTreatACallAsAScope() {
+        let java = "class A {\n  void run() {\n    other.call(1,\n      2);\n  }\n}\n"
+        let jns = java as NSString
+        XCTAssertEqual(TreeSitterHighlighter.breadcrumbs(at: jns.range(of: "2)").location, text: java, language: .java),
+                       ["A", "run"])
+        let lua = "function f()\n  print(1,\n    2)\nend\n"
+        let lns = lua as NSString
+        XCTAssertEqual(TreeSitterHighlighter.breadcrumbs(at: lns.range(of: "2)").location, text: lua, language: .lua),
+                       ["f"])
+    }
+
     /// The scope-position variant must return the SAME names as `breadcrumbs`
     /// plus each definition node's start offset — sticky scroll maps those to
     /// header lines, so a wrong start pins the wrong line. The unicode prefix

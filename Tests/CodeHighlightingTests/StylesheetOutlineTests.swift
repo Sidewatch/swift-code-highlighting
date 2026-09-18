@@ -15,6 +15,20 @@ import XCTest
 /// at-rules and selectors keep their ranges.
 final class StylesheetOutlineTests: XCTestCase {
 
+    /// `//` inside an unquoted `url(...)` is part of the URL, not a comment. Treating it as one
+    /// swallowed the `;` that ended the `@import`, so the next rule's prelude began at the
+    /// import and the outline listed `@import url( .a` in place of `.a`.
+    func testProtocolRelativeURLInSCSSIsNotALineComment() {
+        let scss = """
+        @import url(//fonts.googleapis.com/css?family=Inter);
+
+        .a { color: red; }
+        """
+        let symbols = StylesheetOutline.symbols(in: scss, language: .scss)
+        XCTAssertEqual(symbols.map(\.name), [".a"])
+        XCTAssertEqual(symbols.map(\.kind), [.selector])
+    }
+
     /// The example that asked for this: three WordPress-style banners, each
     /// followed by its rules. Banners become headings whose scope reaches the next
     /// banner, so the shared tree builder nests the rules under them.

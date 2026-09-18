@@ -53,7 +53,10 @@ struct StylesheetScanner {
             let c = buf[i]
             if c == 0x0A { line += 1; i += 1; lineStart = i; continue }
             if c == 0x2F, i + 1 < length, buf[i + 1] == 0x2A { scanBlockComment(); continue }
-            if lineComments, c == 0x2F, i + 1 < length, buf[i + 1] == 0x2F, !(i > 0 && buf[i - 1] == 0x3A) {   // not the `//` in url(http://…)
+            // Not the `//` in `url(http://…)` nor in a protocol-relative `url(//cdn…)`: Sass reads an
+            // unquoted url() as one token, and treating it as a comment swallowed the `;` that ended
+            // the statement, so the next rule's prelude began at the `@import` (18 Sep 2026).
+            if lineComments, c == 0x2F, i + 1 < length, buf[i + 1] == 0x2F, !(i > 0 && (buf[i - 1] == 0x3A || buf[i - 1] == 0x28)) {
                 scanLineComments(); continue
             }
             if c == 0x22 || c == 0x27 { skipString(quote: c); continue }
