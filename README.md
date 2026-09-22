@@ -18,6 +18,15 @@ Syntax highlighting for macOS `NSTextStorage`, with two backends behind one `Cod
 - 🔬 **Headless validation** — `dumpCaptures(path:)` prints every token → capture → role for a file, so highlighting can be verified without a GUI
 - 🧪 **Tested** — unit tests cover the regex backend, capture-role mapping, hit precedence/clipping, doc-comment extraction, symbol queries (compiled against the real grammars), and the index's path canonicalization
 
+### YAML as structure
+
+```swift
+// The vendored tree-sitter-yaml grammar read as ordered structure, for a tree preview:
+// mappings in file order, scalars typed, quotes and block scalars resolved.
+YAMLStructure.value(of: "version: \"3.9\"\nports: [80, 443]\n")
+// .mapping([Pair("version", .string("3.9")), Pair("ports", .sequence([.integer(80), .integer(443)]))])
+```
+
 ## Requirements
 
 - macOS 14+

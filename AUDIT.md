@@ -66,3 +66,4 @@ map was missing `Rules/`, `Models/`, `Extensions/`, `SymbolKind`, `OutlineNode`,
 
 - 17 Sep 2026 — full audit (app + all 20 libraries), Claude with David.
 - 18 Sep 2026 — logic review (every source and test file, line by line), Claude with David.
+- 22 Sep 2026 — `Structure/YAMLStructure` added (the grammar already vendored for highlighting, read as ordered values); `YAMLStructureTests`.

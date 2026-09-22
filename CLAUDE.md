@@ -16,6 +16,7 @@ Syntax highlighting for macOS `NSTextStorage`, with two backends behind one `Cod
 - `Extensions/` — one extension per idiom: StringProtocol+Trimmed
 - `Models/` — value types — the shape of a thing, nothing else: CompletionItem, CustomPattern, DefaultTokenColors, DefLocation, UTF16NewlineScanner
 - `Outline/` — the engine: outline: MarkdownOutline, OutlineNode, OutlineTree, StylesheetOutline
+- `Structure/` — the engine: structure: YAMLStructure (a YAML document as ordered `Value`s — mappings in file order, typed scalars, block and quoted scalars resolved — read off the vendored tree-sitter-yaml grammar; `value(of:)`, `documents(in:)`)
 - `Protocols/` — protocols the module exposes: CodeHighlighter, TokenColorProviding
 - `Rules/` — the regex tables behind `SyntaxHighlighter`: RuleTables, RuleTables+Builders, one file per language under `Languages/`, one per family under `Families/`
 - `Support/` — QuerySourceScanner (tree-sitter query forms), StylesheetScanner (one pass over a stylesheet), UTF16LineScanner (document lines as UTF-16 offsets)
