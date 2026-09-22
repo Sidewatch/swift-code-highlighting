@@ -123,11 +123,11 @@ public final class HighlightSession: @unchecked Sendable {
     /// Test seam: number of from-scratch parses performed (first highlight
     /// after init/invalidate, or a completed warm-up). A scroll-only workload
     /// must keep this at 1.
-    private(set) var fullParseCount = 0
+    public private(set) var fullParseCount = 0
 
     /// Test seam: number of incremental re-parses performed by
     /// ``noteEdit(range:replacementLength:newText:)``.
-    private(set) var incrementalParseCount = 0
+    public private(set) var incrementalParseCount = 0
 
     /// Creates a session for `language`, or nil when no grammar (with its
     /// query bundle) is loaded for it — the same condition as

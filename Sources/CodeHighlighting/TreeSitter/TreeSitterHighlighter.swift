@@ -984,16 +984,30 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         }
         let resolving = ResolvingQueryCursor(cursor: cursor)
         resolving.prepare(with: { r, _ in NSMaxRange(r) <= ns.length ? ns.substring(with: r) : nil })
+        var separate: [(name: String, ranges: [NSRange])] = []
         while let match = resolving.next() {
             guard let named = match.injection(with: { r, _ in NSMaxRange(r) <= ns.length ? ns.substring(with: r) : nil }),
                   let content = match.captures(named: "injection.content").first else { continue }
             let r = content.range
             guard r.length > 0, NSMaxRange(r) <= ns.length else { continue }
+            if separatelyParsed.contains(named.name) {
+                separate.append((named.name, [r]))
+                continue
+            }
             if grouped[named.name] == nil { order.append(named.name) }
             grouped[named.name, default: []].append(r)
         }
-        return order.map { name in (name, mergeAscending(grouped[name]!)) }
+        return order.map { name in (name, mergeAscending(grouped[name]!)) } + separate
     }
+
+    /// Injected languages whose chunks are parsed ONE AT A TIME, never combined. Tree-sitter
+    /// reads included ranges as one contiguous text, which is right for a PHP template's HTML
+    /// (`<section>` before a PHP block pairs with `</section>` after it) and wrong for Markdown's
+    /// inline content: every `(inline)` node is its own inline document, and combining them read
+    /// "- `a`\n- `b`" as the code span "a``b" — from the first list onwards, every code span
+    /// swallowed the text up to the next backtick and whole documents went string-coloured
+    /// (David's demo file, 22 Sep 2026).
+    private static let separatelyParsed: Set<String> = ["markdown_inline"]
 
     /// Sorts `ranges` ascending and unions overlapping/adjacent ones — tree-sitter
     /// requires included ranges to be ascending and non-overlapping.

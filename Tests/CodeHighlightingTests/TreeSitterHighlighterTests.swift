@@ -689,6 +689,34 @@ extension TreeSitterHighlighterTests {
                       "emphasis in the LAST inline chunk captured — all chunks share one parse")
     }
 
+    /// Markdown's inline chunks are parsed one at a time: combined, tree-sitter reads two list
+    /// items' "`a`" and "`b`" as one text "`a``b`", and the code span runs from the first
+    /// backtick to the next single one — the whole rest of the document went string-coloured
+    /// (22 Sep 2026). Every chunk still gets its hits.
+    func testMarkdownInlineChunksAreParsedSeparately() throws {
+        try XCTSkipUnless(TreeSitterHighlighter.supports(.markdown), "markdown grammar failed to load")
+        let blockLang = try XCTUnwrap(TreeSitterHighlighter.tsLanguage(for: .markdown))
+        let text = "- `a`\n- `b`\n- `c`\n\nafter *em* `d`\n"
+        let ns = text as NSString
+        let parser = Parser()
+        try parser.setLanguage(blockLang)
+        let tree = try XCTUnwrap(parser.parse(text))
+        let injections = try Query(language: blockLang, data: Data("""
+            ((inline) @injection.content (#set! injection.language "markdown_inline"))
+            """.utf8))
+        let highlights = try Query(language: blockLang, data: Data("(atx_heading (inline) @keyword)".utf8))
+        let grammar = TreeSitterHighlighter.Grammar(language: blockLang, highlights: highlights, injections: injections)
+        let hits: [TreeSitterHighlighter.Hit] = MainActor.assumeIsolated {
+            var base = 1_000_000
+            return TreeSitterHighlighter.collectInjectionHits(grammar, tree: tree, source: ns, offset: 0,
+                                                              clip: NSRange(location: 0, length: ns.length), depth: 0, nextBase: &base)
+        }
+        let spans = hits.filter { $0.color == .green }.map(\.range).sorted { $0.location < $1.location }
+        XCTAssertEqual(spans, [ns.range(of: "`a`"), ns.range(of: "`b`"), ns.range(of: "`c`"), ns.range(of: "`d`")],
+                       "one code span per item, none running into the next item")
+        XCTAssertTrue(hits.contains { $0.range == ns.range(of: "*em*") && $0.color == .purple })
+    }
+
     /// Injection chunks of one language must merge into ascending, non-overlapping
     /// ranges before feeding `Parser.includedRanges` — the combined-parse fix that
     /// lets `<section>`…`</section>` pair across a PHP block between them.
