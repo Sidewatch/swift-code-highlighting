@@ -51,6 +51,28 @@ enum RuleTables {
         case .protobuf: return protobuf
         case .toml: return toml
         case .diff: return diff
+        // 25 Sep 2026: every language a corpus sweep found flat or nearly flat got its own table.
+        case .erlang: return erlang
+        case .prolog: return prolog
+        case .fortran: return fortran
+        case .cobol: return cobol
+        case .assembly: return assembly
+        case .llvm: return llvm
+        case .smalltalk: return smalltalk
+        case .vbscript: return vbscript
+        case .xquery: return xquery
+        case .abap: return abap
+        case .mermaid: return mermaid
+        case .plantuml: return plantuml
+        case .log: return log
+        case .asciidoc: return asciidoc
+        case .restructuredtext: return restructuredtext
+        case .textile: return textile
+        case .gitattributes: return gitattributes
+        case .json5, .hjson: return json5
+        case .nix: return nix
+        case .pug, .haml, .slim: return indentedMarkup
+        case .jinja: return jinja
         default: return table(for: lang.family)
         }
     }

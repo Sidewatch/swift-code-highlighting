@@ -279,7 +279,50 @@
     ]
   ],
   "lang:abap" : [
-
+    [
+      "^\\*.*$",
+      "comment"
+    ],
+    [
+      "\".*$",
+      "comment"
+    ],
+    [
+      "'(?:[^']|'')*'",
+      "string"
+    ],
+    [
+      "\\|[^|]*\\|",
+      "string"
+    ],
+    [
+      "(?i)\\b(REPORT|PROGRAM|DATA|TYPES|CONSTANTS|PARAMETERS|SELECT-OPTIONS|FIELD-SYMBOLS|BEGIN|END|OF|TYPE|LIKE|VALUE|LENGTH|DECIMALS|STANDARD|SORTED|HASHED|TABLE|WITH|KEY|UNIQUE|NON-UNIQUE|START-OF-SELECTION|END-OF-SELECTION|INITIALIZATION|AT|SELECTION-SCREEN|SELECT|SINGLE|FROM|INTO|CORRESPONDING|FIELDS|WHERE|GROUP|BY|ORDER|UP|TO|ROWS|ENDSELECT|LOOP|ENDLOOP|ASSIGNING|READ|APPEND|INSERT|MODIFY|DELETE|UPDATE|CLEAR|REFRESH|FREE|SORT|COLLECT|IF|ELSEIF|ELSE|ENDIF|CASE|WHEN|OTHERS|ENDCASE|DO|ENDDO|WHILE|ENDWHILE|CHECK|EXIT|CONTINUE|RETURN|WRITE|MESSAGE|SKIP|ULINE|NEW-LINE|CALL|FUNCTION|METHOD|METHODS|CLASS-METHODS|CLASS|ENDCLASS|DEFINITION|IMPLEMENTATION|PUBLIC|PROTECTED|PRIVATE|SECTION|INHERITING|FINAL|ABSTRACT|CREATE|OBJECT|NEW|RAISE|EXCEPTION|EXCEPTIONS|TRY|CATCH|ENDTRY|CLEANUP|ENDMETHOD|FORM|ENDFORM|PERFORM|USING|CHANGING|IMPORTING|EXPORTING|RETURNING|RAISING|OPTIONAL|DEFAULT|MOVE|MOVE-CORRESPONDING|CONCATENATE|SPLIT|CONDENSE|TRANSLATE|REPLACE|FIND|SHIFT|DESCRIBE|ASSIGN|UNASSIGN|IS|INITIAL|BOUND|ASSIGNED|NOT|AND|OR|EQ|NE|LT|GT|LE|GE|CO|CN|CA|NA|CS|NS|CP|NP|IN|BETWEEN|INTERFACE|ENDINTERFACE|EVENTS|COMMIT|ROLLBACK|WORK|AUTHORITY-CHECK|INCLUDE|TABLES|INFOTYPES|NODES|RANGES|STATICS|CONV|REF|COND|SWITCH|REDUCE|FILTER|EXACT|CAST|LINES|STRLEN|XSTRLEN|BOOLC|XSDBOOL)\\b",
+      "keyword"
+    ],
+    [
+      "(?i)(?<=\\bTYPE\\s{1,4})[a-z_]\\w*",
+      "type"
+    ],
+    [
+      "(?i)\\b(lv|lt|ls|lo|lr|lc|gv|gt|gs|go|gr|gc|iv|it|is|io|ev|et|es|eo|cv|ct|cs|co|rv|rt|rs|ro|wa)_\\w+",
+      "variable"
+    ],
+    [
+      "<[a-z_]\\w*>",
+      "variable"
+    ],
+    [
+      "\\b[a-z_]\\w*-[a-z_]\\w*\\b",
+      "property"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?\\b",
+      "number"
+    ],
+    [
+      "\\b[a-z_]\\w*(?=\\()",
+      "function"
+    ]
   ],
   "lang:actionscript" : [
     [
@@ -453,7 +496,77 @@
   ],
   "lang:asciidoc" : [
     [
-      "<!--[\\s\\S]*?-->",
+      "^\/\/.*$",
+      "comment"
+    ],
+    [
+      "^(----|====|\\*\\*\\*\\*|\\+\\+\\+\\+|____|\\.\\.\\.\\.|\\|===)\\s*$",
+      "comment"
+    ],
+    [
+      "^=+\\s.*$",
+      "keyword"
+    ],
+    [
+      "^\\.[A-Za-z].*$",
+      "type"
+    ],
+    [
+      "^\\[[^\\]]*\\]\\s*$",
+      "attribute"
+    ],
+    [
+      "^:[\\w-]+!?:",
+      "property"
+    ],
+    [
+      "^\\s*[*.-]+\\s",
+      "keyword"
+    ],
+    [
+      "^\\s*\\d+\\.\\s",
+      "keyword"
+    ],
+    [
+      "\\b(NOTE|TIP|IMPORTANT|WARNING|CAUTION):",
+      "removed"
+    ],
+    [
+      "<<[^>]+>>",
+      "function"
+    ],
+    [
+      "\\b(https?|link|xref|image|include|mailto):[^\\s\\[]+(\\[[^\\]]*\\])?",
+      "string"
+    ],
+    [
+      "`[^`]+`",
+      "string"
+    ],
+    [
+      "\\*[^*\\n]+\\*",
+      "type"
+    ],
+    [
+      "_[^_\\n]+_",
+      "variable"
+    ],
+    [
+      "^\\|",
+      "comment"
+    ]
+  ],
+  "lang:assembly" : [
+    [
+      ";.*$",
+      "comment"
+    ],
+    [
+      "^\\s*#.*$",
+      "comment"
+    ],
+    [
+      "\/\/.*$",
       "comment"
     ],
     [
@@ -465,20 +578,37 @@
       "string"
     ],
     [
-      "<\/?[A-Za-z][\\w:-]*",
-      "keyword"
-    ],
-    [
-      "\/>|>",
-      "keyword"
-    ],
-    [
-      "\\b[A-Za-z-]+=",
+      "^\\s*[A-Za-z_.$][\\w.$]*:",
       "function"
+    ],
+    [
+      "^\\s*\\.[a-z_]+\\b",
+      "keyword"
+    ],
+    [
+      "(?i)\\b(section|segment|global|globl|extern|equ|db|dw|dd|dq|dt|resb|resw|resd|resq|times|org|bits|default|align|use32|use64|struc|endstruc|macro|endmacro|include|incbin|byte|word|dword|qword|ptr|offset|rel)\\b",
+      "keyword"
+    ],
+    [
+      "(?i)\\b(r[abcd]x|e[abcd]x|[abcd][lhx]|r[sd]i|e[sd]i|[sd]il?|r[sb]p|e[sb]p|[sb]pl?|r(8|9|1[0-5])[dwb]?|[xyz]mm\\d{1,2}|st\\(?\\d\\)?|[cdefgs]s|rip|eip|eflags|x\\d{1,2}|w\\d{1,2}|sp|lr|pc|fp|xzr|wzr|v\\d{1,2})\\b",
+      "variable"
+    ],
+    [
+      "%[a-z]+[0-9a-z]*",
+      "variable"
+    ],
+    [
+      "^\\s+[a-zA-Z][a-zA-Z0-9.]*\\b",
+      "keyword"
+    ],
+    [
+      "\\[[^\\]]*\\]",
+      "property"
+    ],
+    [
+      "\\b(0x[0-9a-fA-F]+|[0-9][0-9a-fA-F]*[hH]|[01]+[bB]|\\d+)\\b|\\$[0-9a-fA-Fx]+",
+      "number"
     ]
-  ],
-  "lang:assembly" : [
-
   ],
   "lang:astro" : [
     [
@@ -995,7 +1125,46 @@
     ]
   ],
   "lang:cobol" : [
-
+    [
+      "^.{6}\\*.*$",
+      "comment"
+    ],
+    [
+      "\\*>.*$",
+      "comment"
+    ],
+    [
+      "\"[^\"]*\"",
+      "string"
+    ],
+    [
+      "'[^']*'",
+      "string"
+    ],
+    [
+      "(?i)\\bPIC(TURE)?\\s+(IS\\s+)?[XxAa9SsVvZz0-9()+,.$*-]+",
+      "type"
+    ],
+    [
+      "(?i)\\b(IDENTIFICATION|ENVIRONMENT|DATA|PROCEDURE|DIVISION|PROGRAM-ID|AUTHOR|INPUT-OUTPUT|FILE-CONTROL|FILE|SECTION|WORKING-STORAGE|LINKAGE|FD|SD|SELECT|ASSIGN|TO|ORGANIZATION|ACCESS|MODE|IS|LINE|SEQUENTIAL|INDEXED|RELATIVE|RECORD|KEY|OPEN|INPUT|OUTPUT|I-O|EXTEND|CLOSE|READ|WRITE|REWRITE|DELETE|START|PERFORM|UNTIL|VARYING|FROM|BY|THRU|THROUGH|TIMES|END-PERFORM|END-READ|END-WRITE|END-IF|END-EVALUATE|END-CALL|END-STRING|END-UNSTRING|END-COMPUTE|MOVE|ADD|SUBTRACT|MULTIPLY|DIVIDE|COMPUTE|GIVING|ROUNDED|DISPLAY|ACCEPT|STOP|RUN|IF|ELSE|EVALUATE|WHEN|OTHER|AT|END|NOT|INVALID|VALUE|VALUES|ZERO|ZEROS|ZEROES|SPACE|SPACES|HIGH-VALUES|LOW-VALUES|INTO|INITIALIZE|STRING|UNSTRING|DELIMITED|SIZE|CALL|USING|RETURNING|EXIT|GO|BACK|GOBACK|CONTINUE|COPY|REDEFINES|OCCURS|DEPENDING|ON|SET|UP|DOWN|SEARCH|ALL|INSPECT|TALLYING|REPLACING|AND|OR|EQUAL|GREATER|LESS|THAN|SORT|MERGE|RELEASE|RETURN|COMP|COMP-3|BINARY|PACKED-DECIMAL|USAGE|SIGN|LEADING|TRAILING|SEPARATE|JUSTIFIED|BLANK|FILLER)\\b",
+      "keyword"
+    ],
+    [
+      "^\\s*\\d{2}\\b",
+      "number"
+    ],
+    [
+      "^\\s*[A-Za-z0-9][A-Za-z0-9-]*\\.$",
+      "function"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?\\b",
+      "number"
+    ],
+    [
+      "\\b[A-Za-z][A-Za-z0-9]*-[A-Za-z0-9-]+\\b",
+      "variable"
+    ]
   ],
   "lang:coffeescript" : [
     [
@@ -1806,7 +1975,50 @@
     ]
   ],
   "lang:erlang" : [
-
+    [
+      "%.*$",
+      "comment"
+    ],
+    [
+      "\"(?:[^\"\\\\]|\\\\.)*\"",
+      "string"
+    ],
+    [
+      "'(?:[^'\\\\]|\\\\.)*'",
+      "string"
+    ],
+    [
+      "^-[a-z_]+",
+      "attribute"
+    ],
+    [
+      "\\b(module|export|import|define|record|behaviour|behavior|include|include_lib|spec|type|opaque|callback|fun|case|of|end|if|when|receive|after|try|catch|throw|begin|and|or|not|andalso|orelse|div|rem|bnot|band|bor|bxor|bsl|bsr|xor|cond|let|query)\\b",
+      "keyword"
+    ],
+    [
+      "\\?[A-Z_][A-Za-z0-9_]*",
+      "type"
+    ],
+    [
+      "#[a-z_]\\w*",
+      "type"
+    ],
+    [
+      "\\b[A-Z_][A-Za-z0-9_@]*\\b",
+      "variable"
+    ],
+    [
+      "\\b[a-z]\\w*:[a-z]\\w*(?=\\()",
+      "function"
+    ],
+    [
+      "\\b[a-z]\\w*(?=\\()",
+      "function"
+    ],
+    [
+      "\\b\\d+#[0-9a-zA-Z]+\\b|\\b\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b|\\$.",
+      "number"
+    ]
   ],
   "lang:fennel" : [
     [
@@ -1857,7 +2069,46 @@
     ]
   ],
   "lang:fortran" : [
-
+    [
+      "!.*$",
+      "comment"
+    ],
+    [
+      "^[cC*].*$",
+      "comment"
+    ],
+    [
+      "\"[^\"]*\"",
+      "string"
+    ],
+    [
+      "'[^']*'",
+      "string"
+    ],
+    [
+      "(?i)\\b(program|module|contains|subroutine|function|result|end|implicit|none|intent|in|out|inout|do|concurrent|enddo|if|then|else|elseif|endif|call|print|write|read|allocate|deallocate|use|type|pure|elemental|recursive|parameter|dimension|allocatable|select|case|while|return|stop|only|private|public|interface|procedure|abstract|extends|class|where|elsewhere|forall|cycle|exit|goto|continue|format|open|close|inquire|namelist|data|save|target|pointer|optional|value|volatile|import|block|associate|enum|enumerator|sequence|bind|kind|len)\\b",
+      "keyword"
+    ],
+    [
+      "(?i)\\b(integer|real|double\\s+precision|complex|character|logical)\\b",
+      "type"
+    ],
+    [
+      "\\b\\d+(\\.\\d*)?([dDeE][+-]?\\d+)?(_\\w+)?\\b",
+      "number"
+    ],
+    [
+      "(?i)\\b(sum|size|abs|sqrt|exp|log|sin|cos|tan|min|max|mod|nint|int|real|dble|trim|len|allocated|present|associated|huge|tiny|epsilon|matmul|dot_product|transpose|reshape|maxval|minval|count|any|all)\\b(?=\\s*\\()",
+      "function"
+    ],
+    [
+      "%\\w+",
+      "property"
+    ],
+    [
+      "\\b[a-zA-Z_]\\w*(?=\\s*\\()",
+      "function"
+    ]
   ],
   "lang:freemarker" : [
     [
@@ -1961,24 +2212,20 @@
       "comment"
     ],
     [
-      "\"(?:[^\"\\\\]|\\\\.)*\"",
-      "string"
+      "^\\S+",
+      "function"
     ],
     [
-      "'[^']*'",
-      "string"
+      "[-!][\\w.-]+",
+      "removed"
     ],
     [
-      "\\b(if|then|else|elif|fi|for|while|do|done|case|esac|in|function|return|exit|local|export|set|unset|source|alias|echo)\\b",
+      "\\b(text|binary|diff|merge|filter|eol|export-ignore|export-subst|delta|encoding|ident|whitespace|working-tree-encoding|linguist-[\\w-]+|gitlab-[\\w-]+|conflict-marker-size)\\b",
       "keyword"
     ],
     [
-      "\\$\\{?[A-Za-z_]\\w*\\}?",
-      "type"
-    ],
-    [
-      "\\b\\d+\\b",
-      "number"
+      "=[\\w.-]+",
+      "property"
     ]
   ],
   "lang:gitcommit" : [
@@ -2353,8 +2600,16 @@
   ],
   "lang:haml" : [
     [
-      "<!--[\\s\\S]*?-->",
+      "^\\s*(\/\/-?|-#|\/!?)\\s.*$",
       "comment"
+    ],
+    [
+      "^\\s*(\/\/-?|-#)$",
+      "comment"
+    ],
+    [
+      "#\\{[^}]*\\}|\\$\\{[^}]*\\}|!\\{[^}]*\\}",
+      "property"
     ],
     [
       "\"[^\"]*\"",
@@ -2365,16 +2620,44 @@
       "string"
     ],
     [
-      "<\/?[A-Za-z][\\w:-]*",
+      "^\\s*\\|.*$",
+      "string"
+    ],
+    [
+      "^\\s*(doctype|!!!)\\b.*$",
       "keyword"
     ],
     [
-      "\/>|>",
+      "\\b(if|else|elif|elsif|unless|each|for|in|of|while|case|when|default|mixin|include|extends|block|append|prepend|yield|end|do|render|javascript|css|coffee|markdown|sass|scss)\\b",
       "keyword"
     ],
     [
-      "\\b[A-Za-z-]+=",
+      "^\\s*%[\\w:-]+",
+      "keyword"
+    ],
+    [
+      "^\\s*[a-z][\\w:-]*(?=[\\s.#(=:]|$)",
+      "keyword"
+    ],
+    [
+      "[.#][A-Za-z_][\\w-]*",
+      "type"
+    ],
+    [
+      "\\+[\\w-]+",
       "function"
+    ],
+    [
+      "\\b[\\w:-]+(?==)",
+      "attribute"
+    ],
+    [
+      "^\\s*[-=!]=?",
+      "variable"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?\\b",
+      "number"
     ]
   ],
   "lang:handlebars" : [
@@ -2529,19 +2812,47 @@
   ],
   "lang:hjson" : [
     [
-      "\"(?:[^\"\\\\]|\\\\.)*\"\\s*:",
+      "\/\/.*$",
+      "comment"
+    ],
+    [
+      "\/\\*[\\s\\S]*?\\*\/",
+      "comment"
+    ],
+    [
+      "#.*$",
+      "comment"
+    ],
+    [
+      "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)",
       "function"
+    ],
+    [
+      "'(?:[^'\\\\]|\\\\.)*'(?=\\s*:)",
+      "function"
+    ],
+    [
+      "[A-Za-z_$][\\w$]*(?=\\s*:)",
+      "function"
+    ],
+    [
+      "'''[\\s\\S]*?'''",
+      "string"
     ],
     [
       "\"(?:[^\"\\\\]|\\\\.)*\"",
       "string"
     ],
     [
-      "\\b(true|false|null)\\b",
+      "'(?:[^'\\\\]|\\\\.)*'",
+      "string"
+    ],
+    [
+      "\\b(true|false|null|Infinity|NaN)\\b",
       "keyword"
     ],
     [
-      "\\b-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b",
+      "[+-]?(0[xX][0-9a-fA-F]+|\\d*\\.?\\d+([eE][+-]?\\d+)?)\\b",
       "number"
     ]
   ],
@@ -2793,6 +3104,10 @@
   ],
   "lang:jinja" : [
     [
+      "\\{#[\\s\\S]*?#\\}",
+      "comment"
+    ],
+    [
       "<!--[\\s\\S]*?-->",
       "comment"
     ],
@@ -2805,16 +3120,32 @@
       "string"
     ],
     [
-      "<\/?[A-Za-z][\\w:-]*",
+      "\\{%-?|-?%\\}|\\{\\{-?|-?\\}\\}",
       "keyword"
     ],
     [
-      "\/>|>",
+      "\\b(if|elif|else|endif|for|endfor|in|set|endset|block|endblock|extends|include|import|from|as|macro|endmacro|call|endcall|filter|endfilter|with|endwith|raw|endraw|autoescape|endautoescape|is|not|and|or|true|false|none|True|False|None|loop|recursive|scoped|ignore|missing|context|do|trans|endtrans|pluralize)\\b",
+      "keyword"
+    ],
+    [
+      "\\|\\s*[a-z_]\\w*",
+      "function"
+    ],
+    [
+      "\\b[a-zA-Z_]\\w*(\\.[a-zA-Z_]\\w*)+\\b",
+      "property"
+    ],
+    [
+      "<\/?[A-Za-z][\\w:-]*|\/>|>",
       "keyword"
     ],
     [
       "\\b[A-Za-z-]+=",
-      "function"
+      "attribute"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?\\b",
+      "number"
     ]
   ],
   "lang:jq" : [
@@ -2863,19 +3194,47 @@
   ],
   "lang:json5" : [
     [
-      "\"(?:[^\"\\\\]|\\\\.)*\"\\s*:",
+      "\/\/.*$",
+      "comment"
+    ],
+    [
+      "\/\\*[\\s\\S]*?\\*\/",
+      "comment"
+    ],
+    [
+      "#.*$",
+      "comment"
+    ],
+    [
+      "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)",
       "function"
+    ],
+    [
+      "'(?:[^'\\\\]|\\\\.)*'(?=\\s*:)",
+      "function"
+    ],
+    [
+      "[A-Za-z_$][\\w$]*(?=\\s*:)",
+      "function"
+    ],
+    [
+      "'''[\\s\\S]*?'''",
+      "string"
     ],
     [
       "\"(?:[^\"\\\\]|\\\\.)*\"",
       "string"
     ],
     [
-      "\\b(true|false|null)\\b",
+      "'(?:[^'\\\\]|\\\\.)*'",
+      "string"
+    ],
+    [
+      "\\b(true|false|null|Infinity|NaN)\\b",
       "keyword"
     ],
     [
-      "\\b-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b",
+      "[+-]?(0[xX][0-9a-fA-F]+|\\d*\\.?\\d+([eE][+-]?\\d+)?)\\b",
       "number"
     ]
   ],
@@ -3300,10 +3659,100 @@
     ]
   ],
   "lang:llvm" : [
-
+    [
+      ";.*$",
+      "comment"
+    ],
+    [
+      "c?\"(?:[^\"\\\\]|\\\\.)*\"",
+      "string"
+    ],
+    [
+      "%[\\w.]+",
+      "variable"
+    ],
+    [
+      "@[\\w.]+",
+      "function"
+    ],
+    [
+      "![\\w.]+",
+      "property"
+    ],
+    [
+      "\\b(i\\d+|void|half|bfloat|float|double|fp128|x86_fp80|ppc_fp128|ptr|label|token|metadata|x86_mmx|opaque)\\b",
+      "type"
+    ],
+    [
+      "\\[\\s*\\d+\\s+x\\b",
+      "type"
+    ],
+    [
+      "\\b(define|declare|ret|br|switch|indirectbr|invoke|resume|unreachable|call|tail|musttail|icmp|fcmp|phi|select|add|fadd|sub|fsub|mul|fmul|udiv|sdiv|fdiv|urem|srem|frem|shl|lshr|ashr|and|or|xor|load|store|alloca|getelementptr|fence|cmpxchg|atomicrmw|trunc|zext|sext|fptrunc|fpext|fptoui|fptosi|uitofp|sitofp|ptrtoint|inttoptr|bitcast|addrspacecast|extractelement|insertelement|shufflevector|extractvalue|insertvalue|landingpad|global|constant|private|internal|external|linkonce|weak|common|appending|unnamed_addr|local_unnamed_addr|align|nsw|nuw|exact|inbounds|volatile|target|datalayout|triple|attributes|source_filename|eq|ne|ugt|uge|ult|ule|sgt|sge|slt|sle|oeq|ogt|oge|olt|ole|one|ord|uno|true|false|null|undef|poison|zeroinitializer|nocapture|noalias|readonly|nounwind|noinline|alwaysinline|dso_local|type|to)\\b",
+      "keyword"
+    ],
+    [
+      "\\b-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b|\\b0x[0-9a-fA-F]+\\b",
+      "number"
+    ]
   ],
   "lang:log" : [
-
+    [
+      "^\\s+at [\\w.$<>]+\\(.*\\)\\s*$",
+      "comment"
+    ],
+    [
+      "^\\s*(Caused by|\\.\\.\\. \\d+ more).*$",
+      "comment"
+    ],
+    [
+      "\"(?:[^\"\\\\]|\\\\.)*\"",
+      "string"
+    ],
+    [
+      "\\b\\d{4}-\\d{2}-\\d{2}[T ]\\d{2}:\\d{2}:\\d{2}([.,]\\d+)?(Z|[+-]\\d{2}:?\\d{2})?\\b",
+      "number"
+    ],
+    [
+      "\\b\\d{2}:\\d{2}:\\d{2}([.,]\\d+)?\\b",
+      "number"
+    ],
+    [
+      "\\b(ERROR|ERR|FATAL|CRITICAL|CRIT|SEVERE|PANIC|EMERG|ALERT|FAILED|FAILURE|FAIL)\\b",
+      "removed"
+    ],
+    [
+      "\\b(WARN|WARNING|NOTICE)\\b",
+      "keyword"
+    ],
+    [
+      "\\b(TRACE|DEBUG|INFO|VERBOSE|FINE|FINER|FINEST)\\b",
+      "type"
+    ],
+    [
+      "\\b(SUCCESS|SUCCEEDED|OK|PASS|PASSED|DONE|COMPLETED?)\\b",
+      "added"
+    ],
+    [
+      "\\b\\w+(Exception|Error)\\b",
+      "removed"
+    ],
+    [
+      "\\[[^\\]]{1,60}\\]",
+      "property"
+    ],
+    [
+      "\\b[a-z]+(\\.[a-zA-Z_$][\\w$]*){2,}\\b",
+      "function"
+    ],
+    [
+      "\\bhttps?:\/\/\\S+",
+      "string"
+    ],
+    [
+      "\\b0x[0-9a-fA-F]+\\b|\\b[0-9a-f]{8,}\\b|\\b\\d+(\\.\\d+)?\\s?(ms|s|m|h|KB|MB|GB|%)\\b|#\\d+\\b",
+      "number"
+    ]
   ],
   "lang:lua" : [
     [
@@ -3554,7 +4003,46 @@
     ]
   ],
   "lang:mermaid" : [
-
+    [
+      "%%.*$",
+      "comment"
+    ],
+    [
+      "\"[^\"]*\"",
+      "string"
+    ],
+    [
+      "\\b(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram(-v2)?|erDiagram|gantt|pie|journey|gitGraph|mindmap|timeline|quadrantChart|requirementDiagram|C4Context|sankey-beta|xychart-beta|block-beta)\\b",
+      "keyword"
+    ],
+    [
+      "\\b(subgraph|end|direction|title|note|right|left|of|over|participant|actor|activate|deactivate|loop|alt|else|opt|par|and|critical|break|rect|section|class|state|click|style|classDef|linkStyle|dateFormat|axisFormat|excludes|todayMarker|as|TB|TD|BT|RL|LR|commit|branch|checkout|merge|cherry-pick|namespace|accTitle|accDescr|showData)\\b",
+      "keyword"
+    ],
+    [
+      "\\[\\*\\]",
+      "keyword"
+    ],
+    [
+      "<?-{1,3}>?|<?={1,3}>?|-\\.+->|--\\|>|\\.\\.>|\\*--|o--|<\\|--|--\\*|--o|-->>|--x|--\\)|:::|-\\.-",
+      "type"
+    ],
+    [
+      "\\[[^\\]]*\\]|\\([^)]*\\)|\\{[^}]*\\}|\\|[^|]*\\|",
+      "string"
+    ],
+    [
+      ":\\s.*$",
+      "string"
+    ],
+    [
+      "^\\s*[A-Za-z_][\\w-]*",
+      "variable"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?%?\\b",
+      "number"
+    ]
   ],
   "lang:meson" : [
     [
@@ -3826,28 +4314,56 @@
   ],
   "lang:nix" : [
     [
-      "--.*$",
+      "#.*$",
       "comment"
     ],
     [
-      "\\(\\*[\\s\\S]*?\\*\\)",
+      "\/\\*[\\s\\S]*?\\*\/",
       "comment"
     ],
     [
-      "\\{-[\\s\\S]*?-\\}",
-      "comment"
+      "''[\\s\\S]*?''(?!\\$)",
+      "string"
     ],
     [
       "\"(?:[^\"\\\\]|\\\\.)*\"",
       "string"
     ],
     [
-      "\\b(let|in|module|import|open|type|data|newtype|class|instance|where|match|with|case|of|if|then|else|do|fun|function|val|rec|and|begin|end|deriving|struct|functor|signature)\\b",
+      "\\b(let|in|with|rec|inherit|if|then|else|assert|or|import|throw|abort)\\b",
       "keyword"
     ],
     [
-      "\\b[A-Z]\\w*\\b",
+      "\\b(true|false|null)\\b",
+      "number"
+    ],
+    [
+      "<[\\w.\/-]+>",
+      "string"
+    ],
+    [
+      "(\\.\\.?|~)?\/[\\w.\/+-]+",
+      "string"
+    ],
+    [
+      "\\b(builtins|lib|pkgs|stdenv|self|super|config|options|system|inputs|outputs|nixpkgs|flake-utils)\\b",
       "type"
+    ],
+    [
+      "\\b(mkDerivation|mkShell|fetchurl|fetchFromGitHub|fetchgit|map|filter|toString|concatStringsSep|attrValues|attrNames|mapAttrs|genAttrs|optional|optionals|optionalString|callPackage|writeText|writeShellScriptBin|eachDefaultSystem|eachSystem|listToAttrs|hasAttr|getAttr|readFile|fromJSON|toJSON|elem|length|head|tail|foldl|foldr|substring|stringLength|replaceStrings|splitString|removeSuffix|removePrefix)\\b",
+      "function"
+    ],
+    [
+      "\\b[a-zA-Z_][\\w'-]*(?=\\s*=[^=])",
+      "property"
+    ],
+    [
+      "\\b[a-zA-Z_][\\w'-]*(?=\\s*:(?!:))",
+      "variable"
+    ],
+    [
+      "\\$\\{|\\}",
+      "keyword"
     ],
     [
       "\\b\\d+(\\.\\d+)?\\b",
@@ -4234,7 +4750,46 @@
 
   ],
   "lang:plantuml" : [
-
+    [
+      "^\\s*'.*$",
+      "comment"
+    ],
+    [
+      "\/'[\\s\\S]*?'\/",
+      "comment"
+    ],
+    [
+      "\"[^\"]*\"",
+      "string"
+    ],
+    [
+      "@(start|end)[a-z]+",
+      "keyword"
+    ],
+    [
+      "\\b(title|skinparam|actor|participant|database|queue|boundary|control|entity|collections|activate|deactivate|destroy|create|alt|else|end|loop|opt|par|break|critical|group|ref|over|note|left|right|of|as|class|interface|enum|abstract|annotation|package|namespace|state|object|usecase|component|node|cloud|rectangle|frame|folder|storage|artifact|card|return|autonumber|hide|show|newpage|header|footer|legend|caption|top|bottom|center|endlegend|endnote|endheader|endfooter|start|stop|if|then|elseif|endif|while|endwhile|repeat|fork|again|partition|split|detach|kill|extends|implements|together|sprite|scale|rotate|box|endbox|mainframe)\\b",
+      "keyword"
+    ],
+    [
+      "<?[-.]{1,4}>?|<-->|<\\|--|--\\|>|\\*--|--\\*|o--|--o|\\.\\.>|<\\.\\.|\\|>|<\\|",
+      "type"
+    ],
+    [
+      ":.*$",
+      "string"
+    ],
+    [
+      "\\b[A-Z][\\w]*\\b",
+      "variable"
+    ],
+    [
+      "#[0-9A-Fa-f]{6}\\b|#[A-Za-z]+\\b",
+      "number"
+    ],
+    [
+      "\\b\\d+\\b",
+      "number"
+    ]
   ],
   "lang:plist" : [
     [
@@ -4401,7 +4956,42 @@
     ]
   ],
   "lang:prolog" : [
-
+    [
+      "%.*$",
+      "comment"
+    ],
+    [
+      "\/\\*[\\s\\S]*?\\*\/",
+      "comment"
+    ],
+    [
+      "\"(?:[^\"\\\\]|\\\\.)*\"",
+      "string"
+    ],
+    [
+      "'(?:[^'\\\\]|\\\\.)*'",
+      "string"
+    ],
+    [
+      ":-|-->|\\?-|\\\\\\+|->|;",
+      "keyword"
+    ],
+    [
+      "\\b(is|mod|rem|not|true|fail|false|dynamic|discontiguous|module|use_module|initialization|findall|bagof|setof|forall|length|member|append|nth0|nth1|assert|asserta|assertz|retract|write|writeln|nl|format|halt)\\b",
+      "keyword"
+    ],
+    [
+      "\\b[A-Z_][A-Za-z0-9_]*\\b",
+      "variable"
+    ],
+    [
+      "\\b[a-z]\\w*(?=\\()",
+      "function"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?\\b",
+      "number"
+    ]
   ],
   "lang:properties" : [
     [
@@ -4503,8 +5093,16 @@
   ],
   "lang:pug" : [
     [
-      "<!--[\\s\\S]*?-->",
+      "^\\s*(\/\/-?|-#|\/!?)\\s.*$",
       "comment"
+    ],
+    [
+      "^\\s*(\/\/-?|-#)$",
+      "comment"
+    ],
+    [
+      "#\\{[^}]*\\}|\\$\\{[^}]*\\}|!\\{[^}]*\\}",
+      "property"
     ],
     [
       "\"[^\"]*\"",
@@ -4515,16 +5113,44 @@
       "string"
     ],
     [
-      "<\/?[A-Za-z][\\w:-]*",
+      "^\\s*\\|.*$",
+      "string"
+    ],
+    [
+      "^\\s*(doctype|!!!)\\b.*$",
       "keyword"
     ],
     [
-      "\/>|>",
+      "\\b(if|else|elif|elsif|unless|each|for|in|of|while|case|when|default|mixin|include|extends|block|append|prepend|yield|end|do|render|javascript|css|coffee|markdown|sass|scss)\\b",
       "keyword"
     ],
     [
-      "\\b[A-Za-z-]+=",
+      "^\\s*%[\\w:-]+",
+      "keyword"
+    ],
+    [
+      "^\\s*[a-z][\\w:-]*(?=[\\s.#(=:]|$)",
+      "keyword"
+    ],
+    [
+      "[.#][A-Za-z_][\\w-]*",
+      "type"
+    ],
+    [
+      "\\+[\\w-]+",
       "function"
+    ],
+    [
+      "\\b[\\w:-]+(?==)",
+      "attribute"
+    ],
+    [
+      "^\\s*[-=!]=?",
+      "variable"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?\\b",
+      "number"
     ]
   ],
   "lang:purescript" : [
@@ -4859,28 +5485,60 @@
   ],
   "lang:restructuredtext" : [
     [
-      "<!--[\\s\\S]*?-->",
+      "^\\.\\. [\\w-]+::.*$",
+      "keyword"
+    ],
+    [
+      "^\\.\\. _[^:]+:.*$",
+      "function"
+    ],
+    [
+      "^\\.\\. .*$",
       "comment"
     ],
     [
-      "\"[^\"]*\"",
-      "string"
-    ],
-    [
-      "'[^']*'",
-      "string"
-    ],
-    [
-      "<\/?[A-Za-z][\\w:-]*",
+      "^(=+|-+|~+|\\^+|\\*+|#+|\"+|\\++|`+)\\s*$",
       "keyword"
     ],
     [
-      "\/>|>",
-      "keyword"
+      "^={2,}(\\s+={2,})+\\s*$",
+      "comment"
     ],
     [
-      "\\b[A-Za-z-]+=",
+      "``[^`]+``",
+      "string"
+    ],
+    [
+      "`[^`]+`_{1,2}",
       "function"
+    ],
+    [
+      ":[\\w+.-]+:`[^`]+`",
+      "property"
+    ],
+    [
+      "^\\s*:[\\w -]+:",
+      "property"
+    ],
+    [
+      "\\*\\*[^*\\n]+\\*\\*",
+      "type"
+    ],
+    [
+      "\\*[^*\\n]+\\*",
+      "variable"
+    ],
+    [
+      "\\|[^|\\n]+\\|",
+      "property"
+    ],
+    [
+      "^\\s*([-*+]|\\d+\\.|#\\.)\\s",
+      "keyword"
+    ],
+    [
+      "\\bhttps?:\/\/\\S+",
+      "string"
     ]
   ],
   "lang:rmarkdown" : [
@@ -5259,8 +5917,16 @@
   ],
   "lang:slim" : [
     [
-      "<!--[\\s\\S]*?-->",
+      "^\\s*(\/\/-?|-#|\/!?)\\s.*$",
       "comment"
+    ],
+    [
+      "^\\s*(\/\/-?|-#)$",
+      "comment"
+    ],
+    [
+      "#\\{[^}]*\\}|\\$\\{[^}]*\\}|!\\{[^}]*\\}",
+      "property"
     ],
     [
       "\"[^\"]*\"",
@@ -5271,20 +5937,83 @@
       "string"
     ],
     [
-      "<\/?[A-Za-z][\\w:-]*",
+      "^\\s*\\|.*$",
+      "string"
+    ],
+    [
+      "^\\s*(doctype|!!!)\\b.*$",
       "keyword"
     ],
     [
-      "\/>|>",
+      "\\b(if|else|elif|elsif|unless|each|for|in|of|while|case|when|default|mixin|include|extends|block|append|prepend|yield|end|do|render|javascript|css|coffee|markdown|sass|scss)\\b",
       "keyword"
     ],
     [
-      "\\b[A-Za-z-]+=",
+      "^\\s*%[\\w:-]+",
+      "keyword"
+    ],
+    [
+      "^\\s*[a-z][\\w:-]*(?=[\\s.#(=:]|$)",
+      "keyword"
+    ],
+    [
+      "[.#][A-Za-z_][\\w-]*",
+      "type"
+    ],
+    [
+      "\\+[\\w-]+",
       "function"
+    ],
+    [
+      "\\b[\\w:-]+(?==)",
+      "attribute"
+    ],
+    [
+      "^\\s*[-=!]=?",
+      "variable"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?\\b",
+      "number"
     ]
   ],
   "lang:smalltalk" : [
-
+    [
+      "\"[^\"]*\"",
+      "comment"
+    ],
+    [
+      "'(?:[^']|'')*'",
+      "string"
+    ],
+    [
+      "#[A-Za-z_][\\w:]*|#\\(|#\\[",
+      "type"
+    ],
+    [
+      "\\b(self|super|true|false|nil|thisContext)\\b",
+      "keyword"
+    ],
+    [
+      "\\^|>>|:=",
+      "keyword"
+    ],
+    [
+      "\\b[a-z][\\w]*:(?!=)",
+      "function"
+    ],
+    [
+      "\\b[A-Z][\\w]*\\b",
+      "type"
+    ],
+    [
+      "\\|[\\s\\w]+\\|",
+      "variable"
+    ],
+    [
+      "\\b\\d+r[0-9A-Z]+\\b|\\b\\d+(\\.\\d+)?([edq]-?\\d+)?\\b|\\$.",
+      "number"
+    ]
   ],
   "lang:smarty" : [
     [
@@ -5822,28 +6551,44 @@
   ],
   "lang:textile" : [
     [
-      "<!--[\\s\\S]*?-->",
-      "comment"
-    ],
-    [
-      "\"[^\"]*\"",
-      "string"
-    ],
-    [
-      "'[^']*'",
-      "string"
-    ],
-    [
-      "<\/?[A-Za-z][\\w:-]*",
+      "^h[1-6]\\.\\s.*$",
       "keyword"
     ],
     [
-      "\/>|>",
+      "^(bq|bc|pre|p|notextile|fn\\d+|table)\\.+\\s",
       "keyword"
     ],
     [
-      "\\b[A-Za-z-]+=",
+      "^\\s*[*#]+\\s",
+      "keyword"
+    ],
+    [
+      "@[^@\\n]+@",
+      "string"
+    ],
+    [
+      "\"[^\"\\n]+\":\\S+",
       "function"
+    ],
+    [
+      "![^!\\n]+!",
+      "function"
+    ],
+    [
+      "\\*[^*\\n]+\\*",
+      "type"
+    ],
+    [
+      "_[^_\\n]+_",
+      "variable"
+    ],
+    [
+      "\\{[^}\\n]*\\}",
+      "attribute"
+    ],
+    [
+      "\\|_?\\.?",
+      "comment"
     ]
   ],
   "lang:thrift" : [
@@ -6205,7 +6950,38 @@
     ]
   ],
   "lang:vbscript" : [
-
+    [
+      "'.*$",
+      "comment"
+    ],
+    [
+      "(?i)^\\s*Rem\\b.*$",
+      "comment"
+    ],
+    [
+      "\"[^\"]*\"",
+      "string"
+    ],
+    [
+      "(?i)\\b(Option|Explicit|Dim|Set|Const|If|Then|Else|ElseIf|End|Function|Sub|Do|Loop|Until|While|Wend|For|Each|Next|In|To|Step|Exit|Call|Select|Case|With|New|Not|And|Or|Xor|Is|Mod|True|False|Nothing|Null|Empty|On|Error|Resume|Goto|ReDim|Preserve|Private|Public|Default|Class|Property|Get|Let|ByVal|ByRef|Randomize|Erase|Execute|Eval|Stop|WScript)\\b",
+      "keyword"
+    ],
+    [
+      "(?i)\\bvb[A-Za-z]+\\b",
+      "type"
+    ],
+    [
+      "(?i)\\b(CreateObject|GetObject|MsgBox|InputBox|Len|Left|Right|Mid|Trim|LTrim|RTrim|Split|Join|Replace|InStr|InStrRev|UCase|LCase|CDbl|CInt|CLng|CStr|CBool|CDate|IsNumeric|IsNull|IsEmpty|IsObject|IsArray|Array|UBound|LBound|FormatNumber|FormatCurrency|FormatDateTime|Now|Date|Time|DateAdd|DateDiff|Abs|Int|Fix|Round|Sqr|Rnd|Chr|Asc|Hex|Oct|TypeName|VarType)\\b",
+      "function"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?\\b|&H[0-9A-Fa-f]+",
+      "number"
+    ],
+    [
+      "\\b[A-Za-z_]\\w*(?=\\s*\\()",
+      "function"
+    ]
   ],
   "lang:velocity" : [
     [
@@ -6558,7 +7334,46 @@
     ]
   ],
   "lang:xquery" : [
-
+    [
+      "\\(:[\\s\\S]*?:\\)",
+      "comment"
+    ],
+    [
+      "\"[^\"]*\"",
+      "string"
+    ],
+    [
+      "'[^']*'",
+      "string"
+    ],
+    [
+      "\\$[\\w:.-]+",
+      "variable"
+    ],
+    [
+      "\\b(xquery|version|encoding|declare|namespace|default|element|attribute|function|variable|option|boundary-space|base-uri|construction|ordering|copy-namespaces|module|import|schema|at|external|let|for|in|where|order|by|stable|return|if|then|else|as|every|some|satisfies|typeswitch|case|ascending|descending|empty|greatest|least|collation|instance|of|treat|castable|cast|to|div|idiv|mod|and|or|not|eq|ne|lt|le|gt|ge|is|union|intersect|except|child|descendant|parent|self|ancestor|text|node|document-node|item|count|group|window|tumbling|sliding|try|catch|switch)\\b",
+      "keyword"
+    ],
+    [
+      "\\b(xs|fn|math|map|array|local|ex):[\\w-]+",
+      "type"
+    ],
+    [
+      "<\/?[A-Za-z][\\w:-]*|\/>|>",
+      "keyword"
+    ],
+    [
+      "@[\\w:-]+",
+      "attribute"
+    ],
+    [
+      "\\b[A-Za-z_][\\w-]*(?=\\s*\\()",
+      "function"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b",
+      "number"
+    ]
   ],
   "lang:xslt" : [
     [

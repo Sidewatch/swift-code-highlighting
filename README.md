@@ -219,3 +219,5 @@ module map.
 ## License
 
 MIT
+
+**Every language paints (25 Sep 2026).** A sweep of one sample per language found 13 with no colour at all and 23 with one or two roles; each has a rule table now (`Rules/Languages/`, 20 new files: Erlang, Prolog, Fortran, COBOL, assembly, LLVM IR, Smalltalk, VBScript, XQuery, ABAP, Mermaid, PlantUML, log files, AsciiDoc, reStructuredText, Textile, .gitattributes, JSON5/Hjson, Nix, Pug/Haml/Slim, Jinja). `RuleTableCoverageTests` pins at least three roles per table on a snippet.

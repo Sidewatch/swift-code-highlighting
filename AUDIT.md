@@ -68,3 +68,4 @@ map was missing `Rules/`, `Models/`, `Extensions/`, `SymbolKind`, `OutlineNode`,
 - 18 Sep 2026 — logic review (every source and test file, line by line), Claude with David.
 - 22 Sep 2026 — `Structure/YAMLStructure` added (the grammar already vendored for highlighting, read as ordered values); `YAMLStructureTests`.
 - 22 Sep 2026 (later) — Markdown inline injection: chunks parsed one at a time (`separatelyParsed`), never combined — combined, two list items' code spans read as one and whole documents went string-coloured; pinned by `testMarkdownInlineChunksAreParsedSeparately`. `HighlightSession.fullParseCount` / `incrementalParseCount` are public for the app's `--dump-highlight --live`.
+- 25 Sep 2026 — 20 rule tables for the languages a corpus sweep found flat or nearly so; `RuleTableCoverageTests` (three roles per table; the mutant that drops a mapping fails); the rule-table snapshot re-recorded.
