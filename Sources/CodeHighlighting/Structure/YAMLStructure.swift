@@ -57,17 +57,17 @@ public enum YAMLStructure {
 
     // MARK: - Walking
 
-    private static func namedChildren(_ node: Node) -> [Node] {
+    static func namedChildren(_ node: Node) -> [Node] {
         (0..<node.namedChildCount).compactMap { node.namedChild(at: $0) }
     }
 
-    private static func text(_ node: Node, _ ns: NSString) -> String {
+    static func text(_ node: Node, _ ns: NSString) -> String {
         NSMaxRange(node.range) <= ns.length ? ns.substring(with: node.range) : ""
     }
 
     /// The node's content: a `block_node` / `flow_node` unwraps to the collection or scalar inside
     /// it (past any anchor, tag or comment).
-    private static func convert(_ node: Node, ns: NSString) -> Value {
+    static func convert(_ node: Node, ns: NSString) -> Value {
         switch node.nodeType ?? "" {
         case "block_node", "flow_node":
             guard let inner = namedChildren(node).first(where: { !["anchor", "tag", "comment"].contains($0.nodeType ?? "") }) else { return .null }
@@ -111,7 +111,7 @@ public enum YAMLStructure {
     }
 
     /// A key as the string the file wrote: `1:` is the key "1".
-    private static func keyText(_ value: Value) -> String {
+    static func keyText(_ value: Value) -> String {
         switch value {
         case .string(let s): return s
         case .integer(let i): return String(i)

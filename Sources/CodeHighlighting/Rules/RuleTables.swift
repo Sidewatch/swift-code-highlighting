@@ -73,6 +73,15 @@ enum RuleTables {
         case .nix: return nix
         case .pug, .haml, .slim: return indentedMarkup
         case .jinja: return jinja
+        case .bibtex: return bibtex
+        case .dot: return dot
+        case .edgeql: return edgeql
+        case .gomod: return gomod
+        case .manifest: return manifest
+        case .meson: return meson
+        case .quarto, .rmarkdown: return quarto
+        case .strings: return strings
+        case .texinfo: return texinfo
         default: return table(for: lang.family)
         }
     }

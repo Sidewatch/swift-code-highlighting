@@ -221,3 +221,5 @@ module map.
 MIT
 
 **Every language paints (25 Sep 2026).** A sweep of one sample per language found 13 with no colour at all and 23 with one or two roles; each has a rule table now (`Rules/Languages/`, 20 new files: Erlang, Prolog, Fortran, COBOL, assembly, LLVM IR, Smalltalk, VBScript, XQuery, ABAP, Mermaid, PlantUML, log files, AsciiDoc, reStructuredText, Textile, .gitattributes, JSON5/Hjson, Nix, Pug/Haml/Slim, Jinja). `RuleTableCoverageTests` pins at least three roles per table on a snippet.
+
+`YAMLStructure.site(in:path:)` (25 Sep 2026) walks the same tree-sitter nodes as `value(of:)` and answers the UTF-16 ranges of the member at a path — its scalar (quotes or the `|` block included) and, in a mapping, its key — so a cell edited in a YAML tree can replace one token and nothing else; what to write there is swift-data-converter's `YAMLEdit`.

@@ -786,16 +786,28 @@
       "comment"
     ],
     [
-      "\\\\[A-Za-z@]+",
+      "@[A-Za-z]+(?=\\s*[{(])",
       "keyword"
     ],
     [
-      "\\{[^{}]*\\}",
+      "^\\s*[A-Za-z_-]+(?=\\s*=)",
+      "property"
+    ],
+    [
+      "(?<==)\\s*\\{[\\s\\S]*?\\}(?=\\s*[,}\\n])",
+      "string"
+    ],
+    [
+      "\"(?:[^\"\\\\]|\\\\.)*\"",
+      "string"
+    ],
+    [
+      "(?<=[{(])\\s*[\\w:.-]+(?=\\s*,)",
       "type"
     ],
     [
-      "\\$[^$]*\\$",
-      "string"
+      "\\b\\d+(--\\d+)?\\b",
+      "number"
     ]
   ],
   "lang:bicep" : [
@@ -1698,28 +1710,40 @@
       "comment"
     ],
     [
+      "^\\s*#.*$",
+      "comment"
+    ],
+    [
       "\"(?:[^\"\\\\]|\\\\.)*\"",
       "string"
     ],
     [
-      "'(?:[^'\\\\]|\\\\.)*'",
+      "<[^>]*>",
       "string"
     ],
     [
-      "\\b(if|else|for|while|do|switch|case|default|break|continue|return|struct|enum|union|class|interface|trait|impl|public|private|protected|internal|static|final|const|let|var|val|func|fn|def|void|new|delete|try|catch|finally|throw|throws|import|export|package|namespace|using|module|use|extends|implements|override|virtual|abstract|async|await|yield|match|when|where|type|typedef|template|typename|operator|this|self|super)\\b",
+      "\\b(digraph|graph|subgraph|node|edge|strict|cluster)\\b",
       "keyword"
     ],
     [
-      "\\b(true|false|null|nil|none|undefined)\\b",
+      "->|--",
+      "type"
+    ],
+    [
+      "\\b[A-Za-z_][\\w]*(?=\\s*=)",
+      "attribute"
+    ],
+    [
+      "\\b(rankdir|label|shape|style|color|fillcolor|fontname|fontsize|penwidth|arrowhead|dir|weight|constraint|splines|nodesep|ranksep|bgcolor|layout|compound|width|height)\\b",
+      "attribute"
+    ],
+    [
+      "#[0-9A-Fa-f]{6}\\b|\\b\\d+(\\.\\d+)?\\b",
       "number"
     ],
     [
-      "\\b\\d+(\\.\\d+)?\\b|\\b0x[0-9a-fA-F]+\\b",
-      "number"
-    ],
-    [
-      "\\b([A-Za-z_]\\w*)\\s*\\(",
-      "function"
+      "\\b[A-Za-z_]\\w*(?=\\s*(\\[|->|--|;|$))",
+      "variable"
     ]
   ],
   "lang:dotenv" : [
@@ -1770,27 +1794,47 @@
   ],
   "lang:edgeql" : [
     [
-      "--.*$",
+      "#.*$",
       "comment"
     ],
     [
-      "\/\\*[\\s\\S]*?\\*\/",
-      "comment"
-    ],
-    [
-      "'(?:[^']|'')*'",
+      "'(?:[^'\\\\]|\\\\.)*'",
       "string"
     ],
     [
-      "(?i)\\b(select|from|where|insert|into|values|update|set|delete|create|table|view|index|drop|alter|add|join|left|right|inner|outer|full|cross|on|using|group|by|order|asc|desc|having|limit|offset|distinct|union|all|as|and|or|not|null|is|in|between|like|primary|key|foreign|references|default|unique|check|case|when|then|else|end|begin|commit|rollback)\\b",
+      "\"(?:[^\"\\\\]|\\\\.)*\"",
+      "string"
+    ],
+    [
+      "\\$\\$[\\s\\S]*?\\$\\$",
+      "string"
+    ],
+    [
+      "\\b(module|type|abstract|extending|required|optional|multi|single|property|link|constraint|exclusive|index|on|default|annotation|using|function|returning|scalar|alias|global|select|insert|update|delete|filter|order|by|limit|offset|with|for|in|union|detached|introspect|set|unless|conflict|else|if|then|group|distinct|exists|not|and|or|like|ilike|is|asc|desc|empty|first|last|true|false|start|migration|commit|create|alter|drop|to|from|as|assert_single|count|len|sum|max|min|array_agg|datetime_current|random|uuid_generate_v1mc)\\b",
       "keyword"
     ],
     [
-      "\\b\\d+(\\.\\d+)?\\b",
+      "\\b(str|int16|int32|int64|float32|float64|bigint|decimal|bool|datetime|duration|uuid|json|bytes|array|tuple|range|anytype|cal::local_date|cal::local_datetime|std::\\w+)\\b",
+      "type"
+    ],
+    [
+      "<[\\w:]+>",
+      "type"
+    ],
+    [
+      ":=|\\+=|-=|\\?\\?|\\?=|\\?!=|\\.<|\\.>|@",
+      "keyword"
+    ],
+    [
+      "\\.[a-zA-Z_]\\w*",
+      "property"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?n?\\b",
       "number"
     ],
     [
-      "\\b([A-Za-z_]\\w*)\\s*\\(",
+      "\\b[a-zA-Z_]\\w*(?=\\s*\\()",
       "function"
     ]
   ],
@@ -2422,48 +2466,32 @@
   ],
   "lang:gomod" : [
     [
-      "<\/?[A-Za-z][\\w-]*",
-      "keyword"
-    ],
-    [
-      "^\\s*\\[[^\\]]*\\]",
-      "keyword"
-    ],
-    [
-      "^\\s*[A-Za-z_][\\w.-]*",
-      "function"
-    ],
-    [
-      "\\$\\{?\\w+\\}?",
-      "type"
-    ],
-    [
-      "%\\{[^}]*\\}",
-      "type"
-    ],
-    [
-      "(?i)\\b(on|off|true|false|yes|no|none|null|enabled|disabled)\\b",
-      "number"
-    ],
-    [
-      "\\b\\d+(\\.\\d+)?\\b",
-      "number"
-    ],
-    [
-      "\"(?:[^\"\\\\]|\\\\.)*\"",
-      "string"
-    ],
-    [
-      "'[^']*'",
-      "string"
-    ],
-    [
-      "#.*$",
+      "\/\/.*$",
       "comment"
     ],
     [
-      "(?:^|\\s);.*$",
-      "comment"
+      "\\b(module|go|toolchain|require|replace|exclude|retract|indirect|godebug)\\b",
+      "keyword"
+    ],
+    [
+      "=>",
+      "type"
+    ],
+    [
+      "\\bv\\d+\\.\\d+\\.\\d+[\\w.+-]*",
+      "number"
+    ],
+    [
+      "\\b\\d+\\.\\d+(\\.\\d+)?\\b",
+      "number"
+    ],
+    [
+      "\\b[\\w.-]+(\/[\\w.-]+)+\\b",
+      "string"
+    ],
+    [
+      "\\bh1:[A-Za-z0-9+\/=]+",
+      "property"
     ]
   ],
   "lang:gradle" : [
@@ -3812,48 +3840,32 @@
   ],
   "lang:manifest" : [
     [
-      "<\/?[A-Za-z][\\w-]*",
-      "keyword"
+      "^[A-Za-z][\\w-]*(?=:)",
+      "property"
     ],
     [
-      "^\\s*\\[[^\\]]*\\]",
-      "keyword"
+      "^ .*$",
+      "string"
     ],
     [
-      "^\\s*[A-Za-z_][\\w.-]*",
+      "\\b[\\w.\/-]+\\.(jar|zip|war)\\b",
+      "string"
+    ],
+    [
+      "\\b[a-z][\\w]*(\\.[a-z][\\w]*)+\\.[A-Z]\\w*\\b",
+      "type"
+    ],
+    [
+      "\\b[a-z][\\w]*(\\.[a-z][\\w]*)+\\b",
       "function"
     ],
     [
-      "\\$\\{?\\w+\\}?",
-      "type"
-    ],
-    [
-      "%\\{[^}]*\\}",
-      "type"
-    ],
-    [
-      "(?i)\\b(on|off|true|false|yes|no|none|null|enabled|disabled)\\b",
+      "\\b\\d+(\\.\\d+)+\\b|\\b\\d+\\b",
       "number"
     ],
     [
-      "\\b\\d+(\\.\\d+)?\\b",
-      "number"
-    ],
-    [
-      "\"(?:[^\"\\\\]|\\\\.)*\"",
-      "string"
-    ],
-    [
-      "'[^']*'",
-      "string"
-    ],
-    [
-      "#.*$",
-      "comment"
-    ],
-    [
-      "(?:^|\\s);.*$",
-      "comment"
+      "\\b(true|false)\\b",
+      "keyword"
     ]
   ],
   "lang:markdown" : [
@@ -4050,20 +4062,32 @@
       "comment"
     ],
     [
-      "\"(?:[^\"\\\\]|\\\\.)*\"",
+      "'''[\\s\\S]*?'''",
       "string"
     ],
     [
-      "'[^']*'",
+      "'(?:[^'\\\\]|\\\\.)*'",
       "string"
     ],
     [
-      "\\b(if|then|else|elif|fi|for|while|do|done|case|esac|in|function|return|exit|local|export|set|unset|source|alias|echo)\\b",
+      "\\b(if|elif|else|endif|foreach|endforeach|and|or|not|in|true|false|break|continue)\\b",
       "keyword"
     ],
     [
-      "\\$\\{?[A-Za-z_]\\w*\\}?",
+      "\\b(meson|host_machine|build_machine|target_machine)\\b",
       "type"
+    ],
+    [
+      "\\b[a-z_]\\w*(?=\\s*:)",
+      "attribute"
+    ],
+    [
+      "\\.[a-z_]\\w*(?=\\()",
+      "function"
+    ],
+    [
+      "\\b[a-z_]\\w*(?=\\()",
+      "function"
     ],
     [
       "\\b\\d+\\b",
@@ -5265,28 +5289,76 @@
   ],
   "lang:quarto" : [
     [
-      "<!--[\\s\\S]*?-->",
+      "^```\\{[^}]*\\}\\s*$|^```\\s*$",
+      "keyword"
+    ],
+    [
+      "^#\\|\\s*[\\w-]+:",
+      "attribute"
+    ],
+    [
+      "`r [^`]+`",
+      "function"
+    ],
+    [
+      "^:::+.*$",
+      "keyword"
+    ],
+    [
+      "^[\\w-]+:(?=\\s)",
+      "property"
+    ],
+    [
+      "^---\\s*$",
       "comment"
     ],
     [
-      "\"[^\"]*\"",
-      "string"
+      "^>+\\s?.*$",
+      "comment"
     ],
     [
-      "'[^']*'",
-      "string"
+      "^\\s*(\\*{3,}|-{3,}|_{3,})\\s*$",
+      "comment"
     ],
     [
-      "<\/?[A-Za-z][\\w:-]*",
+      "^\\s*[\\-\\*+]\\s",
       "keyword"
     ],
     [
-      "\/>|>",
+      "^\\s*\\d+\\.\\s",
       "keyword"
     ],
     [
-      "\\b[A-Za-z-]+=",
+      "!?\\[([^\\]]+)\\]\\(([^)]+)\\)",
+      "type"
+    ],
+    [
+      "(?<!\\*)\\*(?![\\s*])[^*\\n]+?(?<![\\s*])\\*(?!\\*)",
+      "type"
+    ],
+    [
+      "(?<!\\w)_(?![\\s_])[^_\\n]+?(?<![\\s_])_(?!\\w)",
+      "type"
+    ],
+    [
+      "\\*\\*(?:[^*\\n]|\\*(?!\\*))+?\\*\\*",
       "function"
+    ],
+    [
+      "__(?:[^_\\n]|_(?!_))+?__",
+      "function"
+    ],
+    [
+      "^#{1,6}\\s+.*$",
+      "keyword"
+    ],
+    [
+      "`[^`\\n]+`",
+      "string"
+    ],
+    [
+      "```[\\s\\S]*?```",
+      "string"
     ]
   ],
   "lang:r" : [
@@ -5543,28 +5615,76 @@
   ],
   "lang:rmarkdown" : [
     [
-      "<!--[\\s\\S]*?-->",
+      "^```\\{[^}]*\\}\\s*$|^```\\s*$",
+      "keyword"
+    ],
+    [
+      "^#\\|\\s*[\\w-]+:",
+      "attribute"
+    ],
+    [
+      "`r [^`]+`",
+      "function"
+    ],
+    [
+      "^:::+.*$",
+      "keyword"
+    ],
+    [
+      "^[\\w-]+:(?=\\s)",
+      "property"
+    ],
+    [
+      "^---\\s*$",
       "comment"
     ],
     [
-      "\"[^\"]*\"",
-      "string"
+      "^>+\\s?.*$",
+      "comment"
     ],
     [
-      "'[^']*'",
-      "string"
+      "^\\s*(\\*{3,}|-{3,}|_{3,})\\s*$",
+      "comment"
     ],
     [
-      "<\/?[A-Za-z][\\w:-]*",
+      "^\\s*[\\-\\*+]\\s",
       "keyword"
     ],
     [
-      "\/>|>",
+      "^\\s*\\d+\\.\\s",
       "keyword"
     ],
     [
-      "\\b[A-Za-z-]+=",
+      "!?\\[([^\\]]+)\\]\\(([^)]+)\\)",
+      "type"
+    ],
+    [
+      "(?<!\\*)\\*(?![\\s*])[^*\\n]+?(?<![\\s*])\\*(?!\\*)",
+      "type"
+    ],
+    [
+      "(?<!\\w)_(?![\\s_])[^_\\n]+?(?<![\\s_])_(?!\\w)",
+      "type"
+    ],
+    [
+      "\\*\\*(?:[^*\\n]|\\*(?!\\*))+?\\*\\*",
       "function"
+    ],
+    [
+      "__(?:[^_\\n]|_(?!_))+?__",
+      "function"
+    ],
+    [
+      "^#{1,6}\\s+.*$",
+      "keyword"
+    ],
+    [
+      "`[^`\\n]+`",
+      "string"
+    ],
+    [
+      "```[\\s\\S]*?```",
+      "string"
     ]
   ],
   "lang:ron" : [
@@ -6253,36 +6373,28 @@
   ],
   "lang:strings" : [
     [
+      "\/\\*[\\s\\S]*?\\*\/",
+      "comment"
+    ],
+    [
       "\/\/.*$",
       "comment"
     ],
     [
-      "\/\\*[\\s\\S]*?\\*\/",
-      "comment"
+      "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*=)",
+      "property"
     ],
     [
       "\"(?:[^\"\\\\]|\\\\.)*\"",
       "string"
     ],
     [
-      "'(?:[^'\\\\]|\\\\.)*'",
-      "string"
+      "\\b[A-Za-z_][\\w.]*(?=\\s*=)",
+      "property"
     ],
     [
-      "\\b(if|else|for|while|do|switch|case|default|break|continue|return|struct|enum|union|class|interface|trait|impl|public|private|protected|internal|static|final|const|let|var|val|func|fn|def|void|new|delete|try|catch|finally|throw|throws|import|export|package|namespace|using|module|use|extends|implements|override|virtual|abstract|async|await|yield|match|when|where|type|typedef|template|typename|operator|this|self|super)\\b",
+      "[=;]",
       "keyword"
-    ],
-    [
-      "\\b(true|false|null|nil|none|undefined)\\b",
-      "number"
-    ],
-    [
-      "\\b\\d+(\\.\\d+)?\\b|\\b0x[0-9a-fA-F]+\\b",
-      "number"
-    ],
-    [
-      "\\b([A-Za-z_]\\w*)\\s*\\(",
-      "function"
     ]
   ],
   "lang:stylus" : [
@@ -6533,20 +6645,32 @@
   ],
   "lang:texinfo" : [
     [
-      "%.*$",
+      "^@(c|comment)\\b.*$",
       "comment"
     ],
     [
-      "\\\\[A-Za-z@]+",
-      "keyword"
+      "^@node\\s.*$",
+      "function"
     ],
     [
-      "\\{[^{}]*\\}",
+      "^@(chapter|section|subsection|subsubsection|top|unnumbered|appendix|heading|majorheading|title|subtitle|author|settitle|setfilename)\\b.*$",
       "type"
     ],
     [
-      "\\$[^$]*\\$",
+      "@[a-zA-Z]+",
+      "keyword"
+    ],
+    [
+      "@[@{}]",
+      "keyword"
+    ],
+    [
+      "(?<=@[a-zA-Z]{1,20})\\{[^}]*\\}",
       "string"
+    ],
+    [
+      "\\b\\d+(\\.\\d+)?\\b",
+      "number"
     ]
   ],
   "lang:textile" : [

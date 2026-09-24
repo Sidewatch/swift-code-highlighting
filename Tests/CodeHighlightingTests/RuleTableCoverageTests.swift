@@ -62,6 +62,15 @@ final class RuleTableCoverageTests: XCTestCase {
             (.pug, "//- comment\ndoctype html\nhtml(lang=\"en\")\n  head\n    title= `${user.name}`\n  body\n    h1.title Orders for #{user.name}\n    if orders.length === 0\n      p.muted No orders yet.\n"),
             (.haml, "-# comment\n%html{lang: \"en\"}\n  %body\n    %h1= t(\".title\")\n    - if @orders.empty?\n      %p.muted No orders\n"),
             (.slim, "/ comment\ndoctype html\nhtml lang=\"en\"\n  body\n    h1 = t(\".title\")\n    - if @orders.empty?\n      p.muted = t(\".empty\")\n"),
+            (.bibtex, "% refs\n@article{knuth1984,\n  author = {Donald E. Knuth},\n  title = \"Literate Programming\",\n  year = {1984}\n}\n"),
+            (.dot, "// pipeline\ndigraph pipeline {\n    rankdir = LR;\n    lint [label = \"Lint\", shape = box];\n    lint -> test -> build;\n}\n"),
+            (.edgeql, "# schema\nmodule default {\n  type Person { required name: str; joined: datetime; }\n}\nselect Person { name } filter .name = 'Ada' limit 10;\n"),
+            (.gomod, "module github.com/example/inventory\n\ngo 1.23\n\nrequire (\n\tgithub.com/jackc/pgx/v5 v5.7.1 // indirect\n)\nreplace github.com/example/shared => ../shared\n"),
+            (.manifest, "Manifest-Version: 1.0\nMain-Class: com.example.inventory.Application\nClass-Path: lib/postgresql-42.7.4.jar\n"),
+            (.meson, "# build\nproject('inventory', 'c', version : '1.4.0')\nsqlite = dependency('sqlite3', version : '>=3.40')\nif get_option('export')\n  message('on')\nendif\n"),
+            (.quarto, "---\ntitle: \"Weekly\"\n---\n\n## Summary\n\nRevenue `r sum(paid$total)`.\n\n```{r}\n#| label: load\norders <- read.csv(\"orders.csv\")\n```\n"),
+            (.strings, "/* Localizable */\n\"orders.title\" = \"Orders for %@\";\n\"orders.count\" = \"%d orders\\n\";\n"),
+            (.texinfo, "@c a comment\n@node Top\n@chapter Endpoints\nThe @strong{inventory service} keeps @emph{stock}.\n"),
             (.jinja, "{# comment #}\n{% for host in backends %}\n    server {{ hostvars[host]['ansible_host'] }}:{{ api_port }} weight={{ loop.first and 2 or 1 }};\n{% endfor %}\n<div class=\"x\">{{ extra | indent(8) }}</div>\n"),
         ]
         for (language, snippet) in snippets {
