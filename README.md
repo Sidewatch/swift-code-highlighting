@@ -42,6 +42,8 @@ dependencies: [
 ]
 ```
 
+> **Dependencies:** swift-code-language (the language table) and swift-data-converter (the `StructuredValue` model the structure readers produce). Both are path siblings in the Sidewatch family.
+
 > **Bundles note:** the grammar query files are SwiftPM resource bundles — the host app must ship the built `.bundle`s next to its executable (Sidewatch's `bundle.sh` does this) or `TreeSitterHighlighter` loads no grammars and `supports(_:)` is false for everything; fall back to `SyntaxHighlighter`.
 
 ## Usage
@@ -221,5 +223,7 @@ module map.
 MIT
 
 **Every language paints (25 Sep 2026).** A sweep of one sample per language found 13 with no colour at all and 23 with one or two roles; each has a rule table now (`Rules/Languages/`, 20 new files: Erlang, Prolog, Fortran, COBOL, assembly, LLVM IR, Smalltalk, VBScript, XQuery, ABAP, Mermaid, PlantUML, log files, AsciiDoc, reStructuredText, Textile, .gitattributes, JSON5/Hjson, Nix, Pug/Haml/Slim, Jinja). `RuleTableCoverageTests` pins at least three roles per table on a snippet.
+
+`TOMLStructure`, `XMLStructure` and `PlistStructure` (25 Sep 2026) read a TOML document, an XML document and an XML property list the same way — off the vendored grammars, as swift-data-converter's `StructuredValue`, mappings in file order — and each answers `site(in:path:)` for the member at a path (a TOML table header's last segment, an XML attribute's name and quoted value or a text element's trimmed content, a plist `<key>` and its element's content; a boolean's site is its whole `<true/>`). Every reader is built on one `LocatedValue` walk that carries the ranges, so the tree and the edit sites are read from the same nodes.
 
 `YAMLStructure.site(in:path:)` (25 Sep 2026) walks the same tree-sitter nodes as `value(of:)` and answers the UTF-16 ranges of the member at a path — its scalar (quotes or the `|` block included) and, in a mapping, its key — so a cell edited in a YAML tree can replace one token and nothing else; what to write there is swift-data-converter's `YAMLEdit`.

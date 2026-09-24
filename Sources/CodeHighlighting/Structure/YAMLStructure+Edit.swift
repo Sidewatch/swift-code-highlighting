@@ -9,6 +9,7 @@
 
 import Foundation
 import SwiftTreeSitter
+import DataConverter
 
 /// WHERE one key or value of a YAML file sits — the finding half of a cell edit in the YAML tree
 /// (25 Sep 2026, David: "the keys/values should be editable by double clicking"). The
@@ -19,14 +20,9 @@ import SwiftTreeSitter
 /// (`YAMLEdit.encodedScalar`), so the two editors share one vocabulary and one escaper.
 extension YAMLStructure {
     /// One step of a path: a mapping member by key, or a sequence element by index.
-    public enum PathComponent: Equatable, Sendable { case key(String), index(Int) }
-
+    public typealias PathComponent = StructuredEdit.PathComponent
     /// The ranges of a member: its value, and its key when it sits in a mapping.
-    public struct EditSite: Equatable, Sendable {
-        public let key: NSRange?
-        public let value: NSRange
-        public init(key: NSRange?, value: NSRange) { self.key = key; self.value = value }
-    }
+    public typealias EditSite = StructuredEdit.EditSite
 
     /// The member at `path` in the first document of `text`, or nil.
     public static func site(in text: String, path: [PathComponent]) -> EditSite? {

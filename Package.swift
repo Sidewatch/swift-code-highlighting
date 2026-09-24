@@ -9,6 +9,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../swift-code-language"),
+        .package(path: "../swift-data-converter"),
         .package(url: "https://github.com/ChimeHQ/SwiftTreeSitter.git", from: "0.8.0"),
         .package(path: "Grammars/tree-sitter-json"),
         .package(path: "Grammars/tree-sitter-markdown"),
@@ -42,6 +43,7 @@ let package = Package(
             name: "CodeHighlighting",
             dependencies: [
                 .product(name: "CodeLanguage", package: "swift-code-language"),
+                .product(name: "DataConverter", package: "swift-data-converter"),
                 .product(name: "SwiftTreeSitter", package: "SwiftTreeSitter"),
                 .product(name: "TreeSitterJSON", package: "tree-sitter-json"),
                 .product(name: "TreeSitterMarkdown", package: "tree-sitter-markdown"),

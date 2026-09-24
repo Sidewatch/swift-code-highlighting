@@ -11,6 +11,7 @@
 import Foundation
 import SwiftTreeSitter
 import CodeLanguage
+import DataConverter
 
 /// A YAML document as ordered structure, from the vendored tree-sitter-yaml grammar.
 ///
@@ -24,23 +25,12 @@ import CodeLanguage
 /// an error; ``value(of:)`` is nil only for an empty document or when the grammar is missing.
 public enum YAMLStructure {
 
-    /// One value of a document.
-    public indirect enum Value: Equatable, Sendable {
-        case mapping([Pair])
-        case sequence([Value])
-        case string(String)
-        case integer(Int)
-        case number(Double)
-        case bool(Bool)
-        case null
-    }
-
+    /// One value of a document — the model every tree reader shares (swift-data-converter's
+    /// `StructuredValue`, since 25 Sep 2026; it was this type's own enum until TOML and XML
+    /// needed the same shape).
+    public typealias Value = StructuredValue
     /// One `key: value` of a mapping, in file order.
-    public struct Pair: Equatable, Sendable {
-        public let key: String
-        public let value: Value
-        public init(key: String, value: Value) { self.key = key; self.value = value }
-    }
+    public typealias Pair = StructuredPair
 
     /// The FIRST document of `text`, or nil for an empty text (or no grammar).
     public static func value(of text: String) -> Value? { documents(in: text).first }
