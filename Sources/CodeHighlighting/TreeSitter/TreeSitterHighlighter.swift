@@ -547,7 +547,8 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// block that does not exist.
     ///
     /// Colours come from ``HighlightTheme/colors``, so blocks follow the app's theme with no
-    /// stylesheet to keep in sync.
+    /// stylesheet to keep in sync. Tree-sitter ONLY: for the editor's three tiers (a grammar,
+    /// the single-file-component splitter, the regex tables) use ``HighlightedHTML/render(_:language:colors:)``.
     ///
     /// - Parameters:
     ///   - code: The block's source, exactly as written.
@@ -564,24 +565,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         hl.highlight(storage, in: NSRange(location: 0, length: storage.length))
         storage.endEditing()
 
-        let ns = storage.string as NSString
-        let fallback = HighlightTheme.colors.foreground
-        var out = ""
-        out.reserveCapacity(code.count * 2)
-        // One span per colour RUN, not per token: adjacent characters sharing a colour collapse
-        // into a single element, which keeps the markup close to the size of the code itself.
-        storage.enumerateAttribute(.foregroundColor,
-                                   in: NSRange(location: 0, length: ns.length)) { value, range, _ in
-            let text = escapeHTML(ns.substring(with: range))
-            let color = (value as? NSColor) ?? fallback
-            // The default colour needs no span — the surrounding <code> already carries it.
-            if color == fallback {
-                out += text
-            } else {
-                out += "<span style=\"color:\(cssHex(color))\">\(text)</span>"
-            }
-        }
-        return out
+        return HighlightedHTML.spans(of: storage, fallback: HighlightTheme.colors.foreground)
     }
 
     /// Escapes the five characters that can end a text run inside HTML.
