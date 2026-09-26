@@ -11,6 +11,7 @@ import Foundation
 import SwiftTreeSitter
 import CodeLanguage
 import DataConverter
+import FoundationExtensions
 
 /// A property list as the structure a tree shows (25 Sep 2026): an XML plist (`Info.plist`,
 /// `.entitlements`, an Xcode-written `.strings`) read off the vendored tree-sitter-xml grammar
@@ -34,7 +35,7 @@ public enum PlistStructure {
     /// The document's bytes as structure: binary through Foundation, XML through the grammar.
     public static func value(of data: Data) -> StructuredValue? {
         if PropertyListStructure.isBinary(data.prefix(8)) { return PropertyListStructure.value(of: data) }
-        guard let text = String(data: data, encoding: .utf8) else { return nil }
+        guard let text = data.utf8String else { return nil }
         return located(text)?.value
     }
 
