@@ -11,6 +11,7 @@
 
 import AppKit
 import CodeLanguage
+import FoundationExtensions
 
 /// Highlighter for single-file components — `.astro`, `.vue`, `.svelte` — whose
 /// bodies are several languages stacked in one file.

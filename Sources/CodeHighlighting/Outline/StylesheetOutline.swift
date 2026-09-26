@@ -12,6 +12,7 @@
 
 import Foundation
 import CodeLanguage
+import FoundationExtensions
 
 /// Outlines a stylesheet the way its author structured it: the `/* Section */`
 /// banner comments become headings and the rules under each nest beneath them,

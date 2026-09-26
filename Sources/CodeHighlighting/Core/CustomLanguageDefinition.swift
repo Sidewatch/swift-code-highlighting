@@ -11,6 +11,7 @@
 //
 
 import Foundation
+import FoundationExtensions
 
 /// A user-authored description of a language the package doesn't know about,
 /// decodable from a hand-written JSON file and consumable by

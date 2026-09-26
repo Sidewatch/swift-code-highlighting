@@ -39,6 +39,7 @@ import TreeSitterSwift
 import TreeSitterScala
 import TreeSitterXML
 import TreeSitterSQL
+import FoundationExtensions
 
 /// Tree-sitter–backed highlighter: parses the buffer into a syntax tree and
 /// applies colors from the grammar's `highlights.scm` query. Correct across the

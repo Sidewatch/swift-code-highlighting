@@ -8,6 +8,7 @@ let package = Package(
         .library(name: "CodeHighlighting", targets: ["CodeHighlighting"]),
     ],
     dependencies: [
+        .package(path: "../swift-foundation-extensions"),
         .package(path: "../swift-code-language"),
         .package(path: "../swift-data-converter"),
         .package(url: "https://github.com/ChimeHQ/SwiftTreeSitter.git", from: "0.8.0"),
@@ -43,6 +44,7 @@ let package = Package(
             name: "CodeHighlighting",
             dependencies: [
                 .product(name: "CodeLanguage", package: "swift-code-language"),
+                .product(name: "FoundationExtensions", package: "swift-foundation-extensions"),
                 .product(name: "DataConverter", package: "swift-data-converter"),
                 .product(name: "SwiftTreeSitter", package: "SwiftTreeSitter"),
                 .product(name: "TreeSitterJSON", package: "tree-sitter-json"),
