@@ -8,7 +8,6 @@
 //
 
 import Foundation
-import CodeLanguage
 
 /// A definition found in a source file (function, class, method, …).
 public struct Symbol {

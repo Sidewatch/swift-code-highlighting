@@ -9,7 +9,6 @@
 //
 
 import AppKit
-import CodeLanguage
 import SwiftTreeSitter
 
 /// Forward-only newline scanner over an NSString: converts ascending UTF-16

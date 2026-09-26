@@ -9,7 +9,6 @@
 //
 
 import Foundation
-import CodeLanguage
 
 /// One row of the completion popup: what gets inserted, plus the little that
 /// makes the row readable at a glance. Presentation (icon, layout) is the

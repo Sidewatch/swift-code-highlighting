@@ -8,7 +8,6 @@
 //
 
 import Foundation
-import CodeLanguage
 
 /// The kind of definition a ``Symbol`` represents. `class` maps to ``type``.
 public enum SymbolKind: String, Sendable {
