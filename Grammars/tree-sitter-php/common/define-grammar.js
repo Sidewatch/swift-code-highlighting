@@ -289,6 +289,7 @@ module.exports = function defineGrammar(dialect) {
 
       _namespace_use_group: $ => seq(
         field('type', optional($._namespace_use_type)),
+        optional('\\'),
         $.namespace_name,
         '\\',
         field('body', $.namespace_use_group),

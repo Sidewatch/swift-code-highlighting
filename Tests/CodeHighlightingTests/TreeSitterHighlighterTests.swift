@@ -732,4 +732,11 @@ extension TreeSitterHighlighterTests {
         XCTAssertEqual(merged, [NSRange(location: 0, length: 8), NSRange(location: 40, length: 10)])
         XCTAssertEqual(TreeSitterHighlighter.mergeAscending([]), [])
     }
+
+    /// tree-sitter-php v0.25.0 (fix for tree-sitter-php#303, filed from Sidewatch): a group `use`
+    /// with a leading backslash parses; before it, the whole statement was an ERROR node.
+    func testPHPGroupUseWithALeadingBackslashParses() {
+        let php = "<?php\nuse \\App\\Models\\{User, Post};\nuse App\\{Foo};\n"
+        XCTAssertEqual(TreeSitterHighlighter.parseErrorCount(in: php, language: .php), 0)
+    }
 }
