@@ -11,7 +11,7 @@
 import Foundation
 
 /// VBScript (case-insensitive): `'` and `Rem` comments, the statement words, `vb…` constants,
-/// the built-in functions, calls. Written 25 Sep 2026 (the sweep found it flat).
+/// the built-in functions, calls.
 extension RuleTables {
     static let vbscript: [(String, TokenKind)] = [
         ("'.*$", .comment),

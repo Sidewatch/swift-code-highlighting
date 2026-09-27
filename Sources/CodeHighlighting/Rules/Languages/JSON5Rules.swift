@@ -11,8 +11,7 @@
 import Foundation
 
 /// JSON5 and Hjson: JSON plus comments, single-quoted and multi-line strings, unquoted keys,
-/// hex and signed numbers, `Infinity` / `NaN`. Written 25 Sep 2026 (the data family gave them
-/// no strings).
+/// hex and signed numbers, `Infinity` / `NaN`.
 extension RuleTables {
     static let json5: [(String, TokenKind)] = [
         lineComment,

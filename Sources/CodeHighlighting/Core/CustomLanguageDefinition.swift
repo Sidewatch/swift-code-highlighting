@@ -14,28 +14,12 @@
 import Foundation
 import FoundationExtensions
 
-/// A user-authored description of a language the package doesn't know about,
-/// decodable from a hand-written JSON file and consumable by
-/// ``SyntaxHighlighter/init(custom:colors:)``.
-///
-/// Structured fields (`keywords`, `stringDelimiters`, `lineComment`, …) are
-/// compiled into the same battle-tested regex forms the built-in language
-/// tables use; ``patterns`` is the raw-regex escape hatch for anything the
-/// structured fields can't express. Only `name` and `extensions` are required.
-///
-/// Rule precedence mirrors the built-in tables: raw ``patterns`` are applied
-/// first (in array order — a later pattern repaints an earlier one where they
-/// overlap), then `keywords`/`types`/`constants`, then the number and
-/// function-call rules. Comments and strings — whether from the structured
-/// fields or from `comment`/`string`-kind patterns — always win over code
-/// rules and are resolved together in one left-to-right scan, so a `//`
-/// inside a string literal can't repaint the line and vice versa.
-///
-/// Decode with ``decode(from:)`` for readable error messages, or plain
-/// `JSONDecoder` if you don't need them. A pattern whose regex fails to
-/// compile is skipped at highlighter-build time, never fatal; a pattern with
-/// an unknown `kind` is a **decode-time error** (the JSON is hand-authored, so
-/// a typo like `"keyowrd"` should fail loudly, not silently drop the rule).
+/// A user-authored language, decoded from a hand-written JSON file and consumed by
+/// ``SyntaxHighlighter/init(custom:colors:)``. Structured fields compile to the built-in tables'
+/// regex forms; ``patterns`` is the raw-regex escape hatch. Only `name` and `extensions` are
+/// required. Precedence: ``patterns`` in array order, then word lists, then numbers and calls;
+/// comments and strings always win and resolve in one left-to-right scan. A bad regex is
+/// skipped at build time, but an unknown pattern `kind` fails the decode, loudly.
 public struct CustomLanguageDefinition: Codable, Equatable, Sendable {
 
     /// Display name of the language (e.g. `"JSFX"`). Required, non-empty.
@@ -135,20 +119,10 @@ public struct CustomLanguageDefinition: Codable, Equatable, Sendable {
 
 public extension CustomLanguageDefinition {
 
-    /// Decodes and validates a definition from raw JSON data, with error
-    /// messages written for the human who authored the file (missing field
-    /// names, the offending pattern index, the list of valid kinds) rather
-    /// than `DecodingError`'s coding-path dumps.
-    ///
-    /// Validation enforced here, beyond what `Codable` checks:
-    /// - `name` must be non-empty, `extensions` must list at least one entry;
-    /// - every `patterns[i].kind` must be one of ``CustomPattern/validKinds``
-    ///   (a typo fails the whole decode — this JSON is hand-written, so fail
-    ///   loudly rather than silently dropping a rule).
-    ///
-    /// A pattern whose *regex* is invalid still decodes fine — it is skipped
-    /// when the highlighter compiles its rules (never fatal), so one bad
-    /// pattern can't take down the rest of the definition.
+    /// Decodes and validates a definition, with errors written for the file's author (missing
+    /// field, offending pattern index, valid kinds) instead of `DecodingError` coding paths.
+    /// Beyond `Codable`: `name` and `extensions` must be non-empty and every pattern `kind` must
+    /// be in ``CustomPattern/validKinds``. An invalid regex still decodes; the highlighter skips it.
     static func decode(from data: Data) -> Result<CustomLanguageDefinition, Error> {
         let definition: CustomLanguageDefinition
         do {
@@ -236,7 +210,7 @@ extension CustomLanguageDefinition {
     }
 
     /// Compiles the definition into the same `(pattern, kind)` table shape
-    /// `SyntaxHighlighter.buildDefs(for:)` produces for built-in languages,
+    /// `RuleTables.table(for:)` produces for built-in languages,
     /// so the highlighter's existing group-routing and precedence merge apply
     /// unchanged. Order: comments/strings (group-routed, order-independent),
     /// raw patterns (most specific), keywords/types/constants, then the
@@ -306,22 +280,9 @@ extension CustomLanguageDefinition {
 
 public extension SyntaxHighlighter {
 
-    /// Builds a regex highlighter from a user-authored custom language
-    /// definition — the same rule-table machinery the built-in languages use,
-    /// fed from JSON instead of code.
-    ///
-    /// Comments and strings (from the structured fields *and* from
-    /// `comment`/`string`-kind patterns) join the existing precedence merge,
-    /// so a comment marker inside a string literal can't repaint the line and
-    /// vice versa. Patterns whose regexes fail to compile are skipped, never
-    /// fatal. When ``CustomLanguageDefinition/caseInsensitive`` is `true`,
-    /// every rule matches case-insensitively.
-    ///
-    /// ```swift
-    /// let definition = try CustomLanguageDefinition.decode(from: jsonData).get()
-    /// let highlighter = SyntaxHighlighter(custom: definition, colors: myColors)
-    /// highlighter.highlight(storage, in: fullRange)
-    /// ```
+    /// Builds a regex highlighter from a custom language definition, on the same rule-table
+    /// machinery as the built-in languages. Comments and strings join the precedence merge, so
+    /// a comment marker inside a string can't repaint the line; uncompilable patterns are skipped.
     convenience init(custom: CustomLanguageDefinition, colors: TokenColorProviding) {
         self.init(defs: custom.ruleDefinitions(), regexOptions: custom.regexOptions, colors: colors)
     }

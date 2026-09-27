@@ -14,44 +14,20 @@ import AppKit
 import CodeLanguage
 import FoundationExtensions
 
-/// Highlighter for single-file components — `.astro`, `.vue`, `.svelte` — whose
-/// bodies are several languages stacked in one file.
-///
-/// None of the three has a bundled tree-sitter grammar, so they used to fall
-/// through to one flat ``SyntaxHighlighter`` rule table applied to the whole
-/// document. That table can only describe one language at a time, so it was
-/// written for the markup — leaving `<style>` bodies almost entirely uncolored
-/// and, worse, occasionally *mis*colored: the markup table's JS keyword list
-/// painted the `in` of `color-mix(in srgb, …)` as a keyword, because as far as
-/// the table was concerned there was no CSS in the file at all.
-///
-/// This type restores the layering the languages actually have:
-///
-/// - Astro frontmatter (the leading `---` fence) → TypeScript
-/// - `<script>` bodies → TypeScript/JavaScript/JSON (per `lang=` / `type=`)
-/// - `<style>` bodies → CSS/SCSS/Sass/Less (per `lang=`)
-/// - everything else → the host language's markup rules
-///
-/// Each embedded region is parsed by its own tree-sitter grammar where one is
-/// bundled (CSS, JS, TS, JSON all are) via the same combined-parse machinery
-/// injections use — so the region is parsed *in place* and capture ranges are
-/// already in document coordinates. Regions whose language has no grammar
-/// (SCSS/Sass/Less, which route around the CSS grammar deliberately — see the
-/// note by that case in ``SyntaxHighlighter``) fall back to that language's own
-/// regex table, which is still far better than the markup table.
-///
-/// - Note: Like the other tiers, only `.foregroundColor` is ever written, and
-///   painting must happen on the main thread (tree-sitter's resolving query
-///   cursor is main-actor-isolated).
-/// - Note: Region scanning is a full-document string scan per highlight pass,
-///   matching what the injection pass already costs for HTML/PHP. SFCs are
-///   small by construction, so this is not the huge-file case.
+/// Highlighter for single-file components (`.astro`, `.vue`, `.svelte`), whose bodies stack
+/// several languages: Astro frontmatter → TypeScript, `<script>` → TS/JS/JSON and `<style>` →
+/// CSS/SCSS/Sass/Less (per `lang=`/`type=`), the rest → the host's markup rules. One flat rule
+/// table cannot do this: it leaves `<style>` uncoloured and paints CSS's `in` as a JS keyword.
+/// Regions with a bundled grammar are parsed in place like injections; the rest use their own
+/// regex table. Paints only `.foregroundColor`, on the main thread.
 public final class EmbeddedMarkupHighlighter: CodeHighlighter {
 
     /// An embedded span of a non-markup language: the body range (tag/fence
     /// delimiters excluded) and the language to paint it with.
     public struct Region {
+        /// The body's range, delimiters excluded.
         public let range: NSRange
+        /// The language the body is painted as.
         public let language: Language
     }
 
@@ -90,6 +66,8 @@ public final class EmbeddedMarkupHighlighter: CodeHighlighter {
 
     // MARK: - Painting
 
+    /// Repaints the whole lines around `editedRange`: markup rules first, then each embedded
+    /// region over its own slice.
     @MainActor
     public func highlight(_ storage: NSTextStorage, in editedRange: NSRange) {
         let ns = storage.string as NSString

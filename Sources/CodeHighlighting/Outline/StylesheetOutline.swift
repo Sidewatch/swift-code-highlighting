@@ -15,39 +15,12 @@ import Foundation
 import CodeLanguage
 import FoundationExtensions
 
-/// Outlines a stylesheet the way its author structured it: the `/* Section */`
-/// banner comments become headings and the rules under each nest beneath them,
-/// so a WordPress `common.css` reads as "Widgets › Nav Menus › Responsive
-/// Component" instead of six thousand lines of rules. CSS has no tree-sitter
-/// symbol query — a selector is not a definition — so, like Markdown, this is a
-/// hand walk over the text.
-///
-/// What counts:
-/// - **Section** — a block comment that starts its own line at the top level
-///   (outside every `{}`), whose text, with edge decoration stripped (`*` `-`
-///   `=` `#` `~` `_` and whitespace) and inner whitespace collapsed, is 1…60
-///   characters holding none of `{` `}` `;`. That
-///   admits `/* Widgets */`, `/* ===== Header ===== */` and WordPress core's
-///   multi-line `2.0 - Header` banners; it rejects prose paragraphs,
-///   `/*! license */` headers, tool pragmas (`stylelint-…`, `rtl:…`) and code
-///   samples. A section's scope runs to the next section or the end.
-/// - **Section, SCSS/Less style** — a block of own-line `//` comments holding a
-///   decoration row, a title and (usually) a closing row: `// ----` /
-///   `// Grid Units` / `// ----`. A lone `// Label` directly above code counts
-///   too; a multi-line prose block never does (see ``lineCommentBanners``).
-/// - **Variable** — a top-level `$name: value;` (SCSS) or `@name: value;` (Less):
-///   the entire content of a tokens or variables partial, nested under its
-///   section. Inside a block it is a local and stays out.
-/// - **Rule** — a `selector {` prelude at the top level, or directly inside a
-///   listed at-rule block. The name is the prelude with whitespace collapsed.
-/// - **At-rule with a block** — `@media`, `@supports`, `@layer`, `@container`,
-///   `@keyframes`, `@font-face`, `@mixin`, `@function`… — a node whose scope is
-///   its block, so the rules inside nest under it. `@mixin` / `@function` read
-///   as functions, the rest as modules.
-///
-/// Strings and comments are skipped, so a `{` in `content: "{"` never opens a
-/// block and a `;` inside a quoted `url("data:…")` never ends a prelude. CSS,
-/// SCSS and Less; the latter two's `//` line comments are skipped too.
+/// Outlines a CSS, SCSS or Less stylesheet the way its author structured it: banner comments
+/// (`/* Widgets */`, `// ----` / `// Grid Units` / `// ----`, a lone `// Label` above code)
+/// become sections, with top-level variables, rules and block at-rules (`@media`, `@mixin`…)
+/// nested beneath. Banners must be short, single-titled and free of `{` `}` `;`, which rejects
+/// prose, `/*!` licences and tool pragmas. A hand walk, since a selector is not a definition to
+/// a symbol query; strings and comments are skipped so a quoted `{` or `;` never counts.
 public enum StylesheetOutline {
 
     /// The languages this outline serves. Sass's indented syntax has no braces to
@@ -67,6 +40,7 @@ public enum StylesheetOutline {
     /// The at-rules whose block contains rules (which then nest beneath them).
     static let nestingAtRules = ["@media", "@supports", "@layer", "@container", "@scope", "@document"]
 
+    /// Sections, variables, rules and at-rules in `text`, in document order.
     public static func symbols(in text: String, language: Language) -> [Symbol] {
         var scanner = StylesheetScanner(text as NSString, lineComments: language != .css)
         scanner.scan()
@@ -103,15 +77,10 @@ public enum StylesheetOutline {
         return pieces.joined(separator: " ")
     }
 
-    /// The banners in one block of consecutive own-line `//` comments (`rows` are the
-    /// texts after `//`, in order). Two shapes count:
-    /// - **Decorated**: a decoration row (`----`, `====`, `****`…, three or more), a
-    ///   title line, and optionally a closing decoration row — the SCSS convention.
-    ///   The title must pass ``bannerName(_:)``; prose after the closing row is not
-    ///   a title, and a trailing decoration row with nothing under it opens nothing.
-    /// - **Lone label**: a block of exactly one line that passes ``bannerName(_:)``
-    ///   and sits directly above code (`// Buttons` then `.btn {`). A multi-line
-    ///   prose block is never a banner, however short its lines.
+    /// The banners in one block of consecutive own-line `//` comments (`rows` are the texts
+    /// after `//`). Two shapes count: a decoration row (`----`, three or more), a title passing
+    /// ``bannerName(_:)`` and an optional closing row; or a single-line block directly above code
+    /// (`// Buttons` then `.btn {`). A multi-line prose block is never a banner.
     static func lineCommentBanners(_ rows: [(text: String, location: Int, line: Int)], nextIsCode: Bool)
         -> [(name: String, location: Int, length: Int, line: Int)] {
         func isDecorationRow(_ s: String) -> Bool {

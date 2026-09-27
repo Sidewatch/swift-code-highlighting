@@ -12,8 +12,7 @@ import Foundation
 
 /// The indented template languages — Pug, Haml, Slim: comment lines, tags at the start of a
 /// line (Haml's `%tag`), `.class` / `#id` shorthands, `(attributes)`, the control words, `-` and
-/// `=` code lines, `#{…}` interpolation, `|` piped text, `+mixin` calls. Written 25 Sep 2026 (the
-/// markup family gave them two roles).
+/// `=` code lines, `#{…}` interpolation, `|` piped text, `+mixin` calls.
 extension RuleTables {
     static let indentedMarkup: [(String, TokenKind)] = [
         ("^\\s*(//-?|-#|/!?)\\s.*$", .comment),

@@ -11,8 +11,7 @@
 import Foundation
 
 /// Assembly, NASM and GAS: `;` and `#` comments, labels, directives, the x86 and ARM register
-/// names, an indented mnemonic, memory operands, hex / binary literals. Written 25 Sep 2026 (the
-/// sweep found it flat).
+/// names, an indented mnemonic, memory operands, hex / binary literals.
 extension RuleTables {
     static let assembly: [(String, TokenKind)] = [
         (";.*$", .comment),

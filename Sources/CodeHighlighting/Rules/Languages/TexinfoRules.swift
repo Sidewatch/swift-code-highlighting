@@ -11,7 +11,7 @@
 import Foundation
 
 /// Texinfo: `@c` comments, `@commands`, `@node` lines, braced arguments, `@@` escapes,
-/// the `@example` bodies left alone. Written 25 Sep 2026 (the sweep found two roles).
+/// the `@example` bodies left alone.
 extension RuleTables {
     static let texinfo: [(String, TokenKind)] = [
         ("^@(c|comment)\\b.*$", .comment),

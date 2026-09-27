@@ -10,7 +10,8 @@
 
 import Foundation
 
-/// The regex rule table for Swift. Order matters: earlier rules win overlaps.
+/// The regex rule table for Swift.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let swift: [(String, TokenKind)] = [
         lineComment,

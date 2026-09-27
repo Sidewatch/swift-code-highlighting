@@ -12,17 +12,13 @@
 
 import Foundation
 
-/// A folder of user-authored ``CustomLanguageDefinition`` JSON files, loaded once and
-/// re-fingerprinted on demand, answering "does a custom language claim this file?" by exact
-/// filename first, then extension.
-///
-/// - Files load in filename order; the first definition to claim an extension or filename
-///   wins, deterministically.
-/// - A file that fails to decode is skipped and reported through `onSkip` with the author-
-///   facing message from ``CustomLanguageDefinition/decode(from:)``.
-/// - ``reloadIfChanged()`` re-fingerprints the folder (name + size + mtime of every `*.json`
-///   — a folder-mtime check alone misses in-place saves) and reloads only when something moved.
+/// A folder of user-authored ``CustomLanguageDefinition`` JSON files, answering "does a custom
+/// language claim this file?" by exact filename first, then extension. Files load in filename
+/// order and the first claim wins; undecodable files are skipped and reported through `onSkip`.
+/// ``reloadIfChanged()`` fingerprints name + size + mtime of every `*.json`, because a
+/// folder-mtime check alone misses in-place saves.
 public final class CustomLanguageStore {
+    /// The folder the definitions are read from.
     public let folder: URL
     private let onSkip: (String) -> Void
 

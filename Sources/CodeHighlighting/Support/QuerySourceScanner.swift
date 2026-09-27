@@ -21,8 +21,10 @@ struct QuerySourceScanner {
     private let s: [Unicode.Scalar]
     private var i = 0
 
+    /// A scanner positioned at the start of `source`.
     init(_ source: String) { s = Array(source.unicodeScalars) }
 
+    /// One top-level piece of query source, text preserved verbatim.
     enum Token { case whitespace(Unicode.Scalar), comment(String), pattern(String), bare(String) }
 
     /// One top-level token: whitespace, a comment line, a pattern with its suffixes, or a bare
@@ -41,6 +43,7 @@ struct QuerySourceScanner {
         return .bare(take { !Self.isWS($0) })
     }
 
+    /// Space, newline, tab or CR.
     static func isWS(_ c: Unicode.Scalar) -> Bool { c == " " || c == "\n" || c == "\t" || c == "\r" }
 
     private mutating func take(while keep: (Unicode.Scalar) -> Bool) -> String {

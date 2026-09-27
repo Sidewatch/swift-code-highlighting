@@ -195,16 +195,10 @@ final class EmbeddedMarkupTests: XCTestCase {
 
     // MARK: - Painting
 
-    /// The bug this tier exists for: the flat Astro table has no CSS rules, so a
-    /// `<style>` body was left at the default foreground — while its JS keyword
-    /// list painted the `in` of `color-mix(in srgb, …)` as a keyword. Whichever
-    /// backend paints the region, the markup table must no longer reach it.
-    ///
-    /// - Note: This asserts the *negative* only. Under `swift test` the grammar
-    ///   `.scm` bundles aren't on disk, so `grammars[.css]` carries an almost
-    ///   empty query and the tree-sitter tier paints nothing here — see
-    ///   `testEmbeddedRegionFallsBackToTheDialectsOwnRegexTable` for the
-    ///   positive assertion, which runs on a backend that works headlessly.
+    /// The flat Astro table has no CSS rules, and its JS keyword list paints the `in` of
+    /// `color-mix(in srgb, …)` as a keyword; the markup table must not reach a `<style>` body.
+    /// - Note: Asserts the negative only: under `swift test` the `.scm` bundles are absent, so
+    ///   `testEmbeddedRegionFallsBackToTheDialectsOwnRegexTable` holds the positive assertion.
     func testStyleBodyIsNoLongerPaintedByTheMarkupTable() throws {
         let src = """
         ---

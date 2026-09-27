@@ -12,15 +12,10 @@
 import Foundation
 import CodeLanguage
 
-/// Parses every source file in the project and maps symbol names to their
-/// definitions, for cross-file Go-to-Definition and hover-doc. Built on a
-/// background queue; updated incrementally per-file as things change on disk.
-///
-/// All stored state is main-actor isolated, which is what the code already did by hand: the
-/// scan runs on ``queue``, but every read and every install hops back to main first (see the
-/// `- Note` on ``definitions(of:)``). `@MainActor` promotes that convention into something the
-/// compiler checks, and the scan closures below are written to touch nothing isolated — they
-/// build plain values and hand them over the hop.
+/// Parses every source file in the project and maps symbol names to their definitions, for
+/// cross-file Go to Definition, hover docs and completion. Built on a background queue and
+/// updated per file as things change on disk. All stored state is main-actor isolated: the scan
+/// closures touch nothing isolated, building plain values that hop back to main to install.
 @MainActor
 public final class ProjectSymbolIndex {
     private var defs: [String: [DefLocation]] = [:]
@@ -59,18 +54,11 @@ public final class ProjectSymbolIndex {
         "DerivedData", "dist", "build", "__pycache__", ".next", ".cache", "vendor",
     ]
 
-    /// Directory names never descended into during a build. Defaults to
-    /// ``defaultSkipDirs``; assign to override (e.g. from a user preference — a
-    /// project with real sources in `dist/` needs it off the list, or its symbols
-    /// never enter the index).
-    ///
-    /// Lock-guarded and `nonisolated`: the scan reads it from a background queue while the
-    /// setter is a start-up/preferences concern on the main thread, and a `Set` is not atomic.
-    /// Mirrors `FileTools.SkippedDirs.names` and `BlastRadius.skip`.
-    ///
-    /// - Important: Global mutable state read by every ``build(root:completion:)``. The lock
-    ///   makes concurrent access safe, not meaningful — set it during start-up; changing it
-    ///   later needs a rebuild to take effect.
+    /// Directory names never descended into during a build; defaults to ``defaultSkipDirs``
+    /// (a project with real sources in `dist/` needs it off the list). Lock-guarded and
+    /// `nonisolated` because the scan reads it off the main thread; mirrors
+    /// `FileTools.SkippedDirs.names`.
+    /// - Important: Set it during start-up; a later change takes effect only on the next build.
     public nonisolated static var skipDirs: Set<String> {
         get { skipLock.lock(); defer { skipLock.unlock() }; return storedSkipDirs }
         set { skipLock.lock(); defer { skipLock.unlock() }; storedSkipDirs = newValue }
@@ -199,23 +187,12 @@ public final class ProjectSymbolIndex {
         for url in pending.values { updateFile(url) }
     }
 
-    /// Incrementally re-indexes one file (edited/added), or drops it (deleted).
-    /// Cheap enough to call on every disk change. No-op until the full build ran,
-    /// except mid-build: those calls are queued and replayed once it installs.
-    ///
-    /// Two guards keep a file-change storm (a build writing thousands of files, a
-    /// cache directory churning) from turning into a parse storm:
-    /// - A path whose extension maps to no symbol query is dropped HERE, on the
-    ///   main thread, before anything is enqueued — `.log`, `.css`, images and
-    ///   directories never reach the parse queue. The check is extension-only, so
-    ///   a deleted source file (gone from disk, extension intact) still gets its
-    ///   stale definitions dropped.
-    /// - Paths are folded into ``pendingRescans`` and drained as ONE batch at a
-    ///   time (``drainRescansIfIdle()``): the same file rewritten fifty times
-    ///   while a batch is parsing is parsed once more, not fifty times, and the
-    ///   parse queue is never deeper than one batch. The old shape — one closure
-    ///   per notification on a serial queue — grew without bound whenever changes
-    ///   arrived faster than tree-sitter could parse them.
+    /// Re-indexes one edited or added file, or drops a deleted one; cheap enough for every disk
+    /// change. Before the first build it is a no-op (mid-build calls are replayed on install).
+    /// A file-change storm cannot become a parse storm: extensions with no symbol query are
+    /// dropped up front (extension-only, so a deleted file's stale definitions still go), and
+    /// paths fold into ``pendingRescans``, drained one batch at a time, so the parse queue is
+    /// never deeper than one batch.
     public func updateFile(_ url: URL) {
         guard SymbolQueries.sources[Language.detect(for: url)] != nil else { return }
         let path = Self.canonicalPath(for: url)
@@ -319,13 +296,10 @@ public final class ProjectSymbolIndex {
     /// - Note: Read on the main queue — the index installs its updates there.
     public func definitions(of name: String) -> [DefLocation] { defs[name] ?? [] }
 
-    /// The definitions of `name` a file written in `host` may resolve to: only those
-    /// in a language `host` can reference (``SymbolQueries/visibleLanguages(from:)``),
-    /// and none at all when `host` has no symbol vocabulary of its own. This is the
-    /// lookup behind cross-file hover-doc, Go to Definition and the completion
-    /// popup's project tier. It exists because the bare-name table let a `.css`
-    /// file's `float` and `container` pop PHP hover cards — the index knew a PHP
-    /// method named `float`, and nothing asked what language was asking.
+    /// The definitions of `name` a file written in `host` may resolve to: only those in a
+    /// language `host` can reference (``SymbolQueries/visibleLanguages(from:)``), none when
+    /// `host` has no symbol vocabulary. Behind hover docs, Go to Definition and completion, so a
+    /// `.css` file's `float` never pops a PHP method's card.
     public func definitions(of name: String, visibleFrom host: Language) -> [DefLocation] {
         guard let visible = SymbolQueries.visibleLanguages(from: host) else { return [] }
         return (defs[name] ?? []).filter { visible.contains($0.language) }
@@ -352,23 +326,11 @@ public final class ProjectSymbolIndex {
         return out
     }
 
-    /// One definition per known name starting with `prefix`, case-insensitively,
-    /// alphabetical, at most `limit` of them — the completion popup's
-    /// project-symbol tier. A name defined in several files yields its first
-    /// definition only: the popup wants one row per name, not per site.
-    /// Empty for an empty `prefix` (every symbol is not a suggestion) and
-    /// before the build completes.
-    ///
-    /// Cost is a binary search plus a walk of the matches, NOT a scan of the
-    /// project's symbols: `defs` is keyed for exact lookup, so the names are
-    /// mirrored into ``sortedNames`` — lowercased and sorted once per index
-    /// change, then reused across every keystroke of a typing burst. That
-    /// mirror is what makes this callable on the typing path; the rebuild is
-    /// lazy, so a burst of `updateFile(_:)` calls costs one rebuild total, at
-    /// the next query rather than per file.
-    ///
-    /// - Note: Main queue only — the index installs its updates there, and the
-    ///   cursor cache is not synchronized.
+    /// One definition per name starting with `prefix` (case-insensitive, alphabetical, at most
+    /// `limit`): the completion popup's project tier. Empty for an empty `prefix` or before the
+    /// build completes. A binary search over ``sortedNames``, a lowercased mirror rebuilt lazily
+    /// once per index change, so it is cheap enough for the typing path.
+    /// - Note: Main queue only; the cursor cache is not synchronized.
     public func definitions(matchingPrefix prefix: String, limit: Int = 50) -> [DefLocation] {
         guard !prefix.isEmpty, limit > 0 else { return [] }
         let needle = prefix.lowercased()

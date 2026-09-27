@@ -13,38 +13,14 @@ import AppKit
 import CodeLanguage
 import SwiftTreeSitter
 
-/// A stateful tree-sitter highlighting session that parses a document **once**
-/// and keeps the syntax tree alive across highlight passes.
-///
-/// The stateless ``TreeSitterHighlighter/highlight(_:in:)`` re-parses the whole
-/// buffer on every call — fine for small files, but a per-viewport re-highlight
-/// while scrolling a multi-megabyte file re-parses those megabytes every scroll
-/// tick. A `HighlightSession` instead:
-///
-/// - parses the full text once, on the first ``highlight(in:text:clip:)``,
-/// - re-highlights any viewport clip from the **cached** tree (query only,
-///   no parse),
-/// - re-parses **incrementally** on edits via ``noteEdit(range:replacementLength:newText:)``
-///   (tree-sitter re-lexes only the changed region),
-/// - and drops the tree on ``invalidate()`` (file reload, language change),
-///   after which the next highlight performs one fresh full parse.
-///
-/// The color pipeline is identical to the static path: the grammar's
-/// `highlights.scm` with later-pattern-wins precedence, `#eq?`/`#match?`
-/// predicates resolved, and recursive injection highlighting.
-///
-/// - Note: Injected languages (CSS in `<style>`, HTML in PHP, …) are still
-///   fully re-parsed per highlight call — only the *host* language's tree is
-///   cached. Host-language files dominate the huge-file case, so this is an
-///   accepted cost; injection trees can be cached later without API changes.
-/// - Important: ``highlight(in:text:clip:)`` must run on the main thread (the
-///   resolving query cursor is main-actor-isolated), and `text` must be the
-///   exact current contents of `storage`. Only `.foregroundColor` is touched.
-/// `@unchecked Sendable` is a checked claim, not a waiver: every field the warm-up queue
-/// touches (`tree`, `lastText`, `mirror`, `generation`, `fullParseCount`) is documented as
-/// guarded by `stateLock` and is only read or written while holding it. The two `let` fields are
-/// immutable, and `parser` is main-thread-only by construction — the warm-up parses on its
-/// own private `Parser`, which is the whole reason that field carries the note it does.
+/// A tree-sitter highlighting session that parses a document once and keeps the tree across
+/// passes, unlike the stateless ``TreeSitterHighlighter/highlight(_:in:)``, which re-parses per
+/// call. Viewport clips re-highlight from the cached tree, edits re-parse incrementally via
+/// ``noteEdit(range:replacementLength:newText:)``, and ``invalidate()`` drops the tree. Only the
+/// host language's tree is cached; injected languages still re-parse per call.
+/// - Important: ``highlight(in:text:clip:)`` runs on the main thread with `text` exactly the
+///   storage's contents. `@unchecked Sendable` holds because every field the warm-up queue
+///   touches is guarded by `stateLock`, and `parser` is main-thread-only.
 public final class HighlightSession: @unchecked Sendable {
 
     /// The resolved grammar (language pointer + compiled highlight/injection
@@ -70,17 +46,11 @@ public final class HighlightSession: @unchecked Sendable {
     /// Guarded by ``stateLock``.
     private var lastText: String?
 
-    /// A contiguous UTF-16 mirror of the text ``tree`` was parsed from, kept in step
-    /// with it by ``noteEdit(range:replacementLength:newText:)`` and read by the parser
-    /// through ``parse(_:tree:mirror:)``. SwiftTreeSitter's own string reader does, per
-    /// chunk tree-sitter asks for, an index conversion, a substring, a transcode and two
-    /// allocations against the storage's rope — and after an edit the JS and Python
-    /// grammars ask for one chunk per reused top-level node: ~50,000 on a 200,000-line
-    /// file, 125 ms per keystroke and linear in the file (16 ms at 24k lines; Swift and
-    /// PHP reuse in bigger pieces, 15 ms) — measured 6 Sep 2026 with
-    /// `--probe-highlight-huge --profile`. Two bytes per unit, 15 MB beside a 265–360 MB
-    /// tree; a keystroke shifts the tail with one memmove. Guarded by ``stateLock``; the
-    /// warm-up builds its own and installs it with the tree.
+    /// A contiguous UTF-16 mirror of the text ``tree`` was parsed from, kept in step by
+    /// ``noteEdit(range:replacementLength:newText:)`` and read through ``parse(_:tree:mirror:)``.
+    /// SwiftTreeSitter's string reader converts, transcodes and allocates per chunk, and JS and
+    /// Python ask for ~50,000 chunks per edit on a 200,000-line file (125 ms a keystroke); this
+    /// costs 15 MB and one memmove. Guarded by ``stateLock``.
     private var mirror: [UInt16] = []
 
     /// Units per read handed to tree-sitter; the lexer asks again when it runs off the end.
@@ -160,24 +130,11 @@ public final class HighlightSession: @unchecked Sendable {
         return tree != nil
     }
 
-    /// Parses `text` on a background queue and installs the resulting tree, so
-    /// opening a huge document never runs the multi-second first parse on the
-    /// main thread (the host shows plain text until `completion`, which is what
-    /// the regex tier did at open anyway).
-    ///
-    /// The parse runs on a private parser instance; the session's state is only
-    /// touched under the lock, and the parsed tree is **discarded** when the
-    /// session learned of any text change while parsing (an edit's `noteEdit`,
-    /// or `invalidate()`) or when a tree was installed by another path first.
-    /// `completion` always runs on the main queue — check ``hasTree`` there:
-    /// false means the warm-up was superseded, so re-warm with the current text.
-    ///
-    /// `@MainActor` on the completion encodes that contract in the type: hosts touch
-    /// main-actor state (their own view controllers) in it, and without the annotation
-    /// every such capture is a strict-concurrency diagnostic on the caller's side even
-    /// though the dispatch below already guarantees the isolation. Delivered via
-    /// `DispatchQueue.main` (not `Task { @MainActor }`) to preserve main-queue FIFO
-    /// ordering with everything else the session posts.
+    /// Parses `text` on a private background parser and installs the tree, so a huge document's
+    /// first parse never blocks the main thread. The tree is discarded if the text changed
+    /// meanwhile (`noteEdit`, `invalidate()`) or another path installed one first.
+    /// `completion` runs on the main queue (via `DispatchQueue.main`, keeping FIFO order with
+    /// the session's other posts); check ``hasTree`` there, and re-warm when it is false.
     public func warmUp(text: String, completion: @escaping @MainActor @Sendable () -> Void) {
         stateLock.lock()
         let gen = generation
@@ -215,19 +172,11 @@ public final class HighlightSession: @unchecked Sendable {
     private func currentTree(matching text: String) -> MutableTree? {
         stateLock.lock(); defer { stateLock.unlock() }
         guard let tree, let last = lastText else { return nil }
-        // O(1), deliberately. This used to prove the cached tree still matched `text` with a
-        // content compare — first Swift `==` (Unicode canonical equivalence over every unit),
-        // then `NSString.isEqual(to:)` — and both walk the WHOLE document per call: the NSString
-        // form still cost ~45 ms on a 7.5 MB file, five calls per sticky-scroll pass, 78% of
-        // every scroll step with a session (measured 6 Sep 2026, `--probe-highlight-huge
-        // --profile` and `--probe-scroll` on huge-200k.swift; ~1 ms per call at 900 KB, so it
-        // scaled with the file and was the reason highlighting "never scrolled as smoothly as
-        // plain text"). Equality is the `noteEdit` contract's job — every character edit of
-        // the storage reconciles the tree, and a desynced edit drops it — not something to
-        // re-prove on each lookup. What remains is the check that is cheap and still catches
-        // a host handing in the wrong document: object identity (NSTextStorage vends one
-        // backing string for its lifetime, so this is the common case) or, failing that,
-        // equal length.
+        // O(1), deliberately. Must not compare contents: any content compare walks the whole
+        // document per call (~45 ms on 7.5 MB, five calls per sticky-scroll pass), which makes
+        // highlighted scrolling stutter. Keeping the tree equal to the text is `noteEdit`'s job;
+        // this only catches a host passing the wrong document, by object identity (NSTextStorage
+        // vends one backing string for its lifetime) or, failing that, equal length.
         let a = last as NSString, b = text as NSString
         guard a === b || a.length == b.length else { return nil }
         return tree
@@ -279,27 +228,11 @@ public final class HighlightSession: @unchecked Sendable {
         return TreeSitterHighlighter.symbols(tree: tree, ns: text as NSString, language: language)
     }
 
-    /// Records a text edit and incrementally re-parses.
-    ///
-    /// Call this for every storage mutation, **after** the change has been
-    /// applied, describing it in the old document's coordinates:
-    ///
-    /// - Parameters:
-    ///   - range: the replaced range in the **old** text (UTF-16 units, i.e.
-    ///     the `NSRange` NSTextStorage reports — for an insertion, length 0).
-    ///   - replacementLength: the UTF-16 length of the inserted text (0 for a
-    ///     deletion).
-    ///   - newText: the **full** document text after the edit.
-    ///
-    /// Byte offsets follow the load-bearing SwiftTreeSitter rule — the parser
-    /// consumes UTF-16LE, so a tree-sitter byte offset is the UTF-16 index × 2,
-    /// NOT `utf8.count`. `Point`s (row, byte-column) are computed with the same
-    /// forward newline scan the injection combined-parse uses.
-    ///
-    /// If no tree is cached yet this is a no-op (the next highlight parses from
-    /// scratch anyway). If the edit is inconsistent with the cached text (out
-    /// of bounds, or the lengths don't reconcile), the tree is dropped instead
-    /// of edited — the next highlight recovers with one full parse.
+    /// Records a text edit and re-parses incrementally. Call it for every storage mutation, after
+    /// the change, with `range` in the old text's UTF-16 units, `replacementLength` the inserted
+    /// length and `newText` the full new document. Tree-sitter byte offsets are UTF-16 index × 2
+    /// (the parser reads UTF-16LE), not `utf8.count`. A no-op before the first parse; an edit
+    /// that does not reconcile with the cached text drops the tree for one full re-parse.
     public func noteEdit(range: NSRange, replacementLength: Int, newText: String) {
         stateLock.lock()
         defer { stateLock.unlock() }
@@ -352,33 +285,12 @@ public final class HighlightSession: @unchecked Sendable {
         }
     }
 
-    /// Highlights `clip` (a viewport range, in `storage` coordinates) from the
-    /// cached tree — **no parsing** happens unless this is the first call after
-    /// init/``invalidate()``, which parses `text` once.
-    ///
-    /// Runs the same pipeline as the stateless highlighter: the grammar's
-    /// highlights query (later pattern wins, predicates resolved) plus the
-    /// recursive injection pass (injections re-parse their sub-documents each
-    /// call — see the class note), resolved into the final per-range colors and
-    /// applied **diff-aware**: only ranges whose color actually changes are
-    /// written, so a pass over an already-settled viewport is zero storage
-    /// edits — TextKit 2 reconciles nothing (see
-    /// ``TreeSitterHighlighter/applyResolved(hits:clip:defaultColor:into:)``).
-    ///
-    /// - Parameters:
-    ///   - storage: the text storage to color. Only `.foregroundColor` is set.
-    ///   - text: the current full document text; must match `storage.string`
-    ///     and the text the cached tree was built from (keep the tree current
-    ///     via ``noteEdit(range:replacementLength:newText:)``).
-    ///   - clip: the range to (re)color; clamped to the storage bounds.
-    /// - Note: Must be called on the main thread.
-    /// - Returns: whether the pass performed any attribute writes. `false` means
-    ///   the clip was already correctly colored — TextKit saw no edit, nothing
-    ///   was invalidated, and the host can (must, for scroll smoothness) skip
-    ///   its post-pass layout settle.
-    /// `@MainActor` rather than the whole class: this method writes into a live text storage,
-    /// but the session also runs warm-up parses on a background queue, so isolating the type
-    /// would be a lie. Only this entry point is main-thread-bound, as its `- Note` already said.
+    /// Highlights `clip` of `storage` from the cached tree (parsing only on the first call after
+    /// init or ``invalidate()``), with the stateless highlighter's pipeline, injections included.
+    /// Writes are diff-aware: only runs whose colour changes are written, so a settled viewport
+    /// costs zero storage edits. `text` must equal `storage.string`; only `.foregroundColor` is set.
+    /// - Returns: whether anything was written; `false` lets the host skip its post-pass layout
+    ///   settle, which scroll smoothness depends on.
     @discardableResult
     @MainActor
     public func highlight(in storage: NSTextStorage, text: String, clip: NSRange) -> Bool {

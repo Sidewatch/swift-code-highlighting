@@ -16,6 +16,7 @@ import Foundation
 /// whose name range falls inside another's `scopeRange` becomes its child — methods
 /// under their type, subheadings under their heading. Symbols with no scope are leaves.
 public enum OutlineTree {
+    /// The top-level nodes of `symbols` folded by containment; `symbols` must be in document order.
     public static func build(from symbols: [Symbol]) -> [OutlineNode] {
         var roots: [OutlineNode] = []
         var stack: [OutlineNode] = []   // currently-open scopes, innermost last

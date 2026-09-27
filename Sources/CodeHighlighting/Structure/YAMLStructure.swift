@@ -14,21 +14,14 @@ import SwiftTreeSitter
 import CodeLanguage
 import DataConverter
 
-/// A YAML document as ordered structure, from the vendored tree-sitter-yaml grammar.
-///
-/// Mappings keep the file's key order (a `[String: Any]` would not), scalars keep the type the
-/// grammar gives them — `3` is an integer, `0.5` a number, `true` a boolean, an empty value or
-/// `~` null, everything else a string with its quotes and escapes resolved — and a block scalar
-/// (`|`, `>`) is its text with the indentation removed. Anchors and tags are dropped; an alias
-/// stays as `*name`, unresolved, so the preview says what the file says.
-///
-/// Tree-sitter parses anything, so a malformed file yields whatever structure it can see, never
-/// an error; ``value(of:)`` is nil only for an empty document or when the grammar is missing.
+/// A YAML document as ordered structure, from the vendored tree-sitter-yaml grammar. Mappings
+/// keep file order; scalars keep the grammar's type (empty or `~` is null, strings unquoted and
+/// unescaped) and block scalars lose their indentation. Anchors and tags are dropped; an alias
+/// stays `*name`, unresolved. A malformed file yields what could be read, never an error.
 public enum YAMLStructure {
 
-    /// One value of a document — the model every tree reader shares (swift-data-converter's
-    /// `StructuredValue`, since 25 Sep 2026; it was this type's own enum until TOML and XML
-    /// needed the same shape).
+    /// One value of a document: swift-data-converter's `StructuredValue`, the model every tree
+    /// reader shares.
     public typealias Value = StructuredValue
     /// One `key: value` of a mapping, in file order.
     public typealias Pair = StructuredPair
@@ -48,10 +41,12 @@ public enum YAMLStructure {
 
     // MARK: - Walking
 
+    /// The node's named children, in order; the other structure readers walk with it too.
     static func namedChildren(_ node: Node) -> [Node] {
         (0..<node.namedChildCount).compactMap { node.namedChild(at: $0) }
     }
 
+    /// The node's source text, or empty when its range runs past `ns`.
     static func text(_ node: Node, _ ns: NSString) -> String {
         NSMaxRange(node.range) <= ns.length ? ns.substring(with: node.range) : ""
     }

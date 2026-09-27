@@ -11,7 +11,6 @@
 import Foundation
 
 /// BibTeX: `%` comments, `@entry{` types, `key = ` fields, `{…}` and `"…"` values, numbers.
-/// Written 25 Sep 2026 (the corpus sweep found two roles).
 extension RuleTables {
     static let bibtex: [(String, TokenKind)] = [
         ("%.*$", .comment),

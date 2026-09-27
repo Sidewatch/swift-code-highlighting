@@ -15,12 +15,15 @@ import Foundation
 /// as headings) and rules (selectors, at-rules, top-level variables) with their block extents.
 /// Strings are skipped whole; nothing inside one opens, closes or ends anything.
 struct StylesheetScanner {
+    /// A section banner: its title, UTF-16 location and length, and 1-based line.
     struct Banner { let name: String; let location: Int; let length: Int; let line: Int }
+    /// A listed rule; `scopeEnd` is where its block closes, nil when it has none.
     struct Rule {
         let name: String; let location: Int; let length: Int; let line: Int
         let kind: SymbolKind; var scopeEnd: Int?
     }
 
+    /// The stylesheet text and its UTF-16 length.
     let ns: NSString
     let length: Int
     private let buf: [unichar]
@@ -42,6 +45,7 @@ struct StylesheetScanner {
     private var preludeStart = 0
     private var preludeComments: [NSRange] = []
 
+    /// A scanner over `ns`; `lineComments` makes `//` a comment (SCSS / Less).
     init(_ ns: NSString, lineComments: Bool) {
         self.ns = ns; length = ns.length; self.lineComments = lineComments
         var buf = [unichar](repeating: 0, count: ns.length)
@@ -49,14 +53,15 @@ struct StylesheetScanner {
         self.buf = buf
     }
 
+    /// Walks the whole text once, filling ``banners`` and ``rules``.
     mutating func scan() {
         while i < length {
             let c = buf[i]
             if c == 0x0A { line += 1; i += 1; lineStart = i; continue }
             if c == 0x2F, i + 1 < length, buf[i + 1] == 0x2A { scanBlockComment(); continue }
             // Not the `//` in `url(http://…)` nor in a protocol-relative `url(//cdn…)`: Sass reads an
-            // unquoted url() as one token, and treating it as a comment swallowed the `;` that ended
-            // the statement, so the next rule's prelude began at the `@import` (18 Sep 2026).
+            // unquoted url() as one token. Must not treat it as a comment: that swallows the `;`
+            // ending the statement, so the next rule's prelude would begin at the `@import`.
             if lineComments, c == 0x2F, i + 1 < length, buf[i + 1] == 0x2F, !(i > 0 && (buf[i - 1] == 0x3A || buf[i - 1] == 0x28)) {
                 scanLineComments(); continue
             }
@@ -209,8 +214,10 @@ struct StylesheetScanner {
         return count
     }
 
+    /// Space, tab, CR or LF.
     static func isWS(_ c: unichar) -> Bool { c == 0x20 || c == 0x09 || c == 0x0D || c == 0x0A }
 
+    /// `s` with every whitespace run collapsed to one space and the ends trimmed.
     static func collapsed(_ s: String) -> String {
         s.split(whereSeparator: { $0.isWhitespace || $0.isNewline }).joined(separator: " ")
     }

@@ -2,7 +2,7 @@
 //  CSharpRules.swift
 //  CodeHighlighting
 //
-//  The regex rule table for CSharp.
+//  The regex rule table for C#.
 //
 //  Created by David Sherlock on 9/5/26.
 //  Copyright © 2026 ArrayPress Limited. MIT licence.
@@ -10,7 +10,7 @@
 
 import Foundation
 
-/// The regex rule table for CSharp. Order matters: earlier rules win overlaps.
+/// The regex rule table for C#. Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let csharp: [(String, TokenKind)] = [
         lineComment,

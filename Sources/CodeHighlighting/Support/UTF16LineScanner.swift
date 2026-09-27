@@ -13,14 +13,15 @@
 
 import Foundation
 
-/// The lines of a document as UTF-16 offsets, from ONE contiguous copy of the characters:
-/// `components(separatedBy:)` materialised every line as a String (~50k allocations at a
-/// 2 MB document) just to find the few lines an outline wants, and the offsets fall out of
-/// a walk natively — they are the same UTF-16 units `Symbol.range` wants.
+/// The lines of a document as UTF-16 offsets, from one contiguous copy of the characters.
+/// Must not split into Strings: `components(separatedBy:)` makes ~50k allocations at 2 MB just
+/// to find the few lines an outline wants, and the offsets here are the units `Symbol.range` uses.
 struct UTF16LineScanner {
+    /// The document, and its UTF-16 units copied once for indexed reads.
     let ns: NSString
     let buf: [unichar]
 
+    /// Copies `ns`'s characters into ``buf``.
     init(_ ns: NSString) {
         self.ns = ns
         var buf = [unichar](repeating: 0, count: ns.length)
@@ -30,6 +31,7 @@ struct UTF16LineScanner {
 
     /// One line: `[start, end)` excludes the newline; `contentEnd` also excludes a CRLF's `\r`.
     struct Line {
+        /// 1-based line number and UTF-16 offsets.
         let number: Int, start: Int, end: Int, contentEnd: Int
 
         /// Leading whitespace: its count, whether it was spaces only, and where content begins.

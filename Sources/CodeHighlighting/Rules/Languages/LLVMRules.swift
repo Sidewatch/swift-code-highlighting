@@ -11,7 +11,7 @@
 import Foundation
 
 /// LLVM IR: `;` comments, `%locals`, `@globals`, `!metadata`, the integer and float types,
-/// the instruction and linkage words, `c"…"` constants. Written 25 Sep 2026 (the sweep found it flat).
+/// the instruction and linkage words, `c"…"` constants.
 extension RuleTables {
     static let llvm: [(String, TokenKind)] = [
         (";.*$", .comment),

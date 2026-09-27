@@ -11,18 +11,13 @@
 
 import Foundation
 
-/// Extracts a Markdown document's ATX headings (`#`…`######`) as outline `Symbol`s —
-/// Markdown has no tree-sitter symbol query, so the structure outline falls back to
-/// this. Headings inside fenced code blocks (``` / ~~~) are skipped so a `#` comment
-/// in a code sample isn't mistaken for a heading, and CommonMark's 3-space cap on
-/// ATX indentation is enforced so a `#` line in an indented (4-space) code block
-/// isn't either.
-///
-/// Each heading gets a `scopeRange` spanning from its own line to the next heading of
-/// the *same or higher* level, so the shared containment tree-builder nests a document
-/// by heading level (H2 under H1, H3 under H2) exactly like it nests code by braces.
+/// Extracts a Markdown document's ATX headings (`#`…`######`) as outline `Symbol`s, since
+/// Markdown has no tree-sitter symbol query. Headings inside fenced or indented code blocks are
+/// skipped. Each heading's `scopeRange` runs to the next heading of the same or higher level, so
+/// ``OutlineTree`` nests headings by level exactly as it nests code by braces.
 public enum MarkdownOutline {
 
+    /// Every ATX heading in `text`, in document order, each scoped to its section.
     public static func headings(in text: String) -> [Symbol] {
         let ns = text as NSString
         let scanner = UTF16LineScanner(ns)

@@ -13,9 +13,8 @@ import AppKit
 import CodeLanguage
 @testable import CodeHighlighting
 
-/// A sweep of the corpus (25 Sep 2026) found 13 languages painting nothing, 4 painting one
-/// role and 19 two; each got a table. This pins each on a snippet: at least three distinct
-/// roles, so a table that falls back to an empty family again fails here. Colours are one per
+/// Pins every rule-table language on a snippet: at least three distinct roles, so a table that
+/// falls back to an empty family fails here. Colours are one per
 /// role so the count is the roles', not the theme's.
 @MainActor
 final class RuleTableCoverageTests: XCTestCase {

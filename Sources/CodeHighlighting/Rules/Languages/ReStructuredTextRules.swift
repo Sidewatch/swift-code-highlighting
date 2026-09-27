@@ -12,7 +12,7 @@ import Foundation
 
 /// reStructuredText: `..` directives and comments, heading underlines, ``literals``,
 /// `links`_, **bold**, *italic*, list markers, `:field:` names and roles, |substitutions|,
-/// simple tables. Written 25 Sep 2026 (the sweep found one role).
+/// simple tables.
 extension RuleTables {
     static let restructuredtext: [(String, TokenKind)] = [
         ("^\\.\\. [\\w-]+::.*$", .keyword),

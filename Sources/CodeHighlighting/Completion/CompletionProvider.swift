@@ -12,32 +12,15 @@
 import Foundation
 import CodeLanguage
 
-/// Candidate source for the editor's completion popup — both the as-you-type
-/// one (debounced) and the manual `complete(_:)` (Esc / F5). No model, no
-/// language server: three prefix-matched tiers over what the editor already
-/// knows. Pure logic (no AppKit) so the ranking is independently testable.
-///
-/// Candidates, in rank order (case-insensitive prefix match, deduped
-/// preserving rank, capped at `maxCandidates`):
-///   1. Current-file symbols — functions/types/methods from the tree-sitter
-///      symbol queries (empty for languages without one).
-///   2. Project symbols — `ProjectSymbolIndex.definitions(matchingPrefix:limit:)`,
-///      a binary search over the index's sorted name mirror. Carries the
-///      defining file so the popup can show it.
-///   3. Unique identifier-shaped words from the open buffer (>= 3 chars,
-///      same charset as the editor's `identifierRange`: alphanumerics + `_`
-///      + `$`, not starting with a digit).
-///
-/// Performance: tiers 1 and 3 are cached and an edit only *marks* them stale
-/// (`noteEdit()` — two nil stores); tier 2 is not cached because it is already
-/// O(log n) per query and its results are prefix-specific. Nothing here runs
-/// per keystroke: the popup debounces, so a rebuild costs once per typing
-/// pause, and `autoPopupThreshold` keeps the automatic path off files where
-/// that rebuild (a whole-document symbol query + a whole-buffer word scan)
-/// would be felt. Above `wordScanThreshold` the buffer-word scan is skipped
-/// outright even on the manual path — it would beachball a multi-MB buffer.
+/// Candidate source for the editor's completion popup, both as-you-type and manual (Esc / F5).
+/// No language server: prefix-matched tiers in rank order — current-file symbols, project
+/// symbols (``ProjectSymbolIndex``), language builtins, then identifier-shaped buffer words —
+/// deduped preserving rank and capped at `maxCandidates`. Pure logic, no AppKit.
+/// File symbols and buffer words are cached and only marked stale by `noteEdit()`; the project
+/// tier is an O(log n) query per trigger, so it is not cached.
 public final class CompletionProvider {
 
+    /// Creates a provider with both cached tiers stale.
     public init() {}
 
     /// Most candidates ever returned for one trigger.
@@ -50,15 +33,9 @@ public final class CompletionProvider {
     /// rebuild would beachball a multi-MB buffer. The editor always wires the
     /// provider, so in the app this cap governs the word tier.
     public static let wordScanThreshold = 3_000_000
-    /// Mirror of `EditorViewController.fullHighlightThreshold` (UTF-16 units):
-    /// the editor's existing "this file is big" line, and the ceiling for the
-    /// AUTOMATIC popup only. Above it, every tier-1/tier-3 rebuild is a
-    /// whole-document symbol query plus a whole-buffer word scan, and an edit
-    /// invalidates both — so the automatic path would pay that per typing
-    /// pause. At the cap that rebuild measures ~8 ms (release, a 100 KB Swift
-    /// file, via `--dump-completions`) and grows with file size. Esc/F5 still
-    /// completes at any size (a deliberate act, not a per-pause one); this cap
-    /// only governs the popup that fires by itself.
+    /// Mirror of `EditorViewController.fullHighlightThreshold` (UTF-16 units): the ceiling for
+    /// the automatic popup only. Above it each rebuild (whole-document symbol query plus word
+    /// scan, ~8 ms at the cap) would be paid per typing pause; Esc/F5 still completes at any size.
     public static let autoPopupThreshold = 100_000
     /// Hard cap on the cached word set, so a pathological file (huge minified
     /// blob under the size threshold) can't balloon memory.
@@ -143,7 +120,7 @@ public final class CompletionProvider {
     // MARK: - Pure ranking / scanning (testable)
 
     /// Case-insensitive prefix matches of `partial`, walking the tiers in rank
-    /// order (file symbols, project symbols, buffer words). Dedupes on the
+    /// order (file symbols, project symbols, builtins, buffer words). Dedupes on the
     /// inserted text preserving first (highest) rank, drops the candidate
     /// identical to `partial` (completing to itself is noise), caps at `cap`.
     /// Tiers are expected pre-sorted, so results are alphabetical within each

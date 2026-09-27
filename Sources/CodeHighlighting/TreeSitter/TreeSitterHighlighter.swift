@@ -55,7 +55,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         var templateTags = false
     }
 
-    /// Grammars we bundle. Add a package + a line here to support a language.
+    /// The bundled grammars. Add a package + a line here to support a language.
     /// `bundle` is the SwiftPM resource-bundle name: `<Product>_<Product>`.
     /// Internal so ``HighlightSession`` resolves languages through the same table.
     /// One builder per language, built cheaply; `grammar(for:)` compiles on first use.
@@ -91,7 +91,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         // tree-sitter-json parses `//` and `/* */` comments as extras.
         m[.jsonc]      = m[.json]
         // CSS custom properties (`--brand-primary`) are captured `@variable` upstream
-        // with a `^--` guard; the bare-variable role is nil now (see `role(for:)`),
+        // with a `^--` guard; the bare-variable role is nil (see `role(for:)`),
         // so re-capture them as `@property` — sigiled, self-distinguishing tokens
         // that VS Code keeps colored (same hue family as bash's `$VAR` @property).
         m[.css]        = { g(tree_sitter_css(),        "TreeSitterCSS",
@@ -114,7 +114,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         m[.cpp]        = { g(tree_sitter_cpp(),        "TreeSitterCPP", inherits: ["TreeSitterC"]) }
         m[.csharp]     = { g(tree_sitter_c_sharp(),    "TreeSitterCSharp") }
         // PHP `$vars` are captured `(variable_name) @variable` upstream — nil'd by the
-        // bare-variable role now. Like bash's `$VAR`, they're sigiled tokens VS Code
+        // bare-variable role. Like bash's `$VAR`, they're sigiled tokens VS Code
         // keeps colored, so re-capture as `@property` — except `$this`, whose inner
         // `(name)` keeps the `@variable.builtin` color (this extra would outrank it).
         m[.php]        = { g(tree_sitter_php(),         "TreeSitterPHP", injectHTMLText: true,
@@ -129,20 +129,16 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         m[.scala]      = { g(tree_sitter_scala(),      "TreeSitterScala") }
         m[.xml]        = { g(tree_sitter_xml(),        "TreeSitterXML") }
         // Upstream's number/float patterns use Lua-style classes ("%d"), which
-        // NSRegularExpression matches literally — so numeric literals stayed on
+        // NSRegularExpression matches literally — so numeric literals would stay on
         // the earlier `(literal) @string` capture. Re-capture them with a real
         // regex; appended last, it wins under later-pattern-wins precedence.
         m[.sql]        = { g(tree_sitter_sql(),        "TreeSitterSQL",
                            extra: "((literal) @number (#match? @number \"^[+-]?\\\\d+(\\\\.\\\\d+)?$\"))") }
-        // Markdown is upstream's DUAL parser; this entry is the BLOCK grammar
-        // only (headings, fences, lists, quotes). Its injections.scm routes
-        // every `(inline)` node to the separate inline grammar (see
-        // `markdownInlineGrammar`) and fenced code to the fence's language, so
-        // both ride the standard injection machinery. Upstream's captures are
-        // nvim `@text.*`/`@punctuation.*` roles that map to no color here, so
-        // the extra re-captures the structure with this table's roles,
-        // mirroring the regex tier's markdown palette (headings/list markers
-        // keyword, fences/links string, quote markers/rules comment).
+        // Markdown is upstream's DUAL parser; this entry is the BLOCK grammar only.
+        // Its injections.scm routes `(inline)` nodes to `markdownInlineGrammar` and
+        // fenced code to the fence's language. Upstream's nvim `@text.*` captures map
+        // to no colour here, so the extra re-captures the structure with this table's
+        // roles, mirroring the regex tier's markdown palette.
         m[.markdown]   = { g(tree_sitter_markdown(),   "TreeSitterMarkdown", extra: """
             (atx_heading (inline) @keyword)
             (setext_heading (paragraph) @keyword)
@@ -174,14 +170,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     private static let grammarLock = NSLock()
     nonisolated(unsafe) private static var grammarCache: [CodeLanguage.Language: Grammar?] = [:]   // guarded by grammarLock
 
-    /// The compiled grammar for `language`, compiled on first request and cached —
-    /// nil when there is no builder or its query does not compile. The table used to
-    /// be ONE `static let` dictionary that compiled every language's query on first
-    /// touch: 600–750 ms on the main thread at launch, because the untitled document's
-    /// highlighter lookup was the first touch (the watchdog's stack sampler caught it
-    /// on every launch, 3 Sep 2026). Compiling happens OUTSIDE the lock so two threads
-    /// asking for different languages never serialise; a race on the same language
-    /// compiles it twice and keeps one, which is harmless.
+    /// The compiled grammar for `language`, compiled on first request and cached; nil when there
+    /// is no builder or its query does not compile. Must stay per-language: compiling every
+    /// query on first touch costs 600–750 ms on the main thread at launch. Compiling happens
+    /// outside the lock, so a race on one language compiles it twice and keeps one, harmlessly.
     static func grammar(for language: CodeLanguage.Language) -> Grammar? {
         grammarLock.lock()
         if let hit = grammarCache[language] { grammarLock.unlock(); return hit }
@@ -208,15 +200,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         }
     }
 
-    /// The markdown INLINE grammar — upstream tree-sitter-markdown's second
-    /// parser (emphasis, code spans, links). Deliberately NOT in `grammars`:
-    /// it has no `CodeLanguage.Language` of its own and only runs over the
-    /// `(inline)` ranges the block grammar's injections report. The standard
-    /// combined-parse machinery hosts it — all inline chunks of a document
-    /// parse as ONE doc via `Parser.includedRanges` (upstream's own
-    /// included-ranges guidance), so cross-chunk state stays consistent; the
-    /// accepted constraint is that a delimiter left unclosed in one chunk can,
-    /// at worst, pair with one in a later chunk.
+    /// The markdown INLINE grammar (emphasis, code spans, links), upstream's second parser. Not
+    /// in `grammars`: it has no `CodeLanguage.Language` and runs only over the block grammar's
+    /// `(inline)` injections, all chunks parsed as one document via `Parser.includedRanges`.
+    /// An unclosed delimiter in one chunk can, at worst, pair with one in a later chunk.
     static let markdownInlineGrammar: Grammar? = {
         let language = SwiftTreeSitter.Language(tree_sitter_markdown_inline())
         // Same reasoning as the block entry's extra: upstream's `@text.*`
@@ -398,13 +385,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         }
         found.sort { $0.range.location < $1.range.location }
 
-        // Line numbers in ONE forward pass. Counting each symbol's line
-        // independently (`substring(to:).components(separatedBy:)`) copied the
-        // whole prefix and split it into every line PER SYMBOL — O(n·m), which
-        // measured 111 ms on a 125 KB file and over 100 s on 2.8 MB, i.e. the
-        // symbol tier, not the parse, was what made big files unusable. Sorted
-        // ascending, `scanned` only ever moves forward, so this is O(n) total,
-        // read in blocks because `character(at:)` is an ObjC call per index.
+        // Line numbers in ONE forward pass. Must not count each symbol's line separately:
+        // splitting the prefix per symbol is O(n·m), over 100 s on 2.8 MB. Sorted ascending,
+        // `scanned` only moves forward, so this is O(n) total, read in blocks because
+        // `character(at:)` is an ObjC call per index.
         var out: [Symbol] = []
         out.reserveCapacity(found.count)
         var line = 1
@@ -422,22 +406,16 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         return out
     }
 
-    /// For hover-doc: the definition signature + preceding doc comment for `word`,
-    /// if it's defined in `text`. Returns nil when the word isn't a known symbol.
-    /// - Important: performs a fresh full parse of `text` per call. On an open
-    ///   document prefer ``hoverInfo(for:symbols:in:language:)`` with the
-    ///   session's cached symbols; for an already-located definition (e.g. a
-    ///   ``ProjectSymbolIndex`` hit) use ``hoverInfo(for:definedAt:kind:in:language:)``
-    ///   — neither parses.
-    /// `@MainActor`: builds an `NSAttributedString` through the main-thread-only
-    /// ``highlight(_:in:)`` path. Every caller is a hover popup or the headless selftest,
-    /// both already on main.
-    /// What every `hoverInfo` variant returns: the card's kind, highlighted signature
-    /// and doc comment, plus the 1-based `line` the definition sits on. The card
-    /// prints that line beside the defining file (`box.php:3`) so a reviewer sees
-    /// WHERE a signature came from — and a mis-attribution reads as one at a glance.
+    /// What every `hoverInfo` variant returns: the card's kind, highlighted signature and doc
+    /// comment, plus the 1-based `line` of the definition, printed beside the defining file
+    /// (`box.php:3`) so a mis-attribution reads as one at a glance.
     public typealias HoverInfo = (kind: SymbolKind, signature: NSAttributedString, doc: String, line: Int)
 
+    /// For hover docs: the definition signature and preceding doc comment for `word`, if it is
+    /// defined in `text`. Main actor, because it highlights through ``highlight(_:in:)``.
+    /// - Important: A fresh full parse per call. On an open document prefer
+    ///   ``hoverInfo(for:symbols:in:language:)``; for a known site,
+    ///   ``hoverInfo(for:definedAt:kind:in:language:)``. Neither parses.
     @MainActor
     public static func hoverInfo(for word: String, in text: String, language: CodeLanguage.Language) -> HoverInfo? {
         guard word.count > 1 else { return nil }
@@ -445,26 +423,17 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     }
 
     /// ``hoverInfo(for:in:language:)`` against pre-fetched `symbols` (e.g.
-    /// ``HighlightSession/symbols(text:)``, a query over the cached tree) — no
-    /// parse. Empty `symbols` (a session still warming up) just yields nil:
-    /// treat that as "no info here", never a reason to fall back to a parse.
-    /// `@MainActor`: builds an `NSAttributedString` through the main-thread-only
-    /// ``highlight(_:in:)`` path. Every caller is a hover popup or the headless selftest,
-    /// both already on main.
+    /// ``HighlightSession/symbols(text:)``), with no parse. Empty `symbols` (a session still
+    /// warming up) yields nil: "no info here", never a reason to fall back to a parse.
     @MainActor
     public static func hoverInfo(for word: String, symbols: [Symbol], in text: String, language: CodeLanguage.Language) -> HoverInfo? {
         guard word.count > 1, let sym = symbols.first(where: { $0.name == word }) else { return nil }
         return signatureInfo(kind: sym.kind, at: sym.range.location, line: sym.line, in: text as NSString, language: language)
     }
 
-    /// Hover info for a definition whose site is already known (a
-    /// ``ProjectSymbolIndex`` `DefLocation`): the signature line and doc comment
-    /// are read straight off `text` — no parse, no symbol query. Returns nil
-    /// when `range` no longer holds `word` (the FSEvents-refreshed index can
-    /// briefly lag the file on disk) rather than guessing at a stale site.
-    /// `@MainActor`: builds an `NSAttributedString` through the main-thread-only
-    /// ``highlight(_:in:)`` path. Every caller is a hover popup or the headless selftest,
-    /// both already on main.
+    /// Hover info for a definition whose site is already known (a ``ProjectSymbolIndex``
+    /// `DefLocation`), read straight off `text` with no parse. Nil when `range` no longer holds
+    /// `word` (the index can briefly lag the file on disk), rather than guessing at a stale site.
     @MainActor
     public static func hoverInfo(for word: String, definedAt range: NSRange, kind: SymbolKind,
                                  in text: String, language: CodeLanguage.Language) -> HoverInfo? {
@@ -512,15 +481,12 @@ public final class TreeSitterHighlighter: CodeHighlighter {
 
     /// Syntax-highlights a short code snippet (e.g. a hover signature) into an
     /// attributed string. Appends "{}" so a body-less definition still parses.
-    /// `@MainActor`: builds an `NSAttributedString` through the main-thread-only
-    /// ``highlight(_:in:)`` path. Every caller is a hover popup or the headless selftest,
-    /// both already on main.
+    /// Main actor, because it highlights through ``highlight(_:in:)``.
     @MainActor
     public static func attributedSnippet(_ code: String, language: CodeLanguage.Language, font: NSFont) -> NSAttributedString {
         // tree-sitter-php starts in HTML/text mode: a bare signature with no
-        // `<?php` opener parses as inline text and yields ZERO captures, so PHP
-        // hover signatures rendered monochrome. Parse behind an opener, then trim
-        // it back off along with the appended braces.
+        // `<?php` opener parses as inline text and yields ZERO captures. Parse
+        // behind an opener, then trim it back off along with the appended braces.
         let preamble = language == .php ? "<?php " : ""
         let storage = NSTextStorage(string: preamble + code + " {}",
                                     attributes: [.font: font, .foregroundColor: HighlightTheme.colors.foreground])
@@ -535,27 +501,11 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         return storage.attributedSubstring(from: NSRange(location: start, length: len))
     }
 
-    /// Syntax-highlights `code` as HTML: the escaped text wrapped in `<span style="color:…">`
-    /// runs, ready to drop inside a `<pre><code>`.
-    ///
-    /// Returns nil when no grammar is bundled for `language`, which is the caller's signal to
-    /// emit the plain escaped code it would have emitted anyway — an unknown fence tag renders
-    /// exactly as before rather than half-highlighted.
-    ///
-    /// Deliberately NOT built on ``attributedSnippet(_:language:font:)``, which appends `" {}"`
-    /// so a body-less hover signature still parses. That is right for a one-line signature and
-    /// wrong for a whole code block, where the closing braces would be highlighted and then
-    /// trimmed back off by length — leaving the last real token coloured as if it were inside a
-    /// block that does not exist.
-    ///
-    /// Colours come from ``HighlightTheme/colors``, so blocks follow the app's theme with no
-    /// stylesheet to keep in sync. Tree-sitter ONLY: for the editor's three tiers (a grammar,
-    /// the single-file-component splitter, the regex tables) use ``HighlightedHTML/render(_:language:colors:)``.
-    ///
-    /// - Parameters:
-    ///   - code: The block's source, exactly as written.
-    ///   - language: The language to parse it as.
-    /// - Returns: HTML for the inside of a `<code>` element, or nil when unsupported.
+    /// Syntax-highlights `code` as HTML: escaped text in `<span style="color:…">` runs, coloured
+    /// from ``HighlightTheme/colors``, for inside a `<pre><code>`. Nil when no grammar is bundled,
+    /// so the caller emits plain escaped code. Not built on ``attributedSnippet(_:language:font:)``,
+    /// whose appended `" {}"` would miscolour a whole block's last token. Tree-sitter only: for
+    /// the editor's three tiers use ``HighlightedHTML/render(_:language:colors:)``.
     @MainActor
     public static func highlightedHTML(_ code: String, language: CodeLanguage.Language) -> String? {
         guard grammar(for: language) != nil, let hl = TreeSitterHighlighter(language: language) else { return nil }
@@ -570,12 +520,9 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         return HighlightedHTML.spans(of: storage, fallback: HighlightTheme.colors.foreground)
     }
 
-    /// Escapes the five characters that can end a text run inside HTML.
-    ///
-    /// Applied PER RUN rather than once over the whole block: the spans are inserted between
-    /// runs, so escaping afterwards would eat the markup, and escaping before would let a `<` in
-    /// the source split a token. Quotes are escaped too — the output is only used as element
-    /// content today, but a string that is safe in one position and not another is a trap.
+    /// Escapes the five characters that can end a text run inside HTML. Applied per run, since
+    /// spans sit between runs: escaping afterwards would eat the markup. Quotes are escaped too,
+    /// so the result is safe in attribute position as well as element content.
     static func escapeHTML(_ s: String) -> String {
         var out = ""
         out.reserveCapacity(s.count)
@@ -611,14 +558,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         return breadcrumbs(at: offset, ns: text as NSString, root: root)
     }
 
-    /// A reusable breadcrumb resolver over **one** parse of `text`: parses once,
-    /// then each call to the returned closure is a cached-tree walk (microseconds).
-    /// Use when resolving many offsets in the same text — e.g. Blast Radius maps
-    /// every changed line to its enclosing symbol, and the per-call static
-    /// ``breadcrumbs(at:text:language:)`` re-parses the whole file *per line*
-    /// (~620 ms each on a 2.8 MB Swift file). Nil when no grammar is loaded.
-    /// The closure retains the parsed tree (a root `Node` keeps its `Tree` alive)
-    /// and is safe on any single thread — confine it to the thread that made it.
+    /// A reusable breadcrumb resolver over one parse of `text`: each call to the closure is a
+    /// cached-tree walk, where ``breadcrumbs(at:text:language:)`` re-parses per call (~620 ms on
+    /// 2.8 MB). For resolving many offsets, such as every changed line of a diff. Nil when no
+    /// grammar is loaded. The closure retains the tree; confine it to the thread that made it.
     public static func breadcrumbResolver(text: String, language: CodeLanguage.Language) -> ((Int) -> [String])? {
         guard let root = freshParseRoot(text, language: language) else { return nil }
         let ns = text as NSString
@@ -645,8 +588,8 @@ public final class TreeSitterHighlighter: CodeHighlighter {
                         "namespace", "module", "impl", "trait", "constructor", "object"]
         // A CALL is not a scope. Java's `method_invocation` and Lua's `function_call` contain
         // the words above AND carry a `name` field (the callee), so a caret inside a multi-line
-        // call's arguments read the called method as an enclosing definition: the breadcrumb
-        // bar grew a crumb for it and sticky scroll pinned the call's line (18 Sep 2026).
+        // call's arguments would read the called method as an enclosing definition, adding a
+        // breadcrumb for it and pinning the call's line in sticky scroll.
         let calls = ["call", "invocation"]
         var path: [(name: String, start: Int)] = []
         var cur: Node? = node
@@ -765,7 +708,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         var s = Substring(hex)
         if s.hasPrefix("#") { s = s.dropFirst() }
         // Every character must be a hex digit: `UInt64(_:radix:)` accepts a leading sign, so
-        // `#+12345` used to decode as a colour.
+        // `#+12345` would otherwise decode as a colour.
         guard !s.isEmpty, s.allSatisfy({ $0.isASCII && $0.isHexDigit }) else { return nil }
         if s.count == 3 { s = Substring(s.map { "\($0)\($0)" }.joined()) }
         guard s.count == 6 || s.count == 8, let v = UInt64(s, radix: 16) else { return nil }
@@ -783,26 +726,14 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// One resolved capture hit: an absolute storage range, its precedence key,
     /// and the color it paints. `pattern` is the capture's patternIndex plus the
     /// pass's base (see `collectHits`), so hits from several query passes sort
-    /// into the same later-wins order the old sequential application produced.
+    /// into one later-wins order, as if each pass were applied after the last.
     typealias Hit = (range: NSRange, pattern: Int, color: NSColor)
 
-    /// Runs a highlights query over `tree` (parsed from `source`), resolving
-    /// predicates, and returns the colored capture hits offset into storage
-    /// coordinates by `offset`, clipped to `clip`.
-    ///
-    /// The query cursor is **bounded to the clip** (translated into source
-    /// coordinates; bytes = UTF-16 index × 2 — the load-bearing SwiftTreeSitter
-    /// rule), so match iteration is O(viewport), not O(document). Unbounded, a
-    /// per-viewport pass on a multi-megabyte file iterated every match in the
-    /// file (~2.4 s on a 2.8 MB Swift file) only to clip them at paint time.
-    /// `ts_query_cursor_set_byte_range` keeps every match that *intersects* the
-    /// range, so edge-straddling tokens still arrive and the paint-time clipping
-    /// trims them exactly as before.
-    ///
-    /// Each call consumes one precedence window from `nextBase`: returned hit
-    /// `pattern`s start at the current base, and `nextBase` advances so a later
-    /// pass (an injection) always outranks this one — exactly the "applied
-    /// afterwards, overwrites on overlap" behavior of sequential application.
+    /// Runs a highlights query over `tree` (parsed from `source`), resolving predicates, and
+    /// returns the coloured hits offset into storage coordinates by `offset`, clipped to `clip`.
+    /// The cursor is bounded to the clip (bytes = UTF-16 index × 2), so iteration is O(viewport),
+    /// not O(document); matches intersecting the range still arrive whole. Each call consumes one
+    /// precedence window from `nextBase`, so a later pass (an injection) outranks this one.
     @MainActor
     static func collectHits(_ query: Query, tree: MutableTree, source ns: NSString,
                             offset: Int, clip: NSRange, nextBase: inout Int) -> [Hit] {
@@ -842,20 +773,11 @@ public final class TreeSitterHighlighter: CodeHighlighter {
               clip: clip, into: storage)
     }
 
-    /// Applies the RESOLVED highlight state of `clip` — `defaultColor` overlaid
-    /// by `hits`, higher `pattern` winning on overlap — as the MINIMAL set of
-    /// attribute writes: desired colors are computed first, then compared run by
-    /// run against what the storage already holds, and only differing ranges are
-    /// written. Post-state is identical to the old "blanket foreground reset +
-    /// one addAttribute per hit" pipeline, but a pass over an already-settled
-    /// viewport produces ZERO writes — so `endEditing` never fires processEditing,
-    /// TextKit 2 invalidates nothing, and no fragment re-layout follows. That
-    /// reconcile was the single largest cost of every scroll re-highlight
-    /// (~19–41 ms per pass measured on a 2.8 MB file, scaling with hit density).
-    ///
-    /// Returns the number of attribute writes performed — 0 means the pass was
-    /// a no-op for TextKit (nothing invalidated), which hosts use to skip their
-    /// post-pass layout settle entirely.
+    /// Applies the resolved state of `clip` (`defaultColor` overlaid by `hits`, higher `pattern`
+    /// winning) as the minimal set of attribute writes: desired colours are diffed run by run
+    /// against the storage and only differing ranges are written. A settled viewport costs zero
+    /// writes, so TextKit 2 invalidates nothing; that reconcile is otherwise the largest cost of a
+    /// scroll re-highlight. Returns the write count; 0 lets hosts skip their layout settle.
     @discardableResult
     static func applyResolved(hits: [Hit], clip: NSRange, defaultColor: NSColor,
                               into storage: NSTextStorage) -> Int {
@@ -934,29 +856,13 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         }
     }
 
-    /// All injection sites in `tree`, grouped by injected language and merged into
-    /// ascending, non-overlapping ranges. Grouping lets every chunk of the same
-    /// language parse as ONE document via `Parser.includedRanges`, so constructs
-    /// split across chunks (e.g. `<section>`…`</section>` around a PHP block, whose
-    /// HTML arrives as separate `text` nodes) still pair instead of parsing as errors.
-    ///
-    /// When `clip` is non-nil the cursor is bounded to it (source coordinates),
-    /// making per-viewport passes O(viewport): sites *intersecting* the clip are
-    /// still collected whole, but sibling chunks entirely outside it no longer
-    /// join the combined parse — for viewport-tier files (> ~100k chars) a
-    /// construct split across an off-screen chunk may highlight slightly
-    /// differently at the clip edge, an accepted trade (small files always pass
-    /// whole-document clips). Whole-document callers (`dumpCaptures`) pass nil.
-    ///
-    /// Matches go through a `ResolvingQueryCursor` so injection PREDICATES are
-    /// honored — a plain cursor ignores them, which turned e.g. lua's
-    /// `((function_call …) (#eq? @_cdef_identifier "cdef"))` ffi.cdef rule into
-    /// "inject C into EVERY single-string function call": whole Lua files had
-    /// their ordinary string arguments parsed as C (garbage tokens), and the
-    /// clip-dependent combined parse repainted those strings differently on
-    /// every viewport pass — measured 18k chars of redundant attribute rewrites
-    /// per scroll on a 100 KB Lua file, each one invalidating TK2 fragment
-    /// layout mid-scroll.
+    /// All injection sites in `tree`, grouped by language and merged into ascending,
+    /// non-overlapping ranges, so every chunk of a language parses as one document via
+    /// `Parser.includedRanges` (a `<section>` before a PHP block pairs with `</section>` after).
+    /// A non-nil `clip` bounds the cursor to O(viewport); off-screen sibling chunks then drop out
+    /// of the combined parse, an accepted edge effect. Matches go through a
+    /// `ResolvingQueryCursor` so injection predicates are honoured: a plain cursor ignores them
+    /// and injects (for example) C into every Lua string call instead of only `ffi.cdef`.
     @MainActor
     private static func injectionSites(_ injQuery: Query, tree: MutableTree, ns: NSString,
                                        clip: NSRange? = nil) -> [(name: String, ranges: [NSRange])] {
@@ -986,13 +892,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         return order.map { name in (name, mergeAscending(grouped[name]!)) } + separate
     }
 
-    /// Injected languages whose chunks are parsed ONE AT A TIME, never combined. Tree-sitter
-    /// reads included ranges as one contiguous text, which is right for a PHP template's HTML
-    /// (`<section>` before a PHP block pairs with `</section>` after it) and wrong for Markdown's
-    /// inline content: every `(inline)` node is its own inline document, and combining them read
-    /// "- `a`\n- `b`" as the code span "a``b" — from the first list onwards, every code span
-    /// swallowed the text up to the next backtick and whole documents went string-coloured
-    /// (David's demo file, 22 Sep 2026).
+    /// Injected languages whose chunks are parsed ONE AT A TIME, never combined. Combining is
+    /// right for a PHP template's HTML and wrong for Markdown's inline content, where every
+    /// `(inline)` node is its own document: combined, "- `a`\n- `b`" reads as the code span
+    /// "a``b" and every later code span swallows text up to the next backtick.
     private static let separatelyParsed: Set<String> = ["markdown_inline"]
 
     /// Sorts `ranges` ascending and unions overlapping/adjacent ones — tree-sitter
@@ -1012,8 +915,8 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// Parses the whole of `ns` restricted to `ranges` — one combined document per
     /// injected language. Byte offsets are UTF-16 index × 2 (SwiftTreeSitter parses
     /// UTF-16LE); points come from a single forward newline scan (column in bytes),
-    /// block-read via `UTF16NewlineScanner` — this runs per highlight pass, and a
-    /// per-character walk to a late injection site cost an ObjC call per UTF-16 unit.
+    /// block-read via `UTF16NewlineScanner`, since this runs per highlight pass and a
+    /// per-character walk costs an ObjC call per UTF-16 unit.
     static func combinedParse(_ sub: Grammar, ns: NSString, ranges: [NSRange]) -> MutableTree? {
         let p = Parser()
         try? p.setLanguage(sub.language)
@@ -1025,14 +928,10 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         return p.parse(ns as String)
     }
 
-    /// Recursively collects hits for embedded languages (CSS in `<style>`, JS in
-    /// `<script>`, HTML in PHP templates, …), depth-limited. All chunks of one
-    /// injected language share a single combined parse (see `injectionSites`);
-    /// capture ranges therefore stay absolute within `ns` and `offset` is unchanged.
-    /// Visit order matches the old sequential-application order (site, then its
-    /// nested injections, depth-first), and every pass takes a later `nextBase`
-    /// window, so deeper/later passes win on overlap exactly as before.
-    /// Internal (not private) so ``HighlightSession`` runs the same injection pass.
+    /// Recursively collects hits for embedded languages (CSS in `<style>`, HTML in PHP, …),
+    /// depth-limited. All chunks of one language share a combined parse (see `injectionSites`),
+    /// so ranges stay absolute within `ns`. Visits depth-first, each pass taking a later
+    /// `nextBase` window so deeper and later passes win on overlap. Shared with ``HighlightSession``.
     @MainActor
     static func collectInjectionHits(_ g: Grammar, tree: MutableTree, source ns: NSString,
                                      offset: Int, clip: NSRange, depth: Int,
@@ -1055,8 +954,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
             }) else { continue }
             // HTML with template tags is parsed from a copy with the tags blanked to spaces:
             // tree-sitter-html reads `<#` as a tag opening and produces no elements at all
-            // for the rest of the section (0 tag captures on a real Customizer template vs
-            // 12 masked — 4 Sep 2026). Same UTF-16 length, so every position still holds.
+            // for the rest of the section. Same UTF-16 length, so every position still holds.
             let tags: (code: [NSRange], expressions: [NSRange], all: [NSRange]) = sub.templateTags
                 ? templateTagRanges(in: ns, within: site.ranges) : (code: [], expressions: [], all: [])
             let markup: NSString = tags.all.isEmpty ? ns : maskingTemplateTags(ns, tags.all)
@@ -1073,9 +971,8 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     }
 
     /// Underscore / `wp.template` tags — `<# js #>`, `{{ expr }}`, `{{{ expr }}}` — are plain text
-    /// to the HTML grammar, and WordPress core's Customizer and media templates are made of them
-    /// (4 Sep 2026: a WP_Customize control's whole template read as uncoloured). Found by regex
-    /// within the HTML-owned `ranges`. All `<# #>` fragments parse as ONE JavaScript document
+    /// to the HTML grammar, and WordPress core's Customizer and media templates are made of them.
+    /// Found by regex within the HTML-owned `ranges`. All `<# #>` fragments parse as ONE JavaScript document
     /// (combined ranges), so `<# if ( x ) { #> … <# } #>` is a valid program across fragments;
     /// each `{{ }}` interpolation parses alone, as the expression it is.
     private static let templateTagRegex = try! NSRegularExpression(
@@ -1107,6 +1004,8 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         return m
     }
 
+    /// JavaScript hits for the template tags that intersect `clip`: all `<# #>` fragments parsed
+    /// as one combined document, each `{{ }}` expression on its own.
     @MainActor
     static func templateTagHits(source ns: NSString, tags: (code: [NSRange], expressions: [NSRange], all: [NSRange]),
                                 offset: Int, clip: NSRange, nextBase: inout Int) -> [Hit] {
@@ -1125,23 +1024,11 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         return hits
     }
 
-    /// Strips top-level query patterns whose captures ALL map to nil colors
-    /// (punctuation, brackets, operators, …) before the query is compiled.
-    ///
-    /// Those patterns can never paint anything — `color(for:)` drops their
-    /// captures — but the query cursor still yields a match per occurrence.
-    /// On symbol-dense grammars that is real scroll-time cost: the vendored
-    /// Swift query spent ~1/3 of its per-viewport captures (365 of 1096 on a
-    /// 30k-char pass, measured) on punctuation/operator patterns that were
-    /// discarded at paint time. Removing whole patterns preserves precedence:
-    /// later-pattern-wins is *relative* order, which pruning keeps intact.
-    ///
-    /// The parser understands the query grammar shallowly but safely: top-level
-    /// forms (`(...)`, `[...]`, `"literal"`) with their trailing quantifiers and
-    /// `@capture` chains are treated as one pattern; `;` comments are kept;
-    /// anything unrecognized (bare tokens like a stray anchor) is copied
-    /// verbatim, never pruned — unknown syntax can only be kept, not dropped.
-    /// If pruning would leave nothing, the original source is returned.
+    /// Strips top-level query patterns whose captures all map to nil colours (punctuation,
+    /// operators…) before compiling: they can never paint, but the cursor still yields a match per
+    /// occurrence (a third of the Swift query's per-viewport captures). Removing whole patterns
+    /// keeps later-pattern-wins order; unrecognised syntax is kept, never pruned, via
+    /// ``QuerySourceScanner``. Returns the original source if pruning would leave nothing.
     static func prunedQuerySource(_ src: String) -> String {
         var scanner = QuerySourceScanner(src)
         var out = ""
@@ -1179,25 +1066,16 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     }
 
     /// The semantic role for a tree-sitter capture (first dotted component), e.g.
-    /// "function.method" → "function", "variable.parameter" → "variable".
-    ///
-    /// The BARE `variable`/`identifier` captures map to nil (default text) on
-    /// purpose: most vendored queries carry an nvim-convention catch-all like
-    /// `(identifier) @variable` that captures *every* plain identifier, which
-    /// painted whole files in the variable color (~39% of all tokens in a real
-    /// Lua file — an "error wash", not highlighting). VS Code leaves plain
-    /// identifier references at the default foreground; so do we. Qualified
-    /// variable captures stay colored: `@variable.builtin` (self/this),
-    /// `@variable.parameter` / `@parameter`, `@variable.member`. Sigiled
-    /// variables that read as tokens in their own right ($VAR in bash, $var in
-    /// PHP, --custom-props in CSS) are kept colored via `@property` captures in
-    /// the vendored/`extra` queries instead.
+    /// "function.method" → "function". Bare `variable`/`identifier` map to nil (default text),
+    /// as in VS Code: nvim-style catch-alls like `(identifier) @variable` otherwise paint every
+    /// identifier. Qualified captures (`@variable.builtin`, `@variable.parameter`) stay coloured;
+    /// sigiled variables (`$VAR`, `--custom-prop`) are re-captured as `@property` instead.
     public static func role(for capture: String) -> String? {
         if capture == "variable" || capture == "identifier" { return nil }   // bare catch-alls
         // Checked before the first-component split: bare "namespace" stays a type-colored
         // module name, while the PREFIX of a qualified name recedes (PhpStorm-style).
         if capture == "namespace.prefix" { return "muted" }
-        // `@plain` is ours: "this token is deliberately the plain foreground". Painting
+        // `@plain` is this package's own: "this token is deliberately the plain foreground". Painting
         // is additive — nothing can un-paint an earlier hit — so overruling a grammar
         // that classified a token wrongly needs a color, not the absence of one (Kotlin
         // calls every import alias a `type_identifier`, whatever it renames).
@@ -1206,7 +1084,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         // so `prunedQuerySource` drops them and interpolations stay string-colored. Giving
         // `@none` this role would flip all four languages at once — and because those
         // patterns sit AFTER the property/identifier ones, it would flatten `${a.size}`
-        // to plain rather than highlight it as code. Decide that one deliberately.
+        // to plain rather than highlight it as code.
         if capture == "plain" { return "plain" }
         switch capture.split(separator: ".").first.map(String.init) ?? capture {
         case "keyword", "conditional", "repeat", "include", "exception",
@@ -1245,9 +1123,6 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         }
     }
 
-    /// Headless validation: prints every token → capture → role for a file so
-    /// highlighting can be verified across languages without opening the app.
-    /// Invoked via `Sidewatch --dump-captures <file>`.
     /// Number of ERROR nodes tree-sitter produced for `text` — a probe that judges highlight
     /// coverage must know when its own sample does not parse (captures vanish around errors).
     public static func parseErrorCount(in text: String, language: CodeLanguage.Language) -> Int {
@@ -1265,6 +1140,8 @@ public final class TreeSitterHighlighter: CodeHighlighter {
         return count
     }
 
+    /// Headless validation: prints every token → capture → role for the file at `path`, so
+    /// highlighting can be checked across languages without opening the app.
     public static func dumpCaptures(path: String) {
         let url = URL(fileURLWithPath: path)
         let lang = CodeLanguage.Language.detect(for: url)
@@ -1311,9 +1188,8 @@ public final class TreeSitterHighlighter: CodeHighlighter {
                 let text = ns.substring(with: cap.range).trimmed
                 // Skip captures that span lines — a block/whole-file capture would drown the
                 // dump — but KEEP long single-line tokens (printing truncates them anyway).
-                // The old `count <= 30` made a 31-character token look exactly like a missing
-                // capture: `import 'package:flutter/material.dart'` read as an unpainted string
-                // that is in fact painted (17 Sep 2026).
+                // Must not cap by length: a dropped long token looks exactly like a missing
+                // capture.
                 guard !text.isEmpty, !text.contains("\n"), text.count <= 400 else { continue }
                 let absLoc = offset + cap.range.location
                 let key = "\(absLoc):\(cap.range.length)"

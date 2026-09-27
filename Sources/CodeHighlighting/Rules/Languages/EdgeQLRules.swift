@@ -11,7 +11,7 @@
 import Foundation
 
 /// EdgeQL / ESDL: `#` comments, the schema and query words, the scalar types, `:=`, `.path`
-/// lookups, `<casts>`, `123n` literals. Written 25 Sep 2026 (the sweep found two roles).
+/// lookups, `<casts>`, `123n` literals.
 extension RuleTables {
     static let edgeql: [(String, TokenKind)] = [
         hashComment,

@@ -11,7 +11,7 @@
 import Foundation
 
 /// `go.mod` / `go.sum`: `//` comments (`// indirect`), the directive words, module paths,
-/// `vX.Y.Z` versions, `=>` replacements, the Go version. Written 25 Sep 2026 (the sweep found two roles).
+/// `vX.Y.Z` versions, `=>` replacements, the Go version.
 extension RuleTables {
     static let gomod: [(String, TokenKind)] = [
         lineComment,

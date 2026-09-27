@@ -12,37 +12,21 @@ import Foundation
 import CodeLanguage
 import SwiftTreeSitter
 
-/// Rewrites the LEADING WHITESPACE of each line and nothing else — Xcode's ⌃I, not a formatter.
-///
-/// The distinction is the whole design. A formatter decides where lines break, how declarations
-/// are spaced and where braces sit, which needs a per-language model of the language's style.
-/// Re-indenting decides one thing per line: how far in it starts. That is derivable from nesting
-/// alone, so it generalises across every brace-delimited grammar without a rule table, and it
-/// cannot reorder, drop or rewrite a single token — the failure modes a formatter has and this
-/// does not.
-///
-/// Nesting comes from the parse tree rather than from counting braces in the text, because a
-/// brace inside a string or a comment is not nesting. Tree-sitter never emits those as bracket
-/// tokens (they are interior to the string/comment node), so working from tokens excludes them
-/// for free, with no quoting or escape rules to get wrong.
+/// Rewrites the leading whitespace of each line and nothing else: Xcode's ⌃I, not a formatter.
+/// Indentation derives from nesting alone, so it works across every bracket-delimited grammar
+/// without a rule table and can never reorder, drop or rewrite a token. Nesting comes from the
+/// parse tree's bracket tokens, not the text, so a brace inside a string or comment never counts.
 public enum CodeIndenter {
 
-    /// Languages where nesting is delimited by brackets, and only those.
-    ///
-    /// The exclusions matter more than the inclusions. In Python and YAML indentation IS the
-    /// syntax: re-indenting by bracket depth would drive every line to column zero and destroy
-    /// the program. Ruby, Lua and Bash nest with keywords (`def`/`end`, `then`/`end`, `if`/`fi`)
-    /// that this sees no brackets for, so it would flatten them just as badly. HTML and XML nest
-    /// by tags, which is a real algorithm but a different one. Markdown, SQL, TOML and Dockerfile
-    /// have no nesting worth restating.
-    ///
-    /// So the list is a whitelist, never a "parse it and hope". A language absent from it is
-    /// refused rather than mangled.
+    /// Languages where nesting is delimited by brackets, and only those: a whitelist, so anything
+    /// else is refused rather than mangled. Python and YAML (indentation is syntax) and Ruby, Lua
+    /// and Bash (keyword nesting) would be flattened to column zero; HTML and XML nest by tags.
     public static let supportedLanguages: Set<CodeLanguage.Language> = [
         .c, .cpp, .csharp, .css, .dart, .go, .java, .javascript, .json, .jsonc,
         .jsx, .kotlin, .php, .rust, .scala, .swift, .tsx, .typescript,
     ]
 
+    /// Whether `language` is in ``supportedLanguages``.
     public static func supports(_ language: CodeLanguage.Language) -> Bool {
         supportedLanguages.contains(language)
     }

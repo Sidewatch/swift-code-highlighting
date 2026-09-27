@@ -10,7 +10,8 @@
 
 import Foundation
 
-/// The regex rule table for Diff. Order matters: earlier rules win overlaps.
+/// The regex rule table for Diff.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let diff: [(String, TokenKind)] = [
         // Unified diffs / git patches (`git show`, .patch files). Added/removed
@@ -19,9 +20,8 @@ extension RuleTables {
         // git's `diff.mnemonicPrefix` i/ w/ c/ o/, /dev/null, a quoted path, or
         // POSIX `diff -u`'s `file<TAB>timestamp` form — so a removed `-- foo`
         // line ("--- foo") stays a removal while both git and plain POSIX
-        // headers render as headers. (`diff.noprefix` headers are inherently
-        // ambiguous with that per-line rule; DiffTab's hunk-aware colorizer
-        // handles those.)
+        // headers render as headers. `diff.noprefix` headers are ambiguous with
+        // that per-line rule; only a hunk-aware colouriser can tell them apart.
         ("^(?:diff|index|new file|deleted file|old mode|new mode|rename|similarity|dissimilarity|copy|Binary files|commit|Merge:|Author:|AuthorDate:|Commit:|CommitDate:|Date:|\\\\ No newline).*$", .comment),
         ("^(?:\\+\\+\\+|---) (?:[abiwco]/|/dev/null|\"|[^\\t\\n]*\\t).*$", .comment),
         ("^@@[^\\n]*", .function),

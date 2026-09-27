@@ -12,7 +12,6 @@ import Foundation
 
 /// Fortran (free form, with fixed-form `C` comment lines tolerated): `!` comments, the
 /// case-insensitive statement words, intrinsic types, `%` components, `1.0d0` literals.
-/// Written 25 Sep 2026 (the sweep found it flat).
 extension RuleTables {
     static let fortran: [(String, TokenKind)] = [
         ("!.*$", .comment),

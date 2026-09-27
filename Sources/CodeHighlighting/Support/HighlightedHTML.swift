@@ -12,14 +12,10 @@ import AppKit
 import CodeLanguage
 
 /// `code` as HTML for the inside of a `<code>` or a table cell, coloured the way the editor
-/// colours it — the SAME three tiers in the same order: a tree-sitter grammar where one is
-/// vendored, the single-file-component splitter for `.astro` / `.vue` / `.svelte`, and the regex
-/// rule tables for everything else (SCSS, Less, Terraform, GraphQL…). Escaped either way, one
-/// `<span>` per colour run, none for text in the default colour.
-///
-/// Until 24 Sep 2026 the only HTML entry was ``TreeSitterHighlighter/highlightedHTML(_:language:)``,
-/// which answers nil for a language without a grammar — so the Quick Look preview and the
-/// Markdown fences showed SCSS plain while the editor beside them coloured it.
+/// colours it: the same three tiers in the same order (tree-sitter grammar, single-file-component
+/// splitter, regex rule tables). Escaped, one `<span>` per colour run, none for default text.
+/// Prefer this to ``TreeSitterHighlighter/highlightedHTML(_:language:)``, which answers nil for a
+/// language without a grammar (SCSS, Less, Terraform…).
 public enum HighlightedHTML {
     /// The HTML for `code` as `language`, coloured with `colors` (the highlighter's installed
     /// provider by default — a tree-sitter grammar reads that one whatever is passed).

@@ -11,7 +11,7 @@
 import Foundation
 
 /// Textile: `h1.` headings and block signatures, *bold*, _italic_, @code@, "links":url,
-/// !images!, list markers, table cells, {styles}. Written 25 Sep 2026 (the sweep found one role).
+/// !images!, list markers, table cells, {styles}.
 extension RuleTables {
     static let textile: [(String, TokenKind)] = [
         ("^h[1-6]\\.\\s.*$", .keyword),

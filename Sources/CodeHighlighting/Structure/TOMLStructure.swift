@@ -13,18 +13,15 @@ import SwiftTreeSitter
 import CodeLanguage
 import DataConverter
 
-/// A TOML document as the structure a tree shows (25 Sep 2026, David: "I guess TOML and some
-/// other formats too"), from the vendored tree-sitter-toml grammar — so no second parser.
-/// `[table]` and `[a.b.c]` headers open nested mappings, `[[array]]` headers append a mapping
-/// to a sequence, dotted keys nest, and pairs land in file order under whatever header is
-/// open. Scalars keep their TOML kind: integers in every base with `_` separators, floats
-/// (`inf` and `nan` stay strings), booleans, the four date-time forms as strings, strings with
-/// their escapes resolved and multi-line strings with their first newline and line-ending
-/// backslashes handled. Arrays are sequences, inline tables mappings. Tree-sitter parses
-/// anything, so a malformed file yields what it could read; nil only for an empty document or
-/// a missing grammar.
+/// A TOML document as the structure a tree shows, read off the vendored tree-sitter-toml grammar.
+/// `[a.b]` headers and dotted keys nest, `[[array]]` headers append to a sequence, and pairs keep
+/// file order. Scalars keep their TOML kind (integers in every base, floats, booleans); date-times,
+/// `inf` and `nan` stay strings, with escapes and multi-line strings resolved. A malformed file
+/// yields what could be read; nil only for an empty document or a missing grammar.
 public enum TOMLStructure {
+    /// One step of a path into the structure: a mapping key or a sequence index.
     public typealias PathComponent = StructuredEdit.PathComponent
+    /// The ranges of a member's value and key, for replacing one token in place.
     public typealias EditSite = StructuredEdit.EditSite
 
     /// The document as structure, or nil when it is empty.
@@ -42,6 +39,7 @@ public enum TOMLStructure {
 
     // MARK: - Walking
 
+    /// The document as a ``LocatedValue``, ranges and all; nil when there is nothing to read.
     static func located(_ text: String) -> LocatedValue? {
         guard let root = TreeSitterHighlighter.freshParseRoot(text, language: .toml) else { return nil }
         let ns = text as NSString

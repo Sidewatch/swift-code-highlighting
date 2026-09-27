@@ -341,7 +341,7 @@ final class TreeSitterHighlighterTests: XCTestCase {
     }
 
     /// WP Customizer / media templates: `<# js #>` statements and `{{ }}` / `{{{ }}}` expressions
-    /// inside the HTML a PHP file embeds — plain text to every grammar until 4 Sep 2026. The
+    /// inside the HTML a PHP file embeds, which are plain text to every grammar. The
     /// grammar queries are not reachable under `swift test` (Bundle.main is the xctest runner),
     /// so the scanner is tested here and the painted result by `Sidewatch --dump-captures`.
     func testTemplateTagScannerSeparatesCodeFragmentsFromExpressions() {
@@ -692,8 +692,8 @@ extension TreeSitterHighlighterTests {
 
     /// Markdown's inline chunks are parsed one at a time: combined, tree-sitter reads two list
     /// items' "`a`" and "`b`" as one text "`a``b`", and the code span runs from the first
-    /// backtick to the next single one — the whole rest of the document went string-coloured
-    /// (22 Sep 2026). Every chunk still gets its hits.
+    /// backtick to the next single one, colouring the rest of the document as a string. Every
+    /// chunk still gets its hits.
     func testMarkdownInlineChunksAreParsedSeparately() throws {
         try XCTSkipUnless(TreeSitterHighlighter.supports(.markdown), "markdown grammar failed to load")
         let blockLang = try XCTUnwrap(TreeSitterHighlighter.tsLanguage(for: .markdown))

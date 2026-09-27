@@ -11,8 +11,7 @@
 import Foundation
 
 /// Jinja: `{# #}` comments, the `{% %}` and `{{ }}` delimiters, the tag words, `| filters`,
-/// dotted lookups, plus the markup family's tags for the HTML around them. Written 25 Sep 2026
-/// (the markup family gave it two roles).
+/// dotted lookups, plus the markup family's tags for the HTML around them.
 extension RuleTables {
     static let jinja: [(String, TokenKind)] = [
         ("\\{#[\\s\\S]*?#\\}", .comment),

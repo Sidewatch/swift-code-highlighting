@@ -10,7 +10,8 @@
 
 import Foundation
 
-/// The regex rule table for Python. Order matters: earlier rules win overlaps.
+/// The regex rule table for Python.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let python: [(String, TokenKind)] = [
         tripleDoubleQuoted,

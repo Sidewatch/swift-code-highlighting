@@ -12,7 +12,7 @@ import Foundation
 
 /// Nix: `#` and block comments, `"…"` and `''…''` strings, the expression words, attribute
 /// names before `=`, function arguments before `:`, paths and `<search-paths>`, the standard
-/// library names. Written 25 Sep 2026 (the ML family gave it two roles).
+/// library names.
 extension RuleTables {
     static let nix: [(String, TokenKind)] = [
         hashComment,

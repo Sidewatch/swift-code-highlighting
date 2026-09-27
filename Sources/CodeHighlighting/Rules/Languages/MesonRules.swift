@@ -11,7 +11,7 @@
 import Foundation
 
 /// Meson: `#` comments, `'…'` strings, the build functions and control words, `kwarg :`
-/// names, method calls, the built-in objects. Written 25 Sep 2026 (the sweep found two roles).
+/// names, method calls, the built-in objects.
 extension RuleTables {
     static let meson: [(String, TokenKind)] = [
         hashComment,

@@ -11,8 +11,8 @@
 import Foundation
 
 /// `.strings`: `/* */` and `//` comments, the key before `=` (quoted or bare), the quoted
-/// value, the `=` and `;` between them (format specifiers sit inside strings, which the regex
-/// tier paints last and whole, so they cannot show). Written 25 Sep 2026 (the sweep found two roles).
+/// value, the `=` and `;` between them. Format specifiers sit inside strings, which the regex
+/// tier paints last and whole, so they cannot show.
 extension RuleTables {
     static let strings: [(String, TokenKind)] = [
         blockComment,

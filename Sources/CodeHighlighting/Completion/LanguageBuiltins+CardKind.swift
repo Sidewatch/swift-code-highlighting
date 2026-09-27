@@ -16,8 +16,8 @@ extension LanguageBuiltins {
 
     /// What a built-in's hover card should call it, read off its signature: `module …` for
     /// modules, `var …` for properties, `Name — …` for a type or namespace described rather
-    /// than called, `name: Type` for a value; anything else with a `(` is a call. Before
-    /// 4 Sep 2026 every builtin said "Built-in function", which read wrong on `Map` or `os`.
+    /// than called, `name: Type` for a value; anything else with a `(` is a call. Must not
+    /// default everything to "Built-in function": that reads wrong on `Map` or `os`.
     public static func cardKind(word: String, signature: String) -> (kind: SymbolKind, doc: String) {
         let s = signature
         if s.hasPrefix("module ") || s.hasPrefix("package ") { return (.module, "Built-in module") }

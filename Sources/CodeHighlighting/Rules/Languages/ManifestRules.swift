@@ -11,7 +11,6 @@
 import Foundation
 
 /// `MANIFEST.MF`: `Name:` keys, continuation lines, jar paths, dotted class names, versions.
-/// Written 25 Sep 2026 (the sweep found two roles).
 extension RuleTables {
     static let manifest: [(String, TokenKind)] = [
         ("^[A-Za-z][\\w-]*(?=:)", .property),

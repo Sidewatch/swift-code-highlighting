@@ -11,16 +11,18 @@
 import Foundation
 import DataConverter
 
-/// A value and where it sits in its file (25 Sep 2026): the one thing a grammar walk produces,
-/// from which `value` (the tree) and `site(path:)` (a cell edit's ranges) are both read — so
-/// the two can never disagree about which node a path names. The TOML, XML and property-list
-/// readers build one; YAML's two walks predate it.
+/// A value and where it sits in its file: the one thing a grammar walk produces, from which
+/// `value` (the tree) and `site(path:)` (a cell edit's ranges) are both read, so the two can
+/// never disagree about which node a path names. The TOML, XML and property-list readers build
+/// one; YAML walks its tree directly.
 struct LocatedValue {
+    /// The value's shape, with located children.
     indirect enum Node {
         case mapping([LocatedPair])
         case sequence([LocatedValue])
         case scalar(StructuredValue)
     }
+    /// The value's shape and contents.
     var node: Node
     /// The value's own span: a scalar's token, a container's extent — nil when a container has
     /// no single span (a TOML table gathered from several headers) or a scalar no place to write
@@ -75,7 +77,9 @@ final class LocatedBuilder {
     var scalar: StructuredValue = .null
     var range: NSRange?
 
+    /// An empty builder of `kind` spanning `range`.
     init(_ kind: Kind, range: NSRange? = nil) { self.kind = kind; self.range = range }
+    /// A finished scalar builder holding `value` at `range`.
     static func scalar(_ value: StructuredValue, range: NSRange?) -> LocatedBuilder {
         let b = LocatedBuilder(.scalar, range: range); b.scalar = value; return b
     }
@@ -92,6 +96,7 @@ final class LocatedBuilder {
         return made
     }
 
+    /// The immutable ``LocatedValue`` this builder has grown into.
     var frozen: LocatedValue {
         switch kind {
         case .mapping: return LocatedValue(node: .mapping(pairs.map { LocatedPair(key: $0.key, keyRange: $0.keyRange, value: $0.value.frozen) }), range: range)

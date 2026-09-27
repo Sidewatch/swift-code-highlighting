@@ -12,7 +12,6 @@ import Foundation
 
 /// Log files: timestamps, the levels (errors in the removed tint, successes in the added one),
 /// `[thread]` tags, dotted class names, stack frames dimmed, URLs, durations, hex ids.
-/// Written 25 Sep 2026 (the sweep found it flat).
 extension RuleTables {
     static let log: [(String, TokenKind)] = [
         ("^\\s+at [\\w.$<>]+\\(.*\\)\\s*$", .comment),

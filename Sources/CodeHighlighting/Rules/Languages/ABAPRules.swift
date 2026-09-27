@@ -12,7 +12,6 @@ import Foundation
 
 /// ABAP: `*` comment lines and `"` trailing comments, `'…'` strings and `|…|` templates, the
 /// case-insensitive statement words, `ls_`/`lt_` variables, `-` structure components.
-/// Written 25 Sep 2026 (the sweep found it flat).
 extension RuleTables {
     static let abap: [(String, TokenKind)] = [
         ("^\\*.*$", .comment),

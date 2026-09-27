@@ -11,7 +11,7 @@
 import Foundation
 
 /// PlantUML: `'` comments, `@startuml` … `@enduml`, the diagram words, arrows, `: message`
-/// text, capitalised names. Written 25 Sep 2026 (the sweep found it flat).
+/// text, capitalised names.
 extension RuleTables {
     static let plantuml: [(String, TokenKind)] = [
         ("^\\s*'.*$", .comment),

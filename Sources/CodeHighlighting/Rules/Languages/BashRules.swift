@@ -10,7 +10,8 @@
 
 import Foundation
 
-/// The regex rule table for Bash. Order matters: earlier rules win overlaps.
+/// The regex rule table for Bash.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let bash: [(String, TokenKind)] = [
         hashComment,

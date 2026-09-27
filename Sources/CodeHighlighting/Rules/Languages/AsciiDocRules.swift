@@ -12,7 +12,7 @@ import Foundation
 
 /// AsciiDoc: `=` headings, `//` comments, block titles, `[attribute]` lines, `:name:` entries,
 /// block delimiters, inline bold / italic / mono, `<<xrefs>>`, admonitions, tables, list
-/// markers. Written 25 Sep 2026 (the sweep found one role).
+/// markers.
 extension RuleTables {
     static let asciidoc: [(String, TokenKind)] = [
         ("^//.*$", .comment),

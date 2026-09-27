@@ -63,8 +63,6 @@ final class SymbolIndexTests: XCTestCase {
     func testSymbolsUnsupportedLanguageReturnsEmpty() {
         // No grammar AND no symbol query (.plainText), plus an empty buffer in a
         // fully supported language: both must degrade to [] rather than crash.
-        // (.swift used to be this test's no-grammar case — it has one now, and
-        //  its symbols are covered by testSymbolsSwiftDefinitions below.)
         XCTAssertEqual(TreeSitterHighlighter.symbols(in: "hello", language: .plainText).count, 0)
         XCTAssertEqual(TreeSitterHighlighter.symbols(in: "", language: .python).count, 0, "empty buffer")
     }
@@ -91,8 +89,7 @@ final class SymbolIndexTests: XCTestCase {
     }
 
     /// Line numbers come from ONE forward pass whose cursor only moves forward
-    /// (it used to re-count each symbol's prefix independently, which was
-    /// O(n·m)). Two definitions sharing a line are the case that pass can get
+    /// (not a per-symbol prefix count, which is O(n·m)). Two definitions sharing a line are the case that pass can get
     /// wrong: the second must not consume the newline the first stopped at.
     func testSymbolLinesWithTwoDefinitionsOnOneLine() throws {
         try XCTSkipUnless(TreeSitterHighlighter.supports(.javascript), "JS grammar failed to load")

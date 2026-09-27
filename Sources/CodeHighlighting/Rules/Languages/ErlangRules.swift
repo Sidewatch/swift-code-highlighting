@@ -11,8 +11,7 @@
 import Foundation
 
 /// Erlang: `%` comments, quoted atoms, capitalised variables, `-module(...)` attributes,
-/// `?MACRO`, `#record`, `Mod:fun(` calls. Written 25 Sep 2026 when a sweep of every sample found
-/// the language painted nothing (it fell to the empty plain family).
+/// `?MACRO`, `#record`, `Mod:fun(` calls. Without it Erlang falls to the empty plain family.
 extension RuleTables {
     static let erlang: [(String, TokenKind)] = [
         ("%.*$", .comment),

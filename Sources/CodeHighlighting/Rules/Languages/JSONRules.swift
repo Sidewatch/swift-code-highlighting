@@ -10,7 +10,8 @@
 
 import Foundation
 
-/// The regex rule table for JSON. Order matters: earlier rules win overlaps.
+/// The regex rule table for JSON.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let json: [(String, TokenKind)] = [
         ("\"(?:[^\"\\\\]|\\\\.)*\"\\s*:", .function),

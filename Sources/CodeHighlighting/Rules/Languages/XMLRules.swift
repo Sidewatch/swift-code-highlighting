@@ -10,7 +10,7 @@
 
 import Foundation
 
-/// The regex rule table for XML. Order matters: earlier rules win overlaps.
+/// The regex rule table for XML. Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let xml: [(String, TokenKind)] = [
         htmlComment,

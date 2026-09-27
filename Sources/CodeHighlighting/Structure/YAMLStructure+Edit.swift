@@ -12,13 +12,10 @@ import Foundation
 import SwiftTreeSitter
 import DataConverter
 
-/// WHERE one key or value of a YAML file sits — the finding half of a cell edit in the YAML tree
-/// (25 Sep 2026, David: "the keys/values should be editable by double clicking"). The
-/// tree-sitter tree the structure is read from also knows where every node sits, so
+/// Where one key or value of a YAML file sits: the finding half of a cell edit in the YAML tree.
 /// `site(in:path:)` walks the same nodes as `value(of:)` and answers the UTF-16 ranges of the
-/// member at `path`: its scalar (quotes or the `|` block included) and, in a mapping, its key.
-/// What to WRITE there is plain string rules and lives with JSON's in swift-data-converter
-/// (`YAMLEdit.encodedScalar`), so the two editors share one vocabulary and one escaper.
+/// member's scalar (quotes or `|` block included) and, in a mapping, its key. What to write there
+/// lives in swift-data-converter (`YAMLEdit.encodedScalar`), sharing JSON's escaper.
 extension YAMLStructure {
     /// One step of a path: a mapping member by key, or a sequence element by index.
     public typealias PathComponent = StructuredEdit.PathComponent

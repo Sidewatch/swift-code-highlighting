@@ -11,8 +11,7 @@
 import Foundation
 
 /// COBOL: a `*` in column 7 is a comment line, `*>` a floating comment; the divisions and verbs
-/// (case-insensitive), `PIC` clauses as types, level numbers, paragraph names. Written
-/// 25 Sep 2026 (the sweep found it flat).
+/// (case-insensitive), `PIC` clauses as types, level numbers, paragraph names.
 extension RuleTables {
     static let cobol: [(String, TokenKind)] = [
         ("^.{6}\\*.*$", .comment),

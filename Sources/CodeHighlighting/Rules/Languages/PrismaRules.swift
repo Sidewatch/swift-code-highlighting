@@ -10,7 +10,8 @@
 
 import Foundation
 
-/// The regex rule table for Prisma. Order matters: earlier rules win overlaps.
+/// The regex rule table for Prisma.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let prisma: [(String, TokenKind)] = [
         lineComment,

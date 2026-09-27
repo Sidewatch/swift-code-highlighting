@@ -52,7 +52,7 @@ enum RuleTables {
         case .protobuf: return protobuf
         case .toml: return toml
         case .diff: return diff
-        // 25 Sep 2026: every language a corpus sweep found flat or nearly flat got its own table.
+        // Languages whose family table paints them flat or nearly flat.
         case .erlang: return erlang
         case .prolog: return prolog
         case .fortran: return fortran

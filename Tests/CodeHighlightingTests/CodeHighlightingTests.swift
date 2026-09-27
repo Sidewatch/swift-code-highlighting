@@ -250,7 +250,7 @@ final class CodeHighlightingTests: XCTestCase {
 
     func testBuildAfterInvalidateIsNotDropped() {
         // Project switch while a build is in flight: invalidate() + build(newRoot)
-        // must actually run the second build (it used to be silently dropped).
+        // must actually run the second build, not silently drop it.
         let idx = ProjectSymbolIndex()
         let dirA = makeTempDir(), dirB = makeTempDir()
         defer { try? FileManager.default.removeItem(at: dirA); try? FileManager.default.removeItem(at: dirB) }

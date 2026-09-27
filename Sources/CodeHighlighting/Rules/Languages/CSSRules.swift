@@ -10,7 +10,7 @@
 
 import Foundation
 
-/// The regex rule table for CSS. Order matters: earlier rules win overlaps.
+/// The regex rule table for CSS. Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let css: [(String, TokenKind)] = [
         blockComment,

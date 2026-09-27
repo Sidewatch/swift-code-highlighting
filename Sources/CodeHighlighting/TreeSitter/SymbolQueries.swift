@@ -202,17 +202,10 @@ public enum SymbolQueries {
     (function_declaration name: (identifier) @function)
     """
 
-    /// Swift. `class_declaration` is the grammar's node for class/struct/enum/
-    /// extension alike (they differ only by their `declaration_kind` child), so
-    /// one pattern captures all four and they read as `@class` → `.type`.
-    ///
-    /// Patterns must NOT overlap: `symbols(...)` appends every capture of every
-    /// match, so two patterns matching one node would emit the symbol twice. A
-    /// method therefore captures as `@function` from the single
-    /// `function_declaration` pattern (methods and free functions share that
-    /// node) — the same trade every other language here makes. `init`/`deinit`
-    /// and protocol requirements are distinct node types, so they can safely
-    /// carry the finer `@method` kind.
+    /// Swift. `class_declaration` covers class/struct/enum/extension alike, so all four read as
+    /// `@class` → `.type`. Patterns must not overlap (`symbols(...)` would emit a node twice), so
+    /// methods capture as `@function` with free functions; `init`/`deinit` and protocol
+    /// requirements are distinct nodes and can carry `@method`.
     private static let swift = """
     (class_declaration name: (type_identifier) @class)
     (protocol_declaration name: (type_identifier) @interface)

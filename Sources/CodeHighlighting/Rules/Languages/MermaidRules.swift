@@ -11,7 +11,7 @@
 import Foundation
 
 /// Mermaid: `%%` comments, the diagram and structure words, arrows, node labels in brackets,
-/// `[*]` states, `: label` text. Written 25 Sep 2026 (the sweep found it flat).
+/// `[*]` states, `: label` text.
 extension RuleTables {
     static let mermaid: [(String, TokenKind)] = [
         ("%%.*$", .comment),

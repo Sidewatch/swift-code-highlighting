@@ -10,7 +10,8 @@
 
 import Foundation
 
-/// The regex rule table for HTML. Order matters: earlier rules win overlaps.
+/// The regex rule table for HTML.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let html: [(String, TokenKind)] = [
         htmlComment,

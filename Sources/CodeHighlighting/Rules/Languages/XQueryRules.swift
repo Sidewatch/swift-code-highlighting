@@ -12,7 +12,6 @@ import Foundation
 
 /// XQuery: `(: … :)` comments, `$variables`, the FLWOR and declaration words, prefixed
 /// names (`xs:decimal`, `fn:count`), embedded element constructors, `@attributes`.
-/// Written 25 Sep 2026 (the sweep found it flat).
 extension RuleTables {
     static let xquery: [(String, TokenKind)] = [
         ("\\(:[\\s\\S]*?:\\)", .comment),

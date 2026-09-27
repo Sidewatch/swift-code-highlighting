@@ -11,8 +11,7 @@
 import Foundation
 
 /// `.gitattributes`: `#` comments, the path pattern first on the line, `attr=value` settings,
-/// the attribute names git knows, `-attr` / `!attr` unset. Written 25 Sep 2026 (the sweep found
-/// comments only).
+/// the attribute names git knows, `-attr` / `!attr` unset.
 extension RuleTables {
     static let gitattributes: [(String, TokenKind)] = [
         hashComment,

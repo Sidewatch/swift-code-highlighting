@@ -10,7 +10,8 @@
 
 import Foundation
 
-/// The regex rule table for Vue / Svelte. Order matters: earlier rules win overlaps.
+/// The regex rule table for Vue / Svelte.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let vue: [(String, TokenKind)] = [
         // Single-file components: tags, interpolation, and framework directives /

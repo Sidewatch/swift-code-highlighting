@@ -25,6 +25,7 @@ public struct CompletionItem: Equatable {
     /// and a buffer word has no definition site.
     public let detail: String?
 
+    /// Memberwise initializer.
     public init(text: String, kind: SymbolKind?, detail: String?) {
         self.text = text
         self.kind = kind

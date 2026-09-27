@@ -12,7 +12,6 @@ import Foundation
 
 /// Smalltalk (Pharo / Squeak): `"…"` COMMENTS, `'…'` strings, `#symbols`, capitalised class
 /// names, keyword selectors `at:put:`, the pseudo-variables, `^` returns, `| temps |`.
-/// Written 25 Sep 2026 (the sweep found it flat).
 extension RuleTables {
     static let smalltalk: [(String, TokenKind)] = [
         ("\"[^\"]*\"", .comment),

@@ -10,10 +10,11 @@
 
 import Foundation
 
-/// The regex rule table for Gettext. Order matters: earlier rules win overlaps.
+/// The regex rule table for Gettext.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let gettext: [(String, TokenKind)] = [
-        // Translation catalogs (.po/.pot): `#`-family comment lines (translator
+        // Translation catalogues (.po/.pot): `#`-family comment lines (translator
         // notes, `#:` references, `#,` flags), the msgid/msgstr keyword spine —
         // plural forms included — and the quoted message strings themselves.
         hashComment,

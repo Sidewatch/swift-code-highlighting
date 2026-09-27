@@ -13,15 +13,10 @@
 import Foundation
 import CodeLanguage
 
-/// A language's built-in identifiers (standard functions, methods, globals) as
-/// completion candidates — the tier that lets `array_`→`array_map` work in PHP,
-/// `map`/`filter`/`then` across JS objects, `len`/`enumerate` in Python, etc.,
-/// without a language server.
-///
-/// Lean by construction: the lists are plain newline-delimited **names only** (no
-/// signatures or docs), shipped as small text resources (~20 KB/language), and
-/// loaded + cached lazily — only the languages actually edited ever touch disk or
-/// hold memory. Names starting with `#` are comments.
+/// A language's built-in identifiers (standard functions, methods, globals) as completion
+/// candidates, so `array_` completes to `array_map` in PHP without a language server.
+/// The lists are small text resources (~20 KB each, one name per line, optionally with a
+/// signature), loaded and cached lazily per language.
 public enum LanguageBuiltins {
 
     /// Cached, ranked completion items per language (empty for unsupported ones).

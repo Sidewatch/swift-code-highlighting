@@ -26,6 +26,7 @@ public struct Symbol {
     /// which is how the outline tree nests methods under their type. Nil when unknown.
     public let scopeRange: NSRange?
 
+    /// Memberwise initializer; `scopeRange` defaults to unknown.
     public init(name: String, kind: SymbolKind, range: NSRange, line: Int, scopeRange: NSRange? = nil) {
         self.name = name
         self.kind = kind

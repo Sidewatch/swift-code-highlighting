@@ -11,7 +11,7 @@
 import Foundation
 
 /// Graphviz DOT: `//`, `/* */` and `#` comments, the graph words, `->` / `--` edges,
-/// `attr=value` pairs, quoted labels, numbers. Written 25 Sep 2026 (the sweep found two roles).
+/// `attr=value` pairs, quoted labels, numbers.
 extension RuleTables {
     static let dot: [(String, TokenKind)] = [
         lineComment,

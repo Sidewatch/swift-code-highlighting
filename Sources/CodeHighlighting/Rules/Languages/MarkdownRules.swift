@@ -10,7 +10,8 @@
 
 import Foundation
 
-/// The regex rule table for Markdown. Order matters: earlier rules win overlaps.
+/// The regex rule table for Markdown.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let markdown: [(String, TokenKind)] = [
         ("^>+\\s?.*$", .comment),

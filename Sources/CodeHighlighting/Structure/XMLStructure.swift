@@ -13,18 +13,16 @@ import SwiftTreeSitter
 import CodeLanguage
 import DataConverter
 
-/// An XML document as the structure a tree shows (25 Sep 2026, David: "what are your thoughts
-/// on an XML preview mode?"), from the vendored tree-sitter-xml grammar. The root element is a
-/// one-pair mapping. An element is a mapping of its attributes (`@name`, in file order) then its
-/// child elements in file order, REPEATED child names gathered into one sequence under that
-/// name (`<tag>` twice under `<tags>` is `tags.tag[0]`, `tags.tag[1]`); an element holding only
-/// text is that text — CDATA verbatim, the five predefined entities and numeric references
-/// resolved, a DTD's own entity left as written, surrounding whitespace trimmed — and one that
-/// holds both text and children keeps its text under `#text`. Comments, processing
-/// instructions and the DOCTYPE are not values and are dropped. Namespaced names stay as
-/// written (`dc:title`). Nil for a document with no root element.
+/// An XML document as the structure a tree shows, read off the vendored tree-sitter-xml grammar:
+/// the root element is a one-pair mapping, and an element maps its `@attributes` then its children
+/// in file order, repeated child names gathered into one sequence (`tags.tag[0]`, `tags.tag[1]`).
+/// A text-only element is its trimmed text (CDATA verbatim, predefined and numeric references
+/// resolved); mixed content keeps its text under `#text`. Comments, processing instructions and
+/// the DOCTYPE are dropped. Nil for a document with no root element.
 public enum XMLStructure {
+    /// One step of a path into the structure: a mapping key or a sequence index.
     public typealias PathComponent = StructuredEdit.PathComponent
+    /// The ranges of a member's value and key, for replacing one token in place.
     public typealias EditSite = StructuredEdit.EditSite
 
     /// The document as structure, or nil when it has no root element.
@@ -42,6 +40,7 @@ public enum XMLStructure {
 
     // MARK: - Walking
 
+    /// The document as a ``LocatedValue``, ranges and all; nil when there is nothing to read.
     static func located(_ text: String) -> LocatedValue? {
         guard let root = TreeSitterHighlighter.freshParseRoot(text, language: .xml) else { return nil }
         let ns = text as NSString

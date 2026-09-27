@@ -2,7 +2,7 @@
 //  TerraformRules.swift
 //  CodeHighlighting
 //
-//  The regex rule table for Terraform / Hcl.
+//  The regex rule table for Terraform / HCL.
 //
 //  Created by David Sherlock on 9/5/26.
 //  Copyright © 2026 ArrayPress Limited. MIT licence.
@@ -10,7 +10,8 @@
 
 import Foundation
 
-/// The regex rule table for Terraform / Hcl. Order matters: earlier rules win overlaps.
+/// The regex rule table for Terraform / HCL.
+/// Later rules repaint earlier ones; strings and comments paint last.
 extension RuleTables {
     static let terraform: [(String, TokenKind)] = [
         hashComment,

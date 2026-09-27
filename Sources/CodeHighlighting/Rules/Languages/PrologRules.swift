@@ -11,7 +11,7 @@
 import Foundation
 
 /// Prolog: `%` and block comments, quoted atoms, capitalised variables, the `:-` neck, predicate
-/// calls. Written 25 Sep 2026 (the sweep found it flat).
+/// calls.
 extension RuleTables {
     static let prolog: [(String, TokenKind)] = [
         ("%.*$", .comment),

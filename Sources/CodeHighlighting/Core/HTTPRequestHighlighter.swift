@@ -11,18 +11,11 @@
 import AppKit
 import CodeLanguage
 
-/// Highlighter for an HTTP-client request document (the VS Code / JetBrains `.http`
-/// format). `CodeLanguage` has no `.http` case and no grammar ships for it, so this
-/// is the "minimal pass" fallback: it colors the `### block name` separators, the
-/// `METHOD url` line, header names, and hands each request's JSON body to the JSON
-/// regex highlighter — reuse over reinvention, since a `SyntaxHighlighter(.json)`
-/// colors a sub-range in place without parsing the surrounding non-JSON.
-///
-/// A small state machine walks the document line by line: a `###` line opens a new
-/// block, the first real line in a block is its request line, lines up to the next
-/// blank are headers, and everything after that blank (to the next `###` or EOF) is
-/// the body. Colors come from the shared `TokenColorProviding`, read live, so a
-/// theme switch just needs a re-highlight.
+/// Highlighter for an HTTP-client request document (the VS Code / JetBrains `.http` format),
+/// which has no `CodeLanguage` case or grammar. A line-by-line state machine colours `###`
+/// separators, the `METHOD url` line and header names, and hands each body (after the first
+/// blank line) to the regex JSON highlighter, which paints a sub-range without parsing the rest.
+/// Colours are read live, so a theme switch needs only a re-highlight.
 public final class HTTPRequestHighlighter: CodeHighlighter {
 
     private let colors: TokenColorProviding

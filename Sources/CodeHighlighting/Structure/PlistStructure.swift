@@ -14,17 +14,15 @@ import CodeLanguage
 import DataConverter
 import FoundationExtensions
 
-/// A property list as the structure a tree shows (25 Sep 2026): an XML plist (`Info.plist`,
-/// `.entitlements`, an Xcode-written `.strings`) read off the vendored tree-sitter-xml grammar
-/// so a `<dict>` keeps the file's key order and every key and value has a site to edit — a
-/// `<key>` then its element: `<string>`, `<date>` and `<data>` as strings (data with its
-/// whitespace removed), `<integer>` and `<real>` as numbers, `<true/>` / `<false/>` as booleans,
-/// `<array>` a sequence, `<dict>` a mapping; a BINARY plist (`bplist00`) through
-/// `PropertyListStructure` in swift-data-converter, keys sorted and nothing editable, since
-/// there is no text to write into. A `<plist>` wrapper is unwrapped; a bare `<dict>` or
-/// `<array>` root is taken as is. Nil for anything else.
+/// A property list as the structure a tree shows. An XML plist is read off the vendored
+/// tree-sitter-xml grammar, so a `<dict>` keeps file order and every key and value has an edit
+/// site; `<date>` and `<data>` read as strings. A binary plist (`bplist00`) goes through
+/// swift-data-converter's `PropertyListStructure`: keys sorted, nothing editable. The `<plist>`
+/// wrapper is unwrapped; nil for anything that is not a `<dict>` or `<array>` root.
 public enum PlistStructure {
+    /// One step of a path into the structure: a mapping key or a sequence index.
     public typealias PathComponent = StructuredEdit.PathComponent
+    /// The ranges of a member's value and key, for replacing one token in place.
     public typealias EditSite = StructuredEdit.EditSite
 
     /// The document as structure, or nil when it is not a property list.
@@ -56,6 +54,7 @@ public enum PlistStructure {
 
     // MARK: - Walking
 
+    /// The document as a ``LocatedValue``, ranges and all; nil when there is nothing to read.
     static func located(_ text: String) -> LocatedValue? {
         guard let root = TreeSitterHighlighter.freshParseRoot(text, language: .xml) else { return nil }
         let ns = text as NSString
