@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "CodeHighlighting",
+    defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     products: [
         .library(name: "CodeHighlighting", targets: ["CodeHighlighting"]),
@@ -78,6 +79,7 @@ let package = Package(
             resources: [
                 // Per-language built-in identifier lists for the completion tier.
                 .copy("CodeHighlighting/Builtins"),
+                .process("CodeHighlighting/Localizable.xcstrings"),
             ],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
