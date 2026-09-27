@@ -6,6 +6,7 @@
 //  syntax tree alive across highlight passes.
 //
 //  Created by David Sherlock on 7/16/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import AppKit

@@ -6,6 +6,7 @@
 //  has no tree-sitter symbol query, so the structure outline falls back to this.
 //
 //  Created by David Sherlock on 7/19/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

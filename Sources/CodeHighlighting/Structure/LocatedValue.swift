@@ -5,6 +5,7 @@
 //  A document's structure with where each key and value sits — one walk that answers both the tree and an edit site.
 //
 //  Created by David Sherlock on 9/25/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

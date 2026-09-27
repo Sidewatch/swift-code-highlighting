@@ -1,6 +1,6 @@
 //
 //  CustomLanguageDefinition.swift
-//  SwiftCodeHighlighting
+//  CodeHighlighting
 //
 //  A user-authored, JSON-decodable description of a niche language, compiled
 //  into the regex highlighter's rule tables — so an app can support languages
@@ -8,6 +8,7 @@
 //  hand-written JSON file.
 //
 //  Created by David Sherlock on 7/16/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

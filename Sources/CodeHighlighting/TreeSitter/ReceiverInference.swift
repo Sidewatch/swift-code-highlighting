@@ -1,6 +1,6 @@
 //
 //  ReceiverInference.swift
-//  SwiftCodeHighlighting
+//  CodeHighlighting
 //
 //  Language-server-free receiver typing for go-to-definition: pure text reads
 //  that answer "which class does `$obj` in `$obj->method()` hold?" often enough
@@ -11,6 +11,7 @@
 //  redirect.
 //
 //  Created by David Sherlock on 8/26/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

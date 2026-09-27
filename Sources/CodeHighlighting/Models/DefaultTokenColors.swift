@@ -5,6 +5,7 @@
 //  A neutral fallback color provider, so highlighting is sensible before a theme is installed.
 //
 //  Created by David Sherlock on 9/5/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import AppKit

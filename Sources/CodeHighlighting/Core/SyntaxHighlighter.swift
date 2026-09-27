@@ -1,11 +1,12 @@
 //
 //  SyntaxHighlighter.swift
-//  SwiftCodeHighlighting
+//  CodeHighlighting
 //
 //  Dependency-light regex syntax highlighter with per-language rules and a
 //  family-based fallback, covering every language CodeLanguage recognizes.
 //
 //  Created by David Sherlock on 7/9/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import AppKit

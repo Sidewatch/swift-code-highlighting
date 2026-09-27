@@ -1,10 +1,11 @@
 //
 //  TokenKind.swift
-//  SwiftCodeHighlighting
+//  CodeHighlighting
 //
 //  The semantic role of a highlighted token.
 //
 //  Created by David Sherlock on 7/9/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

@@ -5,6 +5,7 @@
 //  An XML document as ordered structure — attributes, children, repeats, text, CDATA, entities — and its edit sites.
 //
 //  Created by David Sherlock on 9/25/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import XCTest

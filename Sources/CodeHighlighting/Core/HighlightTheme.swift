@@ -1,6 +1,6 @@
 //
 //  HighlightTheme.swift
-//  SwiftCodeHighlighting
+//  CodeHighlighting
 //
 //  A process-wide color provider for highlighters whose color access happens in
 //  static context (e.g. the tree-sitter engine's capture→color mapping and its
@@ -8,6 +8,7 @@
 //  theme change just needs a re-highlight.
 //
 //  Created by David Sherlock on 7/9/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import AppKit

@@ -1,12 +1,13 @@
 //
 //  TokenColorProviding.swift
-//  SwiftCodeHighlighting
+//  CodeHighlighting
 //
 //  The color seam: supplies a concrete color for each token role and the default
 //  foreground. Implement it against your theme; colors are read live at highlight
 //  time, so a theme change simply needs a re-highlight.
 //
 //  Created by David Sherlock on 7/9/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import AppKit

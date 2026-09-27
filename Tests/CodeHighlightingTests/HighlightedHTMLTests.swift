@@ -5,6 +5,7 @@
 //  The HTML entry falls through the editor's tiers: a language with no grammar is still coloured.
 //
 //  Created by David Sherlock on 9/24/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import XCTest

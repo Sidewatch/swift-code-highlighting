@@ -1,10 +1,11 @@
 //
 //  EmbeddedMarkupTests.swift
-//  Tests for SwiftCodeHighlighting
+//  CodeHighlightingTests
 //
 //  Region splitting for single-file components (Astro / Vue / Svelte).
 //
 //  Created by David Sherlock on 7/30/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import XCTest

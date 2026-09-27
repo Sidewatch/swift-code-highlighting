@@ -6,6 +6,7 @@
 //  tree-sitter grammar vendored for highlighting, so a tree preview needs no second parser.
 //
 //  Created by David Sherlock on 9/22/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

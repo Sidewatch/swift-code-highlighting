@@ -5,6 +5,7 @@
 //  An XML property list as ordered structure with edit sites; a binary one through Foundation.
 //
 //  Created by David Sherlock on 9/25/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

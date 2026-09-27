@@ -6,6 +6,7 @@
 //  no receiver.
 //
 //  Created by David Sherlock on 8/26/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import XCTest

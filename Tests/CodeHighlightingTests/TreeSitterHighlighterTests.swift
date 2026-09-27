@@ -5,6 +5,7 @@
 //  Covers every TokenKind so capture→color mapping can be asserted exactly.
 //
 //  Created by David Sherlock on 7/16/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import XCTest

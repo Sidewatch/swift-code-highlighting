@@ -5,6 +5,7 @@
 //  An XML property list in file order with edit sites; a binary one read through Foundation.
 //
 //  Created by David Sherlock on 9/25/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import XCTest

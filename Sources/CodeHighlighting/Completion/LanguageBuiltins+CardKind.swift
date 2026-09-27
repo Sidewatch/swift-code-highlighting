@@ -7,6 +7,7 @@
 //  `name: Type` for a value; anything else with a `(` is a call.
 //
 //  Created by David Sherlock on 9/5/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

@@ -5,6 +5,7 @@
 //  A node in the outline tree: a symbol plus its nested children.
 //
 //  Created by David Sherlock on 9/5/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

@@ -5,6 +5,7 @@
 //  An XML document as ordered structure, read off the tree-sitter grammar vendored for highlighting.
 //
 //  Created by David Sherlock on 9/25/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

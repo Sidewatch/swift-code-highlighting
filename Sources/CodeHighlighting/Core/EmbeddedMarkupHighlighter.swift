@@ -1,12 +1,13 @@
 //
 //  EmbeddedMarkupHighlighter.swift
-//  SwiftCodeHighlighting
+//  CodeHighlighting
 //
 //  Single-file-component highlighting (Astro / Vue / Svelte): splits the
 //  document into markup and embedded-language regions, then paints each region
 //  with the best highlighter available for *that* language.
 //
 //  Created by David Sherlock on 7/30/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import AppKit

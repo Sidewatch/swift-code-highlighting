@@ -5,6 +5,7 @@
 //  The regex rule table for JAR manifests.
 //
 //  Created by David Sherlock on 9/25/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation

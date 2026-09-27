@@ -5,6 +5,7 @@
 //  Every language that got a rule table on 25 Sep 2026 paints at least three roles on a real snippet.
 //
 //  Created by David Sherlock on 9/25/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import XCTest

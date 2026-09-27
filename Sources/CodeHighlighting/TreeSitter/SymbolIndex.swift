@@ -5,6 +5,7 @@
 //  A definition found in a source file (function, class, method, …).
 //
 //  Created by David Sherlock on 7/9/26.
+//  Copyright © 2026 ArrayPress Limited. MIT licence.
 //
 
 import Foundation
