@@ -10,6 +10,7 @@
 //
 
 import AppKit
+import AppKitViews
 import CodeLanguage
 import SwiftTreeSitter
 import TreeSitterJSON
@@ -457,7 +458,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
             signature = String(signature.dropLast())
         }
         signature = signature.trimmingCharacters(in: .whitespaces)
-        let mono = NSFont.monospacedSystemFont(ofSize: 12, weight: .medium)
+        let mono = NSFont.mono(12, weight: .medium)
         let line = knownLine ?? lineNumber(at: lineRange.location, in: ns)
         return (kind, attributedSnippet(signature, language: language, font: mono),
                 docComment(above: lineRange.location, in: ns, language: language), line)
@@ -510,7 +511,7 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     public static func highlightedHTML(_ code: String, language: CodeLanguage.Language) -> String? {
         guard grammar(for: language) != nil, let hl = TreeSitterHighlighter(language: language) else { return nil }
 
-        let font = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
+        let font = NSFont.mono(12)
         let storage = NSTextStorage(string: code,
                                     attributes: [.font: font, .foregroundColor: HighlightTheme.colors.foreground])
         storage.beginEditing()
@@ -537,15 +538,6 @@ public final class TreeSitterHighlighter: CodeHighlighter {
             }
         }
         return out
-    }
-
-    /// An NSColor as `#rrggbb`, via sRGB so a theme colour in any space converts predictably.
-    static func cssHex(_ color: NSColor) -> String {
-        let c = color.usingColorSpace(.sRGB) ?? color
-        let r = Int((c.redComponent * 255).rounded())
-        let g = Int((c.greenComponent * 255).rounded())
-        let b = Int((c.blueComponent * 255).rounded())
-        return String(format: "#%02X%02X%02X", r, g, b)
     }
 
     /// Enclosing definition names at `offset` (outermost → innermost) for breadcrumbs,
@@ -701,27 +693,6 @@ public final class TreeSitterHighlighter: CodeHighlighter {
     /// locating chip positions.
     public static let colorRegex = try? NSRegularExpression(
         pattern: "#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\\b")
-
-    /// Parses a `#RGB` / `#RRGGBB` / `#RRGGBBAA` literal (leading `#` optional)
-    /// into an sRGB color; nil when the string isn't a valid hex color.
-    public static func colorFromHex(_ hex: String) -> NSColor? {
-        var s = Substring(hex)
-        if s.hasPrefix("#") { s = s.dropFirst() }
-        // Every character must be a hex digit: `UInt64(_:radix:)` accepts a leading sign, so
-        // `#+12345` would otherwise decode as a colour.
-        guard !s.isEmpty, s.allSatisfy({ $0.isASCII && $0.isHexDigit }) else { return nil }
-        if s.count == 3 { s = Substring(s.map { "\($0)\($0)" }.joined()) }
-        guard s.count == 6 || s.count == 8, let v = UInt64(s, radix: 16) else { return nil }
-        let r, g, b: CGFloat
-        var a: CGFloat = 1
-        if s.count == 8 {
-            r = CGFloat((v >> 24) & 0xFF) / 255; g = CGFloat((v >> 16) & 0xFF) / 255
-            b = CGFloat((v >> 8) & 0xFF) / 255;  a = CGFloat(v & 0xFF) / 255
-        } else {
-            r = CGFloat((v >> 16) & 0xFF) / 255; g = CGFloat((v >> 8) & 0xFF) / 255; b = CGFloat(v & 0xFF) / 255
-        }
-        return NSColor(srgbRed: r, green: g, blue: b, alpha: a)
-    }
 
     /// One resolved capture hit: an absolute storage range, its precedence key,
     /// and the color it paints. `pattern` is the capture's patternIndex plus the

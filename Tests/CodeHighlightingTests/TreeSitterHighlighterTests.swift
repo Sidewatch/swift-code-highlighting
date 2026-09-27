@@ -9,6 +9,7 @@
 //
 
 import XCTest
+import AppKitViews
 import AppKit
 import CodeLanguage
 import SwiftTreeSitter
@@ -155,11 +156,11 @@ final class TreeSitterHighlighterTests: XCTestCase {
     /// `UInt64(_:radix:)` accepts a leading sign, so `#+12345` decoded as a colour. Every
     /// character after the `#` must be a hex digit.
     func testColorFromHexRejectsASignedPayload() {
-        XCTAssertNil(TreeSitterHighlighter.colorFromHex("#+12345"))
-        XCTAssertNil(TreeSitterHighlighter.colorFromHex("#-12345"))
-        XCTAssertNil(TreeSitterHighlighter.colorFromHex("#GGGGGG"))
-        XCTAssertNotNil(TreeSitterHighlighter.colorFromHex("#abc"))
-        XCTAssertNotNil(TreeSitterHighlighter.colorFromHex("ABCDEF80"))
+        XCTAssertNil(NSColor(hex: "#+12345"))
+        XCTAssertNil(NSColor(hex: "#-12345"))
+        XCTAssertNil(NSColor(hex: "#GGGGGG"))
+        XCTAssertNotNil(NSColor(hex: "#abc"))
+        XCTAssertNotNil(NSColor(hex: "ABCDEF80"))
     }
 
     /// A call is not a scope. Java's `method_invocation` and Lua's `function_call` contain the

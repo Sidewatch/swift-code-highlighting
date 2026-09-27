@@ -10,6 +10,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../swift-foundation-extensions"),
+        .package(path: "../swift-appkit-views"),
         .package(path: "../swift-code-language"),
         .package(path: "../swift-data-converter"),
         .package(url: "https://github.com/ChimeHQ/SwiftTreeSitter.git", from: "0.8.0"),
@@ -46,6 +47,7 @@ let package = Package(
             dependencies: [
                 .product(name: "CodeLanguage", package: "swift-code-language"),
                 .product(name: "FoundationExtensions", package: "swift-foundation-extensions"),
+                .product(name: "AppKitViews", package: "swift-appkit-views"),
                 .product(name: "DataConverter", package: "swift-data-converter"),
                 .product(name: "SwiftTreeSitter", package: "SwiftTreeSitter"),
                 .product(name: "TreeSitterJSON", package: "tree-sitter-json"),

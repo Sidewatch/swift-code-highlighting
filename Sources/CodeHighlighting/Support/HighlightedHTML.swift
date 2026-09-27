@@ -9,6 +9,7 @@
 //
 
 import AppKit
+import AppKitViews
 import CodeLanguage
 
 /// `code` as HTML for the inside of a `<code>` or a table cell, coloured the way the editor
@@ -21,7 +22,7 @@ public enum HighlightedHTML {
     /// provider by default — a tree-sitter grammar reads that one whatever is passed).
     @MainActor
     public static func render(_ code: String, language: Language, colors: TokenColorProviding = HighlightTheme.colors) -> String {
-        let font = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
+        let font = NSFont.mono(12)
         let storage = NSTextStorage(string: code, attributes: [.font: font, .foregroundColor: colors.foreground])
         storage.beginEditing()
         let full = NSRange(location: 0, length: storage.length)
@@ -56,7 +57,7 @@ public enum HighlightedHTML {
         storage.enumerateAttribute(.foregroundColor, in: NSRange(location: 0, length: ns.length)) { value, range, _ in
             let text = TreeSitterHighlighter.escapeHTML(ns.substring(with: range))
             let color = (value as? NSColor) ?? fallback
-            if color == fallback { out += text } else { out += "<span style=\"color:\(TreeSitterHighlighter.cssHex(color))\">\(text)</span>" }
+            if color == fallback { out += text } else { out += "<span style=\"color:\(color.hexString)\">\(text)</span>" }
         }
         return out
     }
