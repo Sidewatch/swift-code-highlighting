@@ -13,7 +13,7 @@ Syntax highlighting for macOS `NSTextStorage`, with two backends behind one `Cod
 - `Core/` — the engine: CommentKeywords, CustomLanguageDefinition, CustomLanguageStore, EmbeddedMarkupHighlighter, HighlightTheme, HTTPRequestHighlighter, SyntaxHighlighter
 - `Enums/` — enums with no behaviour beyond their cases and labels: SymbolKind, TokenKind
 - `Errors/` — every Error type, one per file: CustomLanguageDefinitionError
-- `Extensions/` — one extension per idiom: StringProtocol+Trimmed
+- Shared Foundation helpers (`trimmed`, …) come from swift-foundation-extensions, not a local `Extensions/`.
 - `Models/` — value types — the shape of a thing, nothing else: CompletionItem, CustomPattern, DefaultTokenColors, DefLocation, UTF16NewlineScanner
 - `Outline/` — the engine: outline: MarkdownOutline, OutlineNode, OutlineTree, StylesheetOutline
 - `Structure/` — the engine: structure: YAMLStructure (a YAML document as ordered `Value`s — mappings in file order, typed scalars, block and quoted scalars resolved — read off the vendored tree-sitter-yaml grammar; `value(of:)`, `documents(in:)`)
